@@ -37,7 +37,9 @@ export function AutomationWebhookPanel({
   }, []);
 
   useEffect(() => {
-    if (pendingActionId) setApprovedActionId(pendingActionId);
+    if (!pendingActionId) return;
+    const timeout = window.setTimeout(() => setApprovedActionId(pendingActionId), 0);
+    return () => window.clearTimeout(timeout);
   }, [pendingActionId]);
 
   useEffect(() => {

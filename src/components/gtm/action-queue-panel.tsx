@@ -19,8 +19,8 @@ export function ActionQueuePanel({ refreshKey = 0, onActionResolved }: ActionQue
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const loadActions = useCallback(async () => {
-    setLoading(true);
+  const loadActions = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const response = await fetch("/api/pending-actions", { credentials: "include" });
       const data = await readResponseJson<{ actions?: PendingAction[]; error?: string }>(response);
@@ -34,7 +34,8 @@ export function ActionQueuePanel({ refreshKey = 0, onActionResolved }: ActionQue
   }, []);
 
   useEffect(() => {
-    void loadActions();
+    const timeout = window.setTimeout(() => void loadActions(refreshKey > 0), 0);
+    return () => window.clearTimeout(timeout);
   }, [loadActions, refreshKey]);
 
   async function resolveAction(id: string, status: "approved" | "dismissed") {
