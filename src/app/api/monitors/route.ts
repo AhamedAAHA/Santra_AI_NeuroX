@@ -1,0 +1,75 @@
+import { randomUUID } from "crypto";
+import { NextResponse } from "next/server";
+import { requireApiUser } from "@/lib/auth/session";
+import { createMonitor, listMonitors } from "@/lib/db/monitors";
+import { isMongoConfigured } from "@/lib/mongo/config";
+import type { Severity } from "@/types/intelligence";
+
+export const runtime = "nodejs";
+
+export async function GET() {
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+
+  if (!isMongoConfigured()) {
+    return NextResponse.json({ monitors: [], localMode: true });
+  }
+
+  const monitors = await listMonitors(auth.user.id);
+  return NextResponse.json({ monitors });
+}
+
+export async function POST(request: Request) {
+  try {
+    const auth = await requireApiUser();
+    if ("error" in auth) return auth.error;
+
+    const body = (await request.json().catch(() => ({}))) as {
+      requirement?: string;
+      searchQuery?: string;
+      plainSummary?: string;
+      category?: string;
+      minimumSeverity?: Severity;
+      keywords?: string[];
+      targetUrl?: string;
+      active?: boolean;
+    };
+
+    if (!body.requirement?.trim()) {
+      return NextResponse.json({ error: "Monitor requirement is required." }, { status: 400 });
+    }
+
+    if (!isMongoConfigured()) {
+      const monitor = {
+        id: randomUUID(),
+        requirement: body.requirement.trim(),
+        category: body.category ?? "any",
+        minimum_severity: body.minimumSeverity ?? "medium",
+        keywords: body.keywords ?? [],
+        target_url: body.targetUrl ?? null,
+        active: body.active ?? true,
+        last_checked_at: null,
+      };
+      return NextResponse.json({ monitor, localMode: true });
+    }
+
+    const monitor = await createMonitor(auth.user.id, {
+      requirement: body.requirement.trim(),
+      category: body.category ?? "any",
+      minimum_severity: body.minimumSeverity ?? "medium",
+      keywords: body.keywords ?? [],
+      target_url: body.targetUrl ?? null,
+      active: body.active ?? true,
+      search_query: body.searchQuery?.trim() ?? null,
+      plain_summary: body.plainSummary?.trim() ?? null,
+    });
+
+    return NextResponse.json({ monitor });
+  } catch (error) {
+    console.error("Create monitor failed", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Could not save monitor." },
+      { status: 500 },
+    );
+  }
+}
