@@ -4,7 +4,10 @@ node_modules
 # next
 .next
 .next-dev
+.open-next
 out
+.dev.vars
+.wrangler
 
 # production
 build
