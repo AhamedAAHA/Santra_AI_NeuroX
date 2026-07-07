@@ -186,24 +186,22 @@ export function Hero() {
               <ChevronRight className="h-3 w-3 text-sentra-cyan/50" />
             </motion.div>
 
-            {/* Main heading */}
-            <h1 className="text-balance font-display text-[clamp(2.8rem,5.2vw,5.6rem)] font-bold leading-[1.0] tracking-[-0.04em]">
-              <span className="heading-gradient-sweep">Autonomous</span>
-              <br />
-              <span className="heading-gradient-sweep">GTM</span>
-              <br />
-              <span className="heading-gradient-sweep">Intelligence</span>
-              <br />
-              <span className="inline-block">
-                <span className="text-white/30">for </span>
-                <span className="relative inline-block overflow-hidden">
+            {/* Main heading — 2-line layout: title + "Intelligence for [audience]" */}
+            <h1 className="font-display font-bold tracking-[-0.04em]">
+              <span className="heading-gradient-sweep block whitespace-nowrap text-[clamp(2.6rem,5vw,5.2rem)] leading-[1.05]">
+                Autonomous GTM
+              </span>
+              <span className="mt-1 block text-[clamp(2rem,3.8vw,4rem)] leading-[1.12]">
+                <span className="heading-gradient-sweep">Intelligence </span>
+                <span className="text-[0.38em] font-medium tracking-normal text-white/35">for </span>
+                <span className="relative inline-block min-w-[18ch] overflow-hidden align-baseline">
                   <motion.span
                     key={activeWord}
-                    initial={{ y: 40, opacity: 0 }}
+                    initial={{ y: 32, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -40, opacity: 0 }}
+                    exit={{ y: -32, opacity: 0 }}
                     transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-                    className="text-sweep inline-block"
+                    className="text-sweep inline-block whitespace-nowrap"
                   >
                     {words[activeWord]}
                   </motion.span>
