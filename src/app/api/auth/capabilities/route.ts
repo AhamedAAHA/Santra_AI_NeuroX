@@ -1,38 +1,62 @@
 import { NextResponse } from "next/server";
-import { isMongoConfigured, mongoConnectionHint } from "@/lib/mongo/config";
-import { ensureMongoReady, getDb } from "@/lib/mongo/client";
+import { allowDemoAuthFallback } from "@/lib/demo/runtime";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const FALLBACK_CAPABILITIES = {
+  database: "none" as const,
+  providers: { email: false, google: false, github: false },
+  workspaceReady: false,
+  demoAuthAllowed: allowDemoAuthFallback(),
+};
+
 export async function GET() {
-  if (!isMongoConfigured()) {
-    return NextResponse.json({
-      database: "none",
-      providers: { email: false, google: false, github: false },
-      workspaceReady: false,
-    });
-  }
+  const demoAuthAllowed = allowDemoAuthFallback();
 
-  let workspaceReady = false;
-  let workspaceError: string | undefined;
   try {
-    await ensureMongoReady();
-    const db = await getDb();
-    await db.command({ ping: 1 });
-    workspaceReady = true;
-  } catch (error) {
-    workspaceReady = false;
-    workspaceError = mongoConnectionHint(error);
-  }
+    const { isMongoConfigured, mongoConnectionHint } = await import("@/lib/mongo/config");
 
-  return NextResponse.json(
-    {
-      database: "mongodb",
-      providers: { email: true, google: false, github: false },
-      workspaceReady,
-      workspaceError,
-    },
-    { headers: { "Cache-Control": "no-store" } },
-  );
+    if (!isMongoConfigured()) {
+      return NextResponse.json(
+        { ...FALLBACK_CAPABILITIES, demoAuthAllowed },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
+    let workspaceReady = false;
+    let workspaceError: string | undefined;
+
+    try {
+      const { ensureMongoReady, getDb } = await import("@/lib/mongo/client");
+      await ensureMongoReady();
+      const db = await getDb();
+      await db.command({ ping: 1 });
+      workspaceReady = true;
+    } catch (error) {
+      workspaceReady = false;
+      workspaceError = mongoConnectionHint(error);
+    }
+
+    return NextResponse.json(
+      {
+        database: "mongodb",
+        providers: { email: true, google: false, github: false },
+        workspaceReady,
+        workspaceError,
+        demoAuthAllowed,
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  } catch (error) {
+    console.error("[auth/capabilities]", error);
+    return NextResponse.json(
+      {
+        ...FALLBACK_CAPABILITIES,
+        demoAuthAllowed,
+        workspaceError: "Workspace check failed on this host. Use demo sign-in if enabled.",
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
 }

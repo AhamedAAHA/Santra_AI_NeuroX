@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { allowDemoLlmFallback } from "@/lib/demo/runtime";
 import { getPlatformEnv } from "@/lib/secrets/platform-secrets";
 import { isFeatherlessConfigured } from "@/lib/llm/featherless";
 
@@ -8,9 +9,9 @@ export function isAimlConfigured() {
   return Boolean(getPlatformEnv("AIML_API_KEY"));
 }
 
-/** At least one inference provider is configured. */
+/** At least one inference provider is configured, or demo heuristic mode is enabled. */
 export function isLlmConfigured() {
-  return isAimlConfigured() || isFeatherlessConfigured();
+  return isAimlConfigured() || isFeatherlessConfigured() || allowDemoLlmFallback();
 }
 
 /** All LLM traffic routes through AI/ML API (OpenAI-compatible gateway). */

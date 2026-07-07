@@ -7,6 +7,7 @@ import {
   type LocalSessionPayload,
 } from "@/lib/local-auth/session-cookie";
 import { findUserById } from "@/lib/auth/users";
+import { allowDemoAuthFallback } from "@/lib/demo/runtime";
 import { isMongoConfigured } from "@/lib/mongo/config";
 import { ensureMongoReady } from "@/lib/mongo/client";
 
@@ -47,7 +48,36 @@ export async function requireApiUser(): Promise<{ error: NextResponse } | ApiAut
     };
   }
 
-  await ensureMongoReady();
+  let mongoReady = true;
+  try {
+    await ensureMongoReady();
+  } catch (error) {
+    mongoReady = false;
+    if (!allowDemoAuthFallback()) {
+      console.error("MongoDB unavailable", error);
+      return {
+        error: NextResponse.json(
+          { error: "Database unavailable.", hint: "Check MONGODB_URI and Atlas network access." },
+          { status: 503 },
+        ),
+      };
+    }
+  }
+
+  if (!mongoReady) {
+    if (!localSession) {
+      return {
+        error: NextResponse.json(
+          {
+            error: "Sign in required.",
+            hint: "Use demo sign-in on this host — MongoDB is not reachable from Cloudflare Workers.",
+          },
+          { status: 401 },
+        ),
+      };
+    }
+    return { user: { id: localSession.userId, email: localSession.email } };
+  }
 
   if (!localSession) {
     return {

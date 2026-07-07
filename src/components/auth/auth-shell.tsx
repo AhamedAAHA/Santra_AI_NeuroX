@@ -24,6 +24,15 @@ type AuthCapabilities = {
   database?: string;
   providers: { email: boolean; google: boolean; github: boolean };
   workspaceReady: boolean | null;
+  demoAuthAllowed?: boolean;
+  workspaceError?: string;
+};
+
+const DEFAULT_CAPABILITIES: AuthCapabilities = {
+  database: "none",
+  providers: { email: false, google: false, github: false },
+  workspaceReady: false,
+  demoAuthAllowed: true,
 };
 
 export function AuthShell({ mode }: AuthShellProps) {
@@ -31,28 +40,43 @@ export function AuthShell({ mode }: AuthShellProps) {
   const searchParams = useSearchParams();
   const isSignUp = mode === "sign-up";
   const [mongoEnabled, setMongoEnabled] = useState(false);
-  const allowLocalAuth = !mongoEnabled && process.env.NODE_ENV !== "production";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
   const [capabilities, setCapabilities] = useState<AuthCapabilities | null>(null);
+  const demoAuthAllowed = capabilities?.demoAuthAllowed ?? false;
+  const mongoWorkspaceReady = mongoEnabled && capabilities?.workspaceReady === true;
+  const allowLocalAuth =
+    (!mongoEnabled && process.env.NODE_ENV !== "production") ||
+    (demoAuthAllowed && !mongoWorkspaceReady);
   const nextPath = safeRedirectPath(searchParams.get("next"));
   const authError = searchParams.get("error");
-  const checkingCapabilities = !capabilities;
+  const checkingCapabilities = capabilities === null;
   const workspaceUnavailable = mongoEnabled && capabilities?.workspaceReady === false;
+  const canSubmit =
+    !loading &&
+    capabilities !== null &&
+    (allowLocalAuth || mongoWorkspaceReady) &&
+    !(isSignUp && workspaceUnavailable && mongoEnabled && !allowLocalAuth);
   const authToggleHref = isSignUp
     ? `/sign-in${nextPath !== "/dashboard" ? `?next=${encodeURIComponent(nextPath)}` : ""}`
     : `/sign-up${nextPath !== "/dashboard" ? `?next=${encodeURIComponent(nextPath)}` : ""}`;
-  const submitLabel = mongoEnabled
-    ? isSignUp
-      ? "Create intelligence workspace"
-      : "Sign in to workspace"
+  const submitLabel = checkingCapabilities
+    ? "Checking workspace…"
     : allowLocalAuth
       ? isSignUp
-        ? "Create local account"
-        : "Sign in locally"
-      : "Configure MongoDB to continue";
+        ? demoAuthAllowed && mongoEnabled
+          ? "Create demo account"
+          : "Create local account"
+        : demoAuthAllowed && mongoEnabled
+          ? "Sign in (demo mode)"
+          : "Sign in locally"
+      : mongoWorkspaceReady
+        ? isSignUp
+          ? "Create intelligence workspace"
+          : "Sign in to workspace"
+        : "Workspace unavailable";
 
   function navigateAfterAuth(localMode: boolean) {
     if (localMode) {
@@ -66,27 +90,28 @@ export function AuthShell({ mode }: AuthShellProps) {
 
   useEffect(() => {
     const controller = new AbortController();
+    const failSafe = window.setTimeout(() => {
+      setCapabilities((current) => current ?? DEFAULT_CAPABILITIES);
+    }, 6000);
+
     const timeout = window.setTimeout(() => {
       void fetch("/api/auth/capabilities", { cache: "no-store", signal: controller.signal })
-        .then((response) => (response.ok ? response.json() : null))
-        .then((data: AuthCapabilities | null) => {
-          if (data) {
-            setCapabilities(data);
-            setMongoEnabled(data.database === "mongodb");
-          }
+        .then(async (response) => {
+          const data = response.ok
+            ? ((await response.json()) as AuthCapabilities)
+            : DEFAULT_CAPABILITIES;
+          setCapabilities(data);
+          setMongoEnabled(data.database === "mongodb");
         })
         .catch(() => {
-          setCapabilities({
-            database: "none",
-            providers: { email: false, google: false, github: false },
-            workspaceReady: null,
-          });
+          setCapabilities(DEFAULT_CAPABILITIES);
         });
     }, 0);
 
     return () => {
       controller.abort();
       window.clearTimeout(timeout);
+      window.clearTimeout(failSafe);
     };
   }, []);
 
@@ -145,15 +170,9 @@ export function AuthShell({ mode }: AuthShellProps) {
   async function handleEmailAuth(event: React.FormEvent) {
     event.preventDefault();
 
-    if (mongoEnabled) {
+    if (mongoEnabled && mongoWorkspaceReady) {
       if (checkingCapabilities) {
         toast.message("Checking workspace setup. Please try again in a moment.");
-        return;
-      }
-      if (workspaceUnavailable) {
-        toast.error("MongoDB workspace is not ready.", {
-          description: "Verify MONGODB_URI in .env.local and restart npm run dev.",
-        });
         return;
       }
       await handleMongoAuth();
@@ -161,8 +180,10 @@ export function AuthShell({ mode }: AuthShellProps) {
     }
 
     if (!allowLocalAuth) {
-      toast.error("Cloud authentication is required.", {
-        description: "Configure MONGODB_URI in .env.local to sign in to your workspace.",
+      toast.error("Workspace is not ready.", {
+        description:
+          capabilities?.workspaceError ||
+          "MongoDB is unreachable from this host. Demo sign-in is disabled.",
       });
       return;
     }
@@ -171,7 +192,7 @@ export function AuthShell({ mode }: AuthShellProps) {
   }
 
   return (
-    <main className="min-h-[100svh] overflow-x-hidden overflow-y-auto">
+    <main className="min-h-[100svh] overflow-x-hidden overflow-y-auto pb-16">
       <ParticleField />
       <div className="container grid min-h-[100svh] items-start gap-12 py-6 sm:py-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <motion.div
@@ -231,7 +252,7 @@ export function AuthShell({ mode }: AuthShellProps) {
               </div>
             )}
 
-            <form className="grid gap-4" onSubmit={handleEmailAuth}>
+            <form className="grid gap-4 pb-10" onSubmit={handleEmailAuth}>
               {isSignUp && (
                 <Input
                   placeholder="Company name"
@@ -257,13 +278,13 @@ export function AuthShell({ mode }: AuthShellProps) {
                 />
               </div>
               <Button
-                variant={mongoEnabled ? "neon" : "ghost"}
+                variant="neon"
                 size="lg"
-                className="mt-2"
-                disabled={loading || checkingCapabilities || (isSignUp && workspaceUnavailable) || (!mongoEnabled && !allowLocalAuth)}
+                className="mt-2 w-full shrink-0"
+                disabled={!canSubmit}
                 type="submit"
               >
-                {submitLabel}
+                {loading ? "Please wait…" : submitLabel}
               </Button>
             </form>
 

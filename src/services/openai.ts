@@ -1,4 +1,5 @@
 import { demoAnalysis } from "@/data/mock-intelligence";
+import { allowDemoLlmFallback } from "@/lib/demo/runtime";
 import {
   createChatCompletion,
   createLiveSearchChatCompletion,
@@ -458,7 +459,34 @@ async function repairHowToDeflection(
   return response.choices[0]?.message?.content?.trim() || answer;
 }
 
+function generateDemoChatResponse(message: string, context?: ChatContext) {
+  const evidence = context?.brightDataEvidence?.trim() || context?.documentEvidence?.text?.trim();
+  const summary = demoAnalysis.summary;
+  const recs = demoAnalysis.recommendations.slice(0, 3).map((item) => `- ${item}`).join("\n");
+
+  return [
+    `**SANTRA demo advisor** (no LLM API key — using heuristic briefing)`,
+    "",
+    `You asked: *${message.trim()}*`,
+    "",
+    summary,
+    evidence
+      ? `\n**Evidence on hand:**\n${evidence.slice(0, 1200)}`
+      : "\n_Add an AIML or Featherless API key later for full live-web reasoning. Exa + demo analysis still power monitors._",
+    "",
+    "**Recommended actions**",
+    recs,
+  ].join("\n");
+}
+
 export async function generateChatResponse(message: string, context?: ChatContext) {
+  if (!isAimlConfigured() && !isFeatherlessConfigured()) {
+    if (allowDemoLlmFallback()) {
+      return generateDemoChatResponse(message, context);
+    }
+    throw new Error("Configure AIML_API_KEY or FEATHERLESS_API_KEY in .env.local for chat.");
+  }
+
   if (!isLlmConfigured()) {
     throw new Error("Configure AIML_API_KEY or FEATHERLESS_API_KEY in .env.local for chat.");
   }
