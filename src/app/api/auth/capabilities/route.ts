@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { allowDemoAuthFallback } from "@/lib/demo/runtime";
+import { getAppOrigin, getOAuthCallbackUrl, getOAuthProvidersStatus } from "@/lib/auth/oauth-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -41,7 +42,16 @@ export async function GET() {
     return NextResponse.json(
       {
         database: "mongodb",
-        providers: { email: true, google: false, github: false },
+        providers: {
+          email: true,
+          google: getOAuthProvidersStatus().google,
+          github: getOAuthProvidersStatus().github,
+        },
+        oauthCallbacks: {
+          github: getOAuthCallbackUrl("github"),
+          google: getOAuthCallbackUrl("google"),
+          appOrigin: getAppOrigin(),
+        },
         workspaceReady,
         workspaceError,
         demoAuthAllowed,

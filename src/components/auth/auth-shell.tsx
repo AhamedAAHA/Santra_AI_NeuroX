@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, GitFork } from "lucide-react";
 import { toast } from "sonner";
 import { AiOrb } from "@/components/shared/ai-orb";
 import { BrandLogo } from "@/components/shared/brand-mark";
@@ -23,6 +23,7 @@ type AuthShellProps = {
 type AuthCapabilities = {
   database?: string;
   providers: { email: boolean; google: boolean; github: boolean };
+  oauthCallbacks?: { github: string; google: string; appOrigin: string };
   workspaceReady: boolean | null;
   demoAuthAllowed?: boolean;
   workspaceError?: string;
@@ -77,6 +78,17 @@ export function AuthShell({ mode }: AuthShellProps) {
           ? "Create intelligence workspace"
           : "Sign in to workspace"
         : "Workspace unavailable";
+  const oauthProviders = capabilities?.providers;
+  const showGithubOAuth = Boolean(mongoWorkspaceReady && oauthProviders?.github);
+  const showGoogleOAuth = Boolean(mongoWorkspaceReady && oauthProviders?.google);
+  const showOAuth = showGithubOAuth || showGoogleOAuth;
+
+  function startOAuth(provider: "github" | "google") {
+    const params = new URLSearchParams();
+    if (nextPath !== "/dashboard") params.set("next", nextPath);
+    const query = params.toString();
+    window.location.assign(`/api/auth/oauth/${provider}${query ? `?${query}` : ""}`);
+  }
 
   function navigateAfterAuth(localMode: boolean) {
     if (localMode) {
@@ -229,7 +241,9 @@ export function AuthShell({ mode }: AuthShellProps) {
               </h2>
               <p className="mt-2 text-sm text-white/50">
                 {mongoEnabled
-                  ? "Use email and password to access your workspace."
+                  ? showOAuth
+                    ? "Use email and password, or continue with GitHub or Google."
+                    : "Use email and password to access your workspace."
                   : allowLocalAuth
                     ? "No MongoDB URI detected. Use email and password for local browser auth."
                     : "Cloud authentication is required in production. Configure MONGODB_URI to continue."}
@@ -239,7 +253,16 @@ export function AuthShell({ mode }: AuthShellProps) {
             {authError && (
               <div className="mb-6 flex gap-3 rounded-2xl border border-rose-300/20 bg-rose-400/10 p-4 text-sm text-rose-100">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <p>Sign-in could not be completed. The link may be expired, invalid, or missing redirect configuration.</p>
+                <div className="space-y-2">
+                  <p>Sign-in could not be completed. The link may be expired, invalid, or missing redirect configuration.</p>
+                  {capabilities?.oauthCallbacks && (
+                    <div className="rounded-xl border border-rose-200/10 bg-black/20 p-3 text-xs text-rose-50/90">
+                      <p className="font-medium text-rose-50">Register these exact callback URLs in your OAuth app:</p>
+                      <p className="mt-2 break-all font-mono">GitHub: {capabilities.oauthCallbacks.github}</p>
+                      <p className="mt-1 break-all font-mono">Google: {capabilities.oauthCallbacks.google}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -249,6 +272,45 @@ export function AuthShell({ mode }: AuthShellProps) {
                 <p>
                   Cloud workspace setup is incomplete. Verify MONGODB_URI in .env.local and restart the dev server.
                 </p>
+              </div>
+            )}
+
+            {showOAuth && (
+              <div className="mb-6 grid gap-3">
+                {showGithubOAuth && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="lg"
+                    className="w-full"
+                    disabled={loading}
+                    onClick={() => startOAuth("github")}
+                  >
+                    <GitFork className="mr-2 h-4 w-4" />
+                    Continue with GitHub
+                  </Button>
+                )}
+                {showGoogleOAuth && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="lg"
+                    className="w-full"
+                    disabled={loading}
+                    onClick={() => startOAuth("google")}
+                  >
+                    <span className="mr-2 text-sm font-semibold">G</span>
+                    Continue with Google
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {showOAuth && (
+              <div className="mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-white/30">
+                <span className="h-px flex-1 bg-white/10" />
+                <span>or email</span>
+                <span className="h-px flex-1 bg-white/10" />
               </div>
             )}
 

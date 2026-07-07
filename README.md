@@ -56,7 +56,7 @@ Open `http://localhost:3001`.
 
 - Netlify + Cloudflare: `docs/DEPLOY_NETLIFY_CLOUDFLARE.md`
 - Supabase setup: `docs/SUPABASE_SETUP.md`
-- OAuth setup: `docs/OAUTH_SETUP.md`
+- OAuth setup: `docs/MONGODB_OAUTH.md` (MongoDB) · legacy Supabase: `docs/OAUTH_SETUP.md`
 
 ## Notes
 

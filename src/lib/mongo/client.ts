@@ -93,6 +93,12 @@ export async function getDb() {
 async function ensureIndexes(db: Awaited<ReturnType<typeof getDb>>) {
   await Promise.all([
     db.collection("users").createIndex({ email: 1 }, { unique: true }),
+    db
+      .collection("users")
+      .createIndex(
+        { auth_provider: 1, oauth_id: 1 },
+        { unique: true, partialFilterExpression: { oauth_id: { $type: "string" } } },
+      ),
     db.collection("monitors").createIndex({ user_id: 1, created_at: -1 }),
     db.collection("signals").createIndex({ user_id: 1, created_at: -1 }),
     db.collection("signals").createIndex({ run_id: 1 }),

@@ -29,6 +29,10 @@ Set in Vercel → Project → Settings → Environment Variables:
 | `EXA_API_KEY` | Exa fallback search |
 | `SENTRA_ALLOW_DEMO_FALLBACK` | `true` if no LLM key yet |
 | `BAND_*` | Optional HITL notifications |
+| `GITHUB_OAUTH_CLIENT_ID` | GitHub OAuth (see `docs/MONGODB_OAUTH.md`) |
+| `GITHUB_OAUTH_CLIENT_SECRET` | GitHub OAuth secret |
+| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth secret |
 
 ## Cron (Hobby plan)
 
