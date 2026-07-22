@@ -63,12 +63,12 @@ export function OurServicesPage({ basePath = "/services" }: { basePath?: string 
         title="B2B GTM agent services"
         description="Browse SANTRA AI modules below. Tap Guide on any card for a walkthrough and open the live workspace when ready."
         aside={
-          <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5">
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4">
             <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-sentra-cyan" />
-              <p className="font-medium text-white">{signedIn ? "Workspace active" : "Browse freely"}</p>
+              <Sparkles className="h-4 w-4 text-sentra-cyan" />
+              <p className="text-sm font-medium text-white">{signedIn ? "Workspace active" : "Browse freely"}</p>
             </div>
-            <p className="mt-2 text-sm leading-6 text-white/55">
+            <p className="mt-1.5 text-xs leading-5 text-white/45">
               {signedIn
                 ? "Each Guide walks you through the service and opens the workspace when you finish."
                 : "Summaries are always visible. Register to unlock interactive guides."}

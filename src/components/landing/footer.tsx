@@ -10,7 +10,6 @@ const workspaceLinks = [
   { label: "GTM Monitors", href: signInFor("/alerts") },
   { label: "Dashboard", href: signInFor("/dashboard") },
   { label: "GTM Advisor", href: signInFor("/chat") },
-  { label: "Competitor IQ", href: signInFor("/analyst") },
 ];
 
 const platformLinks = [
