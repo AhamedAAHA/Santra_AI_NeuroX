@@ -1,5 +1,6 @@
 import { getSignalsForRun, saveIntelligenceRun } from "@/lib/db/intelligence";
 import { createPendingAction } from "@/lib/db/pending-actions";
+import { createServerPendingAction } from "@/lib/pending-actions-server";
 import {
   appendTimelineEventDb,
   updateMonitorCheckState as persistMonitorCheckState,
@@ -55,11 +56,11 @@ function inferBrightDataModeFromEvidence(evidence: string): BrightDataCollection
 }
 
 function buildProposedAction(report: ReturnType<typeof createExecutiveReport>, matchedCount: number) {
-  const headline = report.verdict || report.situation;
+  const headline = (report.verdict || report.situation || "Monitor update").trim();
   if (matchedCount > 0) {
-    return `Review and approve CRM/automation trigger: ${headline}`;
+    return `${matchedCount} signal${matchedCount === 1 ? "" : "s"} need review — ${headline}`;
   }
-  return `Review monitor brief: ${headline}`;
+  return headline;
 }
 
 export async function runMonitorCheck(
@@ -194,17 +195,23 @@ export async function runMonitorCheck(
   });
 
   let pendingAction: PendingAction | undefined;
+  const shouldQueueHitl = matched.length > 0 || changeResult.changes.length > 0;
 
-  if (canPersist && (matched.length > 0 || changeResult.changes.length > 0)) {
+  if (shouldQueueHitl && options?.userId) {
     try {
-      pendingAction = await createPendingAction(options!.userId!, {
+      const queueInput = {
         monitorId: monitor.id,
         reportId: report.id,
         proposedAction: buildProposedAction(report, matched.length),
-        proposedEvent: "monitor_alert",
+        proposedEvent: "monitor_alert" as const,
         monitorRequirement: monitor.requirement,
         reportSnapshot: report,
-      });
+      };
+
+      pendingAction = canPersist
+        ? await createPendingAction(options.userId, queueInput)
+        : createServerPendingAction(options.userId, queueInput);
+
       void notifyBandGtmEvent({
         title: "GTM monitor — approval required",
         summary: report.verdict,

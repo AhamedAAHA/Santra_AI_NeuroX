@@ -306,9 +306,17 @@ function WorldPulseMode({
   );
 }
 
-export function WorldEngineStudio() {
+export function WorldEngineStudio({
+  initialQuery,
+  compactHero = false,
+  onContinueInChat,
+}: {
+  initialQuery?: string;
+  compactHero?: boolean;
+  onContinueInChat?: (message: string) => void;
+} = {}) {
   const { settings } = useSettings();
-  const [prompt, setPrompt] = useState(prompts[0]);
+  const [prompt, setPrompt] = useState(initialQuery?.trim() || prompts[0]);
   const [report, setReport] = useState<WorldEngineReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [domain, setDomain] = useState<WorldDomain | "all">("all");
@@ -554,15 +562,24 @@ export function WorldEngineStudio() {
 
   return (
     <>
-      <section className="mb-7 grid gap-5 xl:grid-cols-[1fr_360px]">
-        <Card className="relative overflow-hidden p-6 md:p-8" glow>
-          <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-violet-400/10 blur-3xl" />
+      <section className={cn("mb-7 grid gap-5", !compactHero && "xl:grid-cols-[1fr_360px]")}>
+        <Card className={cn("relative overflow-hidden", compactHero ? "p-5 md:p-6" : "p-6 md:p-8")} glow>
+          {!compactHero && (
+            <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-violet-400/10 blur-3xl" />
+          )}
           <Badge variant="cyan">AI Startup Advisor / competitor intelligence</Badge>
-          <h1 className="type-display-lg relative mt-4 premium-gradient-text">
-            Understand startup competition as a living system.
+          <h1
+            className={cn(
+              "relative mt-3 font-semibold tracking-tight text-white",
+              compactHero ? "text-xl md:text-2xl" : "text-2xl md:text-3xl",
+            )}
+          >
+            {compactHero ? "Deep brief" : "Understand startup competition as a living system."}
           </h1>
-          <p className="relative mt-4 max-w-3xl text-sm leading-7 text-white/57 md:text-base">
-            Ask a startup or competitor question. SANTRA resolves live evidence, maps relationships, generates visual intelligence, and narrates strategic implications.
+          <p className="relative mt-2 max-w-2xl text-sm leading-6 text-white/55">
+            {compactHero
+              ? "Resolve live evidence, map relationships, and narrate strategy — then continue in Ask."
+              : "Ask a startup or competitor question. SANTRA resolves live evidence, maps relationships, and narrates strategy."}
           </p>
           <Textarea
             value={prompt}

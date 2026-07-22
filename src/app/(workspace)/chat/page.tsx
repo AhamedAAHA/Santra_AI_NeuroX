@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { ChatInterface } from "@/components/chat/chat-interface";
+import { GtmAdvisorHub } from "@/components/chat/gtm-advisor-hub";
 
 export default function ChatPage() {
   return (
-    <Suspense>
-      <ChatInterface />
+    <Suspense fallback={<p className="text-sm text-white/50">Loading GTM Advisor…</p>}>
+      <GtmAdvisorHub />
     </Suspense>
   );
 }

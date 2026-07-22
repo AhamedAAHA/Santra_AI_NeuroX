@@ -9,7 +9,6 @@ import {
   Bot,
   CheckCircle2,
   DatabaseZap,
-  LayoutDashboard,
   Radar,
   ScanSearch,
   Settings,
@@ -26,36 +25,36 @@ import { getBrowserClient, isBrowserSupabaseConfigured } from "@/lib/supabase/cl
 
 const guideSections = [
   {
-    icon: LayoutDashboard,
-    title: "Read the dashboard",
-    description: "Start with live signal velocity, market movement, current risk, and active briefings.",
-    href: "/dashboard",
-  },
-  {
-    icon: Bot,
-    title: "Ask SANTRA",
-    description: "Use chat for live-web research, competitor analysis, summaries, and voice responses.",
-    href: "/chat?prompt=Summarize%20current%20market%20risks",
-  },
-  {
     icon: BellRing,
-    title: "Create monitors",
-    description: "Describe what you care about in plain language. AI turns it into watch rules and alerts.",
+    title: "Create GTM monitors",
+    description: "Describe B2B competitive signals in plain language — the agent routes tools and collects evidence.",
     href: "/alerts",
   },
   {
+    icon: Radar,
+    title: "Run the agent loop",
+    description: "Check now → watch reasoning → open the executive brief grounded in live evidence.",
+    href: "/alerts",
+  },
+  {
+    icon: Bot,
+    title: "Ask GTM Advisor",
+    description: "Use Ask / Deep brief for competitor Q&A after monitors are running.",
+    href: "/chat?mode=ask",
+  },
+  {
     icon: ScanSearch,
-    title: "Investigate markets",
-    description: "Use Competitor IQ when a rival move or pricing signal needs deeper strategic review.",
-    href: "/analyst",
+    title: "Approve HITL actions",
+    description: "Nothing executes to CRM/webhooks until a human Approves in the action queue.",
+    href: "/alerts",
   },
 ];
 
 const quickStart = [
-  "Add company context so SANTRA knows what to watch.",
-  "Generate starter monitors for competitors, pricing, market risks, and sentiment.",
-  "Run the first monitor check and open a verified report.",
-  "Enable browser or webhook alerts for action delivery.",
+  "Add company / ICP context so SANTRA knows your B2B rivals.",
+  "Generate starter competitive monitors (pricing, launches, market risk).",
+  "Run Check now and review Agent reasoning + the executive brief.",
+  "Approve & run in the HITL queue — automation never skips human control.",
 ];
 
 export default function OnboardingPage() {

@@ -7,7 +7,10 @@ import {
   resolveAutomationWebhookUrl,
   type AutomationWebhookEvent,
 } from "@/lib/webhooks/delivery";
-import { getLocalPendingAction, updateLocalPendingAction } from "@/lib/pending-actions-storage";
+import {
+  getServerPendingAction,
+  updateServerPendingAction,
+} from "@/lib/pending-actions-server";
 import type { WorkspaceContext } from "@/lib/gtm/workspace-context";
 import type { ExecutiveIntelligenceReport, IntelligenceAnalysis } from "@/types/intelligence";
 
@@ -53,10 +56,10 @@ export async function POST(request: Request) {
 
   const report = body?.report ?? undefined;
   const useMongo = isMongoConfigured();
-  const localAction = !useMongo ? getLocalPendingAction(pendingActionId) : null;
-  let resolvedReport = report ?? localAction?.reportSnapshot;
-  let monitorRequirement = body?.requirement ?? localAction?.monitorRequirement;
-  let monitorId = body?.monitorId ?? localAction?.monitorId;
+  const serverAction = !useMongo ? getServerPendingAction(auth.user.id, pendingActionId) : null;
+  let resolvedReport = report ?? serverAction?.reportSnapshot;
+  let monitorRequirement = body?.requirement ?? serverAction?.monitorRequirement;
+  let monitorId = body?.monitorId ?? serverAction?.monitorId;
 
   if (useMongo) {
     try {
@@ -80,10 +83,10 @@ export async function POST(request: Request) {
       );
     }
   } else {
-    if (!localAction) {
+    if (!serverAction) {
       return NextResponse.json({ error: "Pending action not found." }, { status: 404 });
     }
-    if (localAction.status !== "approved") {
+    if (serverAction.status !== "approved") {
       return NextResponse.json(
         { error: "Action must be approved before webhook delivery." },
         { status: 403 },
@@ -105,7 +108,7 @@ export async function POST(request: Request) {
     if (useMongo) {
       await resolvePendingAction(auth.user.id, pendingActionId, "executed");
     } else {
-      updateLocalPendingAction(pendingActionId, "executed");
+      updateServerPendingAction(auth.user.id, pendingActionId, "executed");
     }
 
     return NextResponse.json({ ok: true, payload });

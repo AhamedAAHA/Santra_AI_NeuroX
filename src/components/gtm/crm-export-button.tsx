@@ -132,7 +132,8 @@ export function AutomationWebhookPanel({
   return (
     <div className="grid gap-3">
       <p className="text-xs text-white/45">
-        Automation is gated by human approval. Approve in the Action Queue, then execute here.
+        Prefer Approve & run in the Action Queue. Use this panel to retry CRM export or workflow
+        triggers for an already-approved action ID.
       </p>
       <Input
         value={approvedActionId}

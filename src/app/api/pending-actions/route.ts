@@ -3,9 +3,9 @@ import { requireApiUser } from "@/lib/auth/session";
 import { createPendingAction, listPendingActions } from "@/lib/db/pending-actions";
 import { isMongoConfigured } from "@/lib/mongo/config";
 import {
-  createLocalPendingAction,
-  loadLocalPendingActions,
-} from "@/lib/pending-actions-storage";
+  createServerPendingAction,
+  listServerPendingActions,
+} from "@/lib/pending-actions-server";
 import type { PendingActionEvent } from "@/types/pending-actions";
 import type { ExecutiveIntelligenceReport } from "@/types/intelligence";
 
@@ -16,7 +16,7 @@ export async function GET() {
   if ("error" in auth) return auth.error;
 
   if (!isMongoConfigured()) {
-    return NextResponse.json({ actions: loadLocalPendingActions() });
+    return NextResponse.json({ actions: listServerPendingActions(auth.user.id) });
   }
 
   try {
@@ -48,27 +48,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "proposedAction is required." }, { status: 400 });
   }
 
+  const input = {
+    monitorId: body.monitorId,
+    reportId: body.reportId,
+    proposedAction,
+    proposedEvent: body.proposedEvent,
+    monitorRequirement: body.monitorRequirement,
+    reportSnapshot: body.reportSnapshot,
+  };
+
   if (!isMongoConfigured()) {
-    const action = createLocalPendingAction({
-      monitorId: body.monitorId,
-      reportId: body.reportId,
-      proposedAction,
-      proposedEvent: body.proposedEvent,
-      monitorRequirement: body.monitorRequirement,
-      reportSnapshot: body.reportSnapshot,
-    });
+    const action = createServerPendingAction(auth.user.id, input);
     return NextResponse.json({ action });
   }
 
   try {
-    const action = await createPendingAction(auth.user.id, {
-      monitorId: body.monitorId,
-      reportId: body.reportId,
-      proposedAction,
-      proposedEvent: body.proposedEvent,
-      monitorRequirement: body.monitorRequirement,
-      reportSnapshot: body.reportSnapshot,
-    });
+    const action = await createPendingAction(auth.user.id, input);
     return NextResponse.json({ action });
   } catch (error) {
     return NextResponse.json(

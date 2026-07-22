@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import { motion } from "framer-motion";
-import { Bot, FileText, Mic2, MicOff, Paperclip, Radar, Send, Sparkles, TerminalSquare, Volume2, X } from "lucide-react";
+import { Bot, FileText, Globe2, Mic2, MicOff, Paperclip, Phone, PhoneOff, Radar, Send, Sparkles, TerminalSquare, Volume2, X } from "lucide-react";
 import { toast } from "sonner";
 import { AiOrb } from "@/components/shared/ai-orb";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { LiveAgentLogs } from "@/features/activity-console/ai-activity-console";
 import { StudioModal } from "@/features/world-engine/studio-modal";
+import { SuggestedPromptsMenu } from "@/components/shared/suggested-prompts-menu";
 import { repairLocalSessionFromCookie, syncLocalSessionToCookie } from "@/lib/local-auth";
+import { useGtmLiveCall } from "@/hooks/use-gtm-live-call";
 import { usePipelineLogs } from "@/hooks/use-pipeline-logs";
 import { useSpeechInput } from "@/hooks/use-speech-input";
 import { useTypewriter } from "@/hooks/use-typewriter";
@@ -91,7 +92,13 @@ function AssistantMessage({ content, animated }: { content: string; animated?: b
   );
 }
 
-export function ChatInterface() {
+export function ChatInterface({
+  hideChrome = false,
+  onRequestDeepBrief,
+}: {
+  hideChrome?: boolean;
+  onRequestDeepBrief?: (query: string) => void;
+} = {}) {
   const { settings, updateSettings } = useSettings();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -115,6 +122,10 @@ export function ChatInterface() {
   const currentVoiceTextRef = useRef<string | null>(null);
   const speakingTimeoutRef = useRef<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesRef = useRef(messages);
+  const threadIdRef = useRef(threadId);
+  const useGtmAgentRef = useRef(useGtmAgent);
+  const loadingRef = useRef(loading);
   const lastAssistantId = useMemo(
     () => [...messages].reverse().find((message) => message.role === "assistant")?.id,
     [messages],
@@ -134,6 +145,11 @@ export function ChatInterface() {
     getContext: () => input,
     language: settings.voice.language,
   });
+
+  messagesRef.current = messages;
+  threadIdRef.current = threadId;
+  useGtmAgentRef.current = useGtmAgent;
+  loadingRef.current = loading;
 
   function finishVoicePlayback() {
     currentVoiceTextRef.current = null;
@@ -276,10 +292,10 @@ export function ChatInterface() {
     }
   }
 
-  async function sendMessage(nextInput = input) {
+  async function sendMessage(nextInput = input, options?: { fromLiveCall?: boolean }) {
     const trimmed = nextInput.trim();
-    const document = attachedDocument;
-    if ((!trimmed && !document) || loading) return;
+    const document = options?.fromLiveCall ? null : attachedDocument;
+    if ((!trimmed && !document) || loadingRef.current) return null;
     stopSpeechInput();
 
     const displayContent = trimmed || `Analyze the uploaded document: ${document!.fileName}`;
@@ -300,20 +316,21 @@ export function ChatInterface() {
         : undefined,
     };
 
+    const history = messagesRef.current;
     setMessages((current) => [...current, userMessage]);
     setInput("");
-    setAttachedDocument(null);
+    if (!options?.fromLiveCall) setAttachedDocument(null);
     setLoading(true);
     pipeline.start();
 
     try {
       const payload = {
         message: displayContent,
-        history: messages,
-        threadId,
+        history,
+        threadId: threadIdRef.current,
         document: document ?? undefined,
         workspace: getWorkspaceContext(),
-        useGtmAgent,
+        useGtmAgent: useGtmAgentRef.current || Boolean(options?.fromLiveCall),
       };
 
       const postChat = () =>
@@ -365,10 +382,12 @@ export function ChatInterface() {
           provider: data.provider,
         },
       ]);
+      return reply;
     } catch (error) {
       toast.error("SANTRA could not complete the analysis.", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
+      return null;
     } finally {
       pipeline.complete();
       setLoading(false);
@@ -384,9 +403,9 @@ export function ChatInterface() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per unique prompt URL
   }, [searchParams]);
 
-  async function playVoice(content: string, options?: { automatic?: boolean }) {
+  async function playVoice(content: string, options?: { automatic?: boolean; silentToast?: boolean }) {
     if (!settings.voice.enabled) {
-      if (!options?.automatic) toast.message("AI voice response is disabled in Settings.");
+      if (!options?.automatic && !options?.silentToast) toast.message("AI voice response is disabled in Settings.");
       return;
     }
 
@@ -420,10 +439,17 @@ export function ChatInterface() {
       if (result === "cancelled") return;
 
       if (result === "demo") {
-        toast.message("Using browser voice", {
-          description: "Add SPEECHMATICS_API_KEY for premium English TTS, or keep using browser speech.",
+        if (!options?.silentToast) {
+          toast.message("Using browser voice", {
+            description: "Add SPEECHMATICS_API_KEY for premium English TTS, or keep using browser speech.",
+          });
+        }
+        await new Promise<void>((resolve) => {
+          speakingTimeoutRef.current = window.setTimeout(() => {
+            finishVoicePlayback();
+            resolve();
+          }, 1800);
         });
-        speakingTimeoutRef.current = window.setTimeout(finishVoicePlayback, 1800);
         return;
       }
 
@@ -439,40 +465,104 @@ export function ChatInterface() {
         (error.name === "NotAllowedError" || error.name === "AbortError");
 
       if (blockedAutoplay) {
-        toast.message("Voice greeting is ready", {
-          description: "Click Voice controls if your browser blocked autoplay.",
-        });
+        if (!options?.silentToast) {
+          toast.message("Voice greeting is ready", {
+            description: "Click Voice controls if your browser blocked autoplay.",
+          });
+        }
         return;
       }
 
-      toast.error("Voice playback failed.", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
+      if (!options?.silentToast) {
+        toast.error("Voice playback failed.", {
+          description: error instanceof Error ? error.message : "Please try again.",
+        });
+      }
     }
   }
 
-  return (
-    <WorkspacePage>
-      <WorkspacePageHeader
-        badge="B2B GTM agent"
-        title="GTM advisor chat"
-        description="Ask about competitors, pricing risk, monitor signals, battlecards, or executive briefs."
-      />
+  const handleLiveUtterance = useCallback(async (text: string) => {
+    return sendMessage(text, { fromLiveCall: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sendMessage uses refs for latest state
+  }, []);
+
+  const handleLiveSpeak = useCallback(
+    async (text: string) => {
+      await playVoice(text, { automatic: true, silentToast: true });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- playVoice closes over current settings
+    [settings.voice.enabled, settings.voice.volume, settings.voice.speed, settings.voice.mode, settings.voice.language],
+  );
+
+  const handleLiveStopSpeak = useCallback(() => {
+    resetVoicePlayback();
+  }, []);
+
+  const liveCall = useGtmLiveCall({
+    language: settings.voice.language,
+    onUtterance: handleLiveUtterance,
+    onSpeak: handleLiveSpeak,
+    onStopSpeak: handleLiveStopSpeak,
+  });
+
+  const liveCallStatusLabel =
+    liveCall.status === "connecting"
+      ? "Connecting…"
+      : liveCall.status === "listening"
+        ? "Listening…"
+        : liveCall.status === "thinking"
+          ? "Thinking…"
+          : liveCall.status === "speaking"
+            ? "Speaking…"
+            : "Live call";
+
+  function requestDeepBrief() {
+    if (!onRequestDeepBrief) return;
+    const fromInput = input.trim();
+    const lastUser = [...messages].reverse().find((message) => message.role === "user")?.content?.trim();
+    const query = fromInput || lastUser;
+    if (!query) {
+      toast.message("Add a competitor question first.", {
+        description: "Type or say what to investigate, then open Deep brief.",
+      });
+      return;
+    }
+    if (liveCall.active) liveCall.endCall();
+    onRequestDeepBrief(query);
+  }
+
+  const body = (
+    <>
       {chatMode === "unavailable" && (
-        <p className="-mt-4 rounded-2xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+        <p className={cn("mb-4 rounded-xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100", !hideChrome && "-mt-2")}>
           Live chat needs <code className="font-mono text-xs">AIML_API_KEY</code> or{" "}
           <code className="font-mono text-xs">FEATHERLESS_API_KEY</code> in{" "}
           <code className="font-mono text-xs">.env.local</code>, then restart{" "}
           <code className="font-mono text-xs">npm run dev</code>.
         </p>
       )}
-      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <Card className="flex min-h-[calc(100svh-11rem)] min-w-0 flex-col overflow-hidden md:min-h-[calc(100vh-9rem)]" glow>
-          <div className="border-b border-white/10 px-5 py-4 md:px-6">
-            <p className="text-sm text-white/50">Account context from Monitors is applied automatically to each request.</p>
-          </div>
+      <div
+        className={cn(
+          "grid min-w-0 gap-5",
+          !hideChrome && "xl:grid-cols-[minmax(0,1fr)_280px]",
+        )}
+      >
+        <Card
+          className={cn(
+            "flex min-w-0 flex-col overflow-hidden",
+            hideChrome
+              ? "min-h-[calc(100svh-12.5rem)] border-white/[0.08] md:min-h-[calc(100vh-11rem)]"
+              : "min-h-[calc(100svh-11rem)] md:min-h-[calc(100vh-9rem)]",
+          )}
+          glow={!hideChrome}
+        >
+          {!hideChrome && (
+            <div className="border-b border-white/10 px-5 py-3 md:px-6">
+              <p className="text-sm text-white/50">Account context from Monitors is applied automatically.</p>
+            </div>
+          )}
 
-          <div className="flex-1 space-y-5 overflow-y-auto overscroll-contain p-4 md:p-6">
+          <div className="flex-1 space-y-4 overflow-y-auto overscroll-contain p-4 md:p-5">
             {messages.map((message) => (
               <motion.div
                 key={message.id}
@@ -486,34 +576,34 @@ export function ChatInterface() {
                 <div
                   className={
                     message.role === "user"
-                      ? "rounded-3xl bg-gradient-to-r from-sentra-cyan to-sentra-violet p-[1px]"
-                      : "rounded-3xl border border-white/10 bg-white/[0.055] p-5"
+                      ? "rounded-2xl bg-gradient-to-r from-sentra-cyan to-sentra-violet p-[1px]"
+                      : "rounded-2xl border border-white/10 bg-white/[0.04] p-4"
                   }
                 >
-                  <div className={message.role === "user" ? "rounded-3xl bg-sentra-ink px-5 py-4 text-white" : ""}>
+                  <div className={message.role === "user" ? "rounded-2xl bg-sentra-ink px-4 py-3 text-white" : ""}>
                     {message.role === "assistant" && (
-                      <div className="mb-4 flex items-center gap-3">
-                        <span className="grid h-9 w-9 place-items-center rounded-2xl bg-cyan-300/10 text-sentra-cyan">
-                          <Bot className="h-4 w-4" />
+                      <div className="mb-3 flex items-center gap-2.5">
+                        <span className="grid h-8 w-8 place-items-center rounded-xl bg-cyan-300/10 text-sentra-cyan">
+                          <Bot className="h-3.5 w-3.5" />
                         </span>
-                        <span className="text-sm font-medium text-white">SANTRA AI</span>
+                        <span className="text-sm font-medium text-white">SANTRA</span>
                         {message.provider && (
-                          <span className="hidden rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] text-white/45 sm:inline-flex">
+                          <span className="hidden rounded-full border border-white/10 bg-white/[0.06] px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-white/45 sm:inline-flex">
                             {message.provider === "featherless-document"
-                              ? "Featherless document"
+                              ? "Document"
                               : message.provider === "aiml-document"
-                                ? "Document analysis"
+                                ? "Document"
                                 : message.provider === "gtm-agent"
                                   ? "GTM agent"
                                   : message.provider === "aiml-search"
-                                    ? "OpenAI live search"
-                                    : "OpenAI"}
+                                    ? "Live search"
+                                    : "LLM"}
                           </span>
                         )}
                         <button
                           type="button"
                           className={cn(
-                            "ml-auto rounded-full border border-white/10 p-2 text-white/50 transition",
+                            "ml-auto rounded-full border border-white/10 p-1.5 text-white/50 transition",
                             speaking &&
                               activeVoiceText === message.content &&
                               "border-cyan-200/40 bg-cyan-300/10 text-cyan-100",
@@ -527,9 +617,9 @@ export function ChatInterface() {
                           }
                         >
                           {voiceStatus === "loading" && activeVoiceText === message.content ? (
-                            <Sparkles className="h-4 w-4 animate-pulse" />
+                            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
                           ) : (
-                            <Volume2 className="h-4 w-4" />
+                            <Volume2 className="h-3.5 w-3.5" />
                           )}
                         </button>
                       </div>
@@ -552,50 +642,300 @@ export function ChatInterface() {
               </motion.div>
             ))}
             {loading && (
-              <div className="mr-auto max-w-3xl rounded-3xl border border-white/10 bg-white/[0.055] p-5">
-                <div className="flex items-center gap-3 text-white/70">
+              <div className="mr-auto max-w-3xl rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                <div className="flex items-center gap-3 text-sm text-white/65">
                   <Sparkles className="h-4 w-4 animate-pulse text-sentra-cyan" />
-                  SANTRA is collecting live evidence and reasoning through recommendations...
+                  Collecting evidence and drafting a response…
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="border-t border-white/10 p-4 md:p-5">
-            <div className="mb-4 flex flex-wrap items-center gap-2">
+          <div className="border-t border-white/10 p-3 md:p-4">
+            <div className="mb-3 flex flex-wrap items-center gap-1.5">
+              <Button
+                type="button"
+                variant={liveCall.active ? "neon" : "ghost"}
+                size="sm"
+                className={cn("h-8 rounded-full px-3 text-xs", liveCall.active && "ring-1 ring-rose-400/50")}
+                onClick={() => liveCall.toggleCall()}
+                disabled={listening || transcribing}
+                aria-pressed={liveCall.active}
+                title="Continuous live call"
+              >
+                {liveCall.active ? <PhoneOff className="h-3.5 w-3.5" /> : <Phone className="h-3.5 w-3.5" />}
+                {liveCall.active ? "End call" : "Live call"}
+              </Button>
+              {onRequestDeepBrief && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 rounded-full px-3 text-xs"
+                  onClick={requestDeepBrief}
+                  disabled={liveCall.active || loading}
+                  title="Open Deep brief"
+                >
+                  <Radar className="h-3.5 w-3.5" />
+                  Deep brief
+                </Button>
+              )}
               <Button
                 type="button"
                 variant={useGtmAgent ? "neon" : "ghost"}
                 size="sm"
-                className="rounded-full"
+                className="h-8 rounded-full px-3 text-xs"
                 onClick={() => setUseGtmAgent((current) => !current)}
               >
-                <Radar className="h-4 w-4" />
-                {useGtmAgent ? "GTM agent on" : "Run GTM agent"}
+                <Globe2 className="h-3.5 w-3.5" />
+                {useGtmAgent ? "Agent on" : "GTM agent"}
               </Button>
               {settings.analyst.liveLogs && (loading || pipeline.logs.length > 0) && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="rounded-full"
+                  className="h-8 rounded-full px-3 text-xs"
                   onClick={() => setLogModalOpen(true)}
                 >
-                  <TerminalSquare className="h-4 w-4" />
-                  {loading ? "Live log" : "Activity log"}
+                  <TerminalSquare className="h-3.5 w-3.5" />
+                  Log
                 </Button>
               )}
-              {prompts.map((prompt) => (
-                <button
-                  key={prompt}
-                  className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs text-white/60 transition"
-                  onClick={() => sendMessage(prompt)}
-                >
-                  {prompt}
-                </button>
-              ))}
+              <SuggestedPromptsMenu
+                prompts={prompts}
+                disabled={liveCall.active || loading}
+                menuId="gtm-ask-suggested-menu"
+                menuSubtitle="Quick GTM questions"
+                onSelect={(suggestion) => void sendMessage(suggestion)}
+                triggerClassName="h-8 rounded-full px-3 text-xs"
+              />
             </div>
+            {liveCall.active && (
+              <div className="mb-3 rounded-xl border border-rose-300/25 bg-rose-400/[0.08] px-3 py-2.5 text-sm text-rose-50/90">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-rose-400" />
+                  <span className="font-medium">{liveCallStatusLabel}</span>
+                  <span className="text-rose-100/50">·</span>
+                  <span className="text-xs text-rose-100/70">Speak, pause for answers, interrupt anytime.</span>
+                </div>
+                {(liveCall.partial || liveCall.lastHeard) && (
+                  <p className="mt-2 text-xs leading-5 text-rose-50/75">
+                    {liveCall.partial ? (
+                      <>
+                        <span className="text-rose-100/50">Hearing: </span>
+                        {liveCall.partial}
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-rose-100/50">You said: </span>
+                        {liveCall.lastHeard}
+                      </>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+            {attachedDocument && (
+              <div className="mb-3 flex items-center gap-2 rounded-xl border border-cyan-200/20 bg-cyan-300/[0.06] px-3 py-2 text-sm text-cyan-50/90">
+                <FileText className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 flex-1 truncate">
+                  {attachedDocument.fileName}
+                </span>
+                <button
+                  type="button"
+                  className="rounded-full p-1 text-white/50 transition hover:bg-white/10 hover:text-white"
+                  onClick={() => setAttachedDocument(null)}
+                  aria-label="Remove attachment"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+            <input
+              ref={documentInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
+              className="hidden"
+              onChange={(event) => void handleDocumentPick(event)}
+            />
+            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+              <Textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void sendMessage();
+                  }
+                }}
+                placeholder={
+                  liveCall.active
+                    ? "Live call active — speak or type…"
+                    : "Ask about competitors, pricing, or GTM risk…"
+                }
+                className="min-h-[3.25rem] resize-none sm:min-h-14"
+                disabled={liveCall.active && !input}
+              />
+              <div className="grid grid-cols-3 gap-2 sm:contents">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-12 w-full shrink-0 sm:h-14 sm:w-14"
+                  onClick={() => documentInputRef.current?.click()}
+                  disabled={parsingDocument || liveCall.active}
+                  aria-label="Attach document"
+                >
+                  {parsingDocument ? (
+                    <Sparkles className="h-5 w-5 animate-pulse" />
+                  ) : (
+                    <Paperclip className="h-5 w-5" />
+                  )}
+                </Button>
+                {settings.voice.microphone && (
+                  <Button
+                    type="button"
+                    variant={listening ? "neon" : "ghost"}
+                    className={cn(
+                      "h-12 w-full shrink-0 sm:h-14 sm:w-14",
+                      listening && "ring-1 ring-rose-400/50",
+                    )}
+                    onClick={() => void toggleSpeechInput()}
+                    disabled={!listening && (transcribing || loading || liveCall.active)}
+                    aria-label={listening ? "Stop voice input" : "Voice input"}
+                  >
+                    {transcribing ? (
+                      <Sparkles className="h-5 w-5 animate-pulse" />
+                    ) : listening ? (
+                      <MicOff className="h-5 w-5" />
+                    ) : (
+                      <Mic2 className="h-5 w-5" />
+                    )}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="neon"
+                  className="h-12 w-full shrink-0 sm:h-14 sm:w-14"
+                  onClick={() => sendMessage()}
+                  disabled={loading || (!input.trim() && !attachedDocument)}
+                  aria-label="Send message"
+                >
+                  <Send className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+            <p className="mt-2 text-[11px] text-white/35">
+              {listening
+                ? liveTranscript
+                  ? `Listening: ${liveTranscript}`
+                  : "Listening…"
+                : hideChrome
+                  ? "Enter to send · Shift+Enter for new line"
+                  : !settings.voice.microphone
+                    ? "Microphone input is disabled in Settings."
+                    : transcribing
+                      ? "Refining transcript..."
+                      : "Attach PDF, DOCX, TXT, or images. Ask about competitors, pricing, or GTM risk."}
+            </p>
+            {listening && settings.voice.microphone && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-rose-300/25 bg-rose-400/10 px-3 py-2.5">
+                <div className="flex items-center gap-2 text-sm text-rose-100">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-400" />
+                  </span>
+                  Recording…
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="border border-rose-300/30 bg-rose-400/10 text-rose-50 hover:bg-rose-400/20"
+                  onClick={() => void toggleSpeechInput()}
+                >
+                  <MicOff className="h-4 w-4" />
+                  Stop
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {!hideChrome && (
+          <aside className="min-w-0">
+            <Card className="p-5 text-center xl:sticky xl:top-24" glow>
+              <AiOrb speaking={speaking || listening || transcribing || loading || liveCall.active} size="md" className="mx-auto" />
+              <h3 className="mt-5 text-lg font-semibold text-white">Voice analyst</h3>
+              <p className="mt-2 text-sm leading-6 text-white/55">
+                {loading
+                  ? "Collecting live evidence…"
+                  : voiceStatus === "loading"
+                    ? "Preparing voice…"
+                    : voiceStatus === "playing"
+                      ? "Speaking. Click a voice button to stop."
+                      : listening
+                        ? "Tap Stop when you are done speaking."
+                        : "Use the mic beside the prompt, or play a response aloud."}
+              </p>
+              {listening && settings.voice.microphone && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-4 w-full border border-rose-300/30 bg-rose-400/10 text-rose-50 hover:bg-rose-400/20"
+                  onClick={() => void toggleSpeechInput()}
+                >
+                  <MicOff className="h-4 w-4" />
+                  Stop listening
+                </Button>
+              )}
+              <VoiceLanguageSelector
+                className="mt-4 w-full"
+                compact
+                value={settings.voice.language}
+                onChange={(language) =>
+                  updateSettings((current) => ({
+                    ...current,
+                    voice: { ...current.voice, language },
+                  }))
+                }
+              />
+              <Button
+                variant="ghost"
+                className="mt-4 w-full"
+                onClick={() => {
+                  const latestAssistant = [...messages]
+                    .reverse()
+                    .find((message) => message.role === "assistant");
+
+                  if (!latestAssistant) {
+                    toast.message("No analyst response available yet.");
+                    return;
+                  }
+
+                  void playVoice(latestAssistant.content);
+                }}
+                disabled={!settings.voice.enabled}
+              >
+                {voiceStatus === "loading" ? (
+                  <Sparkles className="h-4 w-4 animate-pulse" />
+                ) : (
+                  <Mic2 className="h-4 w-4" />
+                )}
+                {speaking ? "Stop voice" : "Voice controls"}
+              </Button>
+            </Card>
+          </aside>
+        )}
+      </div>
+                        {liveCall.lastHeard}
+                      </>
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
             {attachedDocument && (
               <div className="mb-3 flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/[0.06] px-3 py-2 text-sm text-cyan-50/90">
                 <FileText className="h-4 w-4 shrink-0" />
@@ -663,10 +1003,18 @@ export function ChatInterface() {
                       listening && "ring-2 ring-rose-400/70 ring-offset-2 ring-offset-sentra-ink",
                     )}
                     onClick={() => void toggleSpeechInput()}
-                    disabled={!listening && transcribing}
+                    disabled={liveCall.active || (!listening && transcribing)}
                     aria-pressed={listening}
                     aria-label={listening ? "Stop voice recording" : transcribing ? "Transcribing voice prompt" : "Record voice prompt"}
-                    title={listening ? "Stop recording" : transcribing ? "Transcribing…" : "Start voice input"}
+                    title={
+                      liveCall.active
+                        ? "Mic is used by live call"
+                        : listening
+                          ? "Stop recording"
+                          : transcribing
+                            ? "Transcribing…"
+                            : "Start voice input"
+                    }
                   >
                     {transcribing && !listening ? (
                       <Sparkles className="h-5 w-5 animate-pulse" />
@@ -726,7 +1074,7 @@ export function ChatInterface() {
 
         <aside className="min-w-0">
           <Card className="p-6 text-center xl:sticky xl:top-24" glow>
-            <AiOrb speaking={speaking || listening || transcribing || loading} size="md" className="mx-auto" />
+            <AiOrb speaking={speaking || listening || transcribing || loading || liveCall.active} size="md" className="mx-auto" />
             <h3 className="mt-6 text-xl font-semibold text-white">Voice analyst</h3>
             <p className="mt-2 text-sm leading-6 text-white/55">
               {loading
@@ -802,6 +1150,19 @@ export function ChatInterface() {
           className="h-[clamp(360px,60vh,640px)] rounded-2xl border border-cyan-300/[0.08] bg-black/10"
         />
       </StudioModal>
+    </>
+  );
+
+  if (hideChrome) return body;
+
+  return (
+    <WorkspacePage>
+      <WorkspacePageHeader
+        badge="B2B GTM agent"
+        title="GTM Advisor"
+        description="Ask about competitors, pricing risk, monitor signals, battlecards, or executive briefs."
+      />
+      {body}
     </WorkspacePage>
   );
 }

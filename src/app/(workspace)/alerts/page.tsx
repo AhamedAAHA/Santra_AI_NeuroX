@@ -10,8 +10,8 @@ function AlertsPageContent() {
       <WorkspacePageHeader
         badge="GTM Agent"
         badgeVariant="cyan"
-        title="Autonomous competitive intelligence monitors"
-        description="The SANTRA GTM agent watches competitors, collects live web evidence, detects material changes, and queues CRM actions for human approval."
+        title="GTM Monitors"
+        description="Watch competitors, collect live evidence, detect material changes, and queue CRM actions for human approval."
       />
 
       <MonitorCenter />

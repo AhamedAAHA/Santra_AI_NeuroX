@@ -9,7 +9,6 @@ import {
   BriefcaseBusiness,
   FileCheck2,
   LayoutDashboard,
-  Radar,
   Settings,
 } from "lucide-react";
 import { CommandPalette } from "@/components/shared/command-palette";
@@ -26,7 +25,6 @@ const nav = [
   { href: "/chat", label: "GTM Advisor", icon: Bot },
   { href: "/alerts", label: "GTM Monitors", icon: BellRing },
   { href: "/reports", label: "History", icon: FileCheck2 },
-  { href: "/analyst", label: "Competitor IQ", icon: Radar },
   { href: "/workspace/services", label: "Services", icon: BriefcaseBusiness },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

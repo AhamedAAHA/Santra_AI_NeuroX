@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, BellRing, Bot, CheckCircle2, LayoutDashboard, Radar, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, BellRing, CheckCircle2, Radar, ShieldCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -16,27 +16,27 @@ import {
 
 const guideSteps = [
   {
-    icon: LayoutDashboard,
-    title: "Start on Dashboard",
-    description: "Review live signals, market velocity, and the latest intelligence cards.",
-    detail:
-      "The dashboard is your morning briefing. Watch signal velocity, active alerts, market movement, and AI recommendations before diving deeper.",
-    href: "/dashboard",
-  },
-  {
-    icon: Bot,
-    title: "Ask SANTRA",
-    description: "Use chat for live research, competitor checks, summaries, and voice responses.",
-    detail:
-      "Ask direct questions like competitor pricing changes, market risks, or leadership briefings. SANTRA can answer with sources and read responses aloud.",
-    href: "/chat?prompt=Summarize%20current%20market%20risks",
-  },
-  {
     icon: BellRing,
-    title: "Create Alerts",
-    description: "Tell SANTRA what to monitor in plain language and let AI configure the rule.",
+    title: "Create a GTM monitor",
+    description: "Describe a B2B competitive signal in plain language — pricing, hiring, launches.",
     detail:
-      "Describe the signal you care about. SANTRA interprets the requirement, tracks matches, and opens detailed alert reports with AI analysis.",
+      "This is the scored agent loop. SANTRA interprets intent, routes Bright Data / Exa tools, and runs without re-prompting.",
+    href: "/alerts",
+  },
+  {
+    icon: Radar,
+    title: "Watch agent reasoning",
+    description: "Tap Check now and follow the live reasoning log: intake → routing → evidence → brief.",
+    detail:
+      "Judges look for dynamic decisions, not a chatbot. Show tool routing, fallbacks, and evidence-backed executive briefs.",
+    href: "/alerts",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Approve before automation",
+    description: "HITL queue: Approve & run or Reject. Webhooks only fire after human approval.",
+    detail:
+      "Nothing hits CRM until you approve. That human control point is a required Phase 2 scoring criterion.",
     href: "/alerts",
   },
 ];
@@ -88,11 +88,11 @@ export function NewUserGuideModal() {
           <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-medium text-cyan-100">
               <Radar className="h-3.5 w-3.5" />
-              New user guide
+              Phase 2 demo guide
             </div>
-            <h2 className="mt-4 text-3xl font-semibold text-white md:text-4xl">Welcome to SANTRA AI</h2>
+            <h2 className="mt-4 text-3xl font-semibold text-white md:text-4xl">SANTRA AI — GTM agent loop</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
-              Follow these steps to get from a new account to useful intelligence.
+              Master the scoring path: monitor → live tools → brief → human approval → webhook.
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={closeGuide} aria-label="Close guide">
@@ -144,9 +144,9 @@ export function NewUserGuideModal() {
               <div className="flex gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
                 <div>
-                  <p className="font-medium text-white">Recommended first action</p>
+                  <p className="font-medium text-white">Recommended judge demo</p>
                   <p className="mt-1 text-sm leading-6 text-white/55">
-                    Create one monitor in Alerts, then open the generated report when a match appears.
+                    Open GTM Monitors → Check now → show Agent reasoning → Approve & run in the HITL queue.
                   </p>
                 </div>
               </div>
@@ -165,7 +165,7 @@ export function NewUserGuideModal() {
               {isLastStep ? (
                 <Button variant="neon" asChild>
                   <Link href="/alerts" onClick={finishGuide}>
-                    Create first monitor
+                    Open GTM Monitors
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

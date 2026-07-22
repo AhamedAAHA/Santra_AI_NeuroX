@@ -459,11 +459,11 @@ export function InvestigationStudio() {
         <Card className="relative overflow-visible p-6 md:p-8" glow>
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/[0.08] blur-3xl" />
           <Badge variant="cyan">Visual Forensics / multimodal analyst</Badge>
-          <h1 className="type-display-lg relative mt-4 premium-gradient-text">
+          <h1 className="relative mt-3 text-2xl font-semibold tracking-tight text-white md:text-3xl">
             Investigate visual evidence with AI forensics.
           </h1>
-          <p className="relative mt-4 max-w-3xl text-sm leading-7 text-white/57 md:text-base">
-            Stage images, direct the investigation, and receive a defensible authenticity assessment with scores, scene analysis, and comparison review.
+          <p className="relative mt-2 max-w-2xl text-sm leading-6 text-white/55">
+            Stage images, direct the investigation, and receive a defensible authenticity assessment with scores and scene analysis.
           </p>
 
           {!primary ? (

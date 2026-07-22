@@ -783,7 +783,7 @@ export function MonitorCenter() {
             body: JSON.stringify({
               monitorId,
               reportId: data.report.id,
-              proposedAction: `Review and approve automation: ${data.report.verdict}`,
+              proposedAction: data.report.verdict || "Monitor signals need review",
               proposedEvent: "monitor_alert",
               monitorRequirement: monitor.requirement,
               reportSnapshot: data.report,
@@ -893,6 +893,36 @@ export function MonitorCenter() {
 
   return (
     <>
+      <Card className="mb-4 border-cyan-300/20 bg-cyan-300/[0.04] p-4 md:p-5" glow>
+        <p className="text-[10px] uppercase tracking-[0.22em] text-cyan-100/70">Judge demo path · Phase 2</p>
+        <h2 className="mt-2 text-lg font-semibold text-white">Autonomous B2B GTM loop</h2>
+        <ol className="mt-3 grid gap-2 text-sm text-white/65 sm:grid-cols-5">
+          <li className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+            <span className="block text-[10px] uppercase tracking-wider text-white/35">1</span>
+            Create monitor
+          </li>
+          <li className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+            <span className="block text-[10px] uppercase tracking-wider text-white/35">2</span>
+            Check now → tools
+          </li>
+          <li className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+            <span className="block text-[10px] uppercase tracking-wider text-white/35">3</span>
+            Evidence + brief
+          </li>
+          <li className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+            <span className="block text-[10px] uppercase tracking-wider text-white/35">4</span>
+            Approve (HITL)
+          </li>
+          <li className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+            <span className="block text-[10px] uppercase tracking-wider text-white/35">5</span>
+            Webhook execute
+          </li>
+        </ol>
+        <p className="mt-3 text-xs text-white/45">
+          Watch Agent reasoning below for dynamic tool routing. Nothing hits CRM until a human approves.
+        </p>
+      </Card>
+
       <ActionQueuePanel refreshKey={actionQueueRefreshKey} />
 
       <WorkspaceSection id="create-signal-monitor">
@@ -1111,7 +1141,13 @@ export function MonitorCenter() {
                       </span>
                       {monitor.lastProvider && (
                         <span className="text-xs text-white/30">
-                          {monitor.lastProvider === "openai" || monitor.lastProvider === "bright-data" ? "OpenAI" : "Sample"}
+                          {monitor.lastProvider === "bright-data"
+                            ? "Bright Data"
+                            : monitor.lastProvider === "exa"
+                              ? "Exa"
+                              : monitor.lastProvider === "openai"
+                                ? "LLM analysis"
+                                : "Demo evidence"}
                         </span>
                       )}
                     </div>

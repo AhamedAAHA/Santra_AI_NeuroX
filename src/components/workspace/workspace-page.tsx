@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -31,24 +30,20 @@ export function WorkspacePageHeader({
   aside,
 }: WorkspacePageHeaderProps) {
   return (
-    <section>
-      <Card className="overflow-hidden p-5 md:p-8" glow>
-        <div
-          className={cn(
-            "grid gap-6",
-            aside ? "xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start" : actions ? "md:grid-cols-[minmax(0,1fr)_auto] md:items-end" : undefined,
-          )}
-        >
-          <div className="min-w-0">
-            <Badge variant={badgeVariant}>{badge}</Badge>
-            <h1 className="type-display-lg mt-4 text-white">{title}</h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-white/58 md:text-base">{description}</p>
-          </div>
-          {aside}
-          {!aside && actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
-        </div>
-      </Card>
-    </section>
+    <header
+      className={cn(
+        "grid gap-4 border-b border-white/[0.08] pb-5",
+        aside ? "xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start" : actions ? "md:grid-cols-[minmax(0,1fr)_auto] md:items-end" : undefined,
+      )}
+    >
+      <div className="min-w-0">
+        <Badge variant={badgeVariant}>{badge}</Badge>
+        <h1 className="mt-2.5 text-2xl font-semibold tracking-tight text-white md:text-3xl">{title}</h1>
+        <p className="mt-1.5 max-w-2xl text-sm leading-6 text-white/50">{description}</p>
+      </div>
+      {aside}
+      {!aside && actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
+    </header>
   );
 }
 
@@ -62,11 +57,11 @@ type WorkspaceSectionProps = {
 
 export function WorkspaceSection({ id, title, description, children, className }: WorkspaceSectionProps) {
   return (
-    <section id={id} className={cn("grid gap-5", className)}>
+    <section id={id} className={cn("grid gap-4", className)}>
       {(title || description) && (
         <div className="min-w-0">
-          {title && <h2 className="text-xl font-semibold text-white md:text-2xl">{title}</h2>}
-          {description && <p className="mt-2 max-w-3xl text-sm leading-6 text-white/55">{description}</p>}
+          {title && <h2 className="text-lg font-semibold tracking-tight text-white md:text-xl">{title}</h2>}
+          {description && <p className="mt-1 max-w-2xl text-sm leading-6 text-white/45">{description}</p>}
         </div>
       )}
       {children}

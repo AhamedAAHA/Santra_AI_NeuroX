@@ -34,3 +34,4 @@ scripts/*
 !scripts/configure-supabase-auth.mjs
 !scripts/apply-provider-usage-migration.mjs
 .vercel
+.env*

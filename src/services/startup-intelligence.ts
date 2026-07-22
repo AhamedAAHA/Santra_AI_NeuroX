@@ -19,61 +19,61 @@ import type {
 
 const DEMO_REPORT: StartupIntelligenceReport = {
   executiveSummary:
-    "A practical startup opportunity with strong SME demand signals, manageable early competition, and a viable path to first paying customers.",
+    "A viable B2B GTM opportunity with clear RevOps buyer pain, measurable competitive pressure, and a path to paid pilots with revenue teams.",
   marketOpportunities: [
-    "Underserved SMEs need affordable digital operations support",
-    "Mobile-first founder workflows create demand for lightweight SaaS tools",
-    "Niche vertical packaging can beat generic all-in-one products",
+    "RevOps and competitive intel teams need continuous rival monitoring without headcount growth",
+    "Pricing and positioning shifts create immediate win-rate risk for B2B SaaS sellers",
+    "HITL automation into CRM/webhooks fits existing enterprise stacks better than black-box agents",
   ],
   competitorAnalysis: [
-    "Global tools are feature-rich but often overpriced for early-stage teams",
-    "Local service providers are trusted but difficult to scale",
-    "DIY workflows remain common, indicating room for automation",
+    "Legacy CI platforms are broad and expensive, leaving gaps for outcome-focused GTM agents",
+    "Generic chat assistants lack monitor loops, evidence trails, and approval workflows",
+    "Manual analyst workflows remain common — strong signal for automation ROI",
   ],
   risks: [
-    "Customer acquisition can be slower without a focused beachhead segment",
-    "Retention risk is high if onboarding is not fast and outcomes are unclear",
-    "Payment, legal, and compliance needs vary across countries",
+    "Enterprise sales cycles can slow early ARR without a sharp beachhead ICP",
+    "Adoption stalls if approval UX and webhook reliability are weak",
+    "Data quality and tool credit limits can force fallbacks during demos",
   ],
   growthPotential:
-    "High if the product starts with a narrow pain point, validates quickly, and expands with usage-driven upsells.",
+    "High when the product owns a narrow competitive-intel workflow, proves HITL trust, then expands to multi-monitor correlation.",
   marketSizeEstimate:
-    "TAM: large regional SME software spend; SAM: digitally active SMEs in the selected industry; SOM: first 1-2 city clusters with partner-led distribution.",
+    "TAM: global B2B SaaS competitive intelligence and RevOps tooling; SAM: mid-market GTM teams with active rivals; SOM: first ICP clusters in one region with partner-led pilots.",
   suggestedBusinessModel:
-    "SaaS subscription with freemium entry, paid automation tiers, and optional consulting add-ons.",
+    "B2B SaaS subscription with seat/monitor tiers, usage for live evidence collection, and optional professional services for CRM mapping.",
   gtm: {
     customerPersona:
-      "Founder-led SME operators aged 24-45 who need faster decisions and low-cost growth guidance.",
+      "RevOps leads and competitive intel analysts who need faster briefs and approved outbound actions.",
     idealCustomerProfile:
-      "5-50 employee companies, digitally active, recurring need for market and competitor analysis, and willingness to adopt SaaS.",
+      "20-500 employee B2B SaaS companies with active competitors, CRM/webhook stack, and weekly GTM decision cadence.",
     acquisitionChannels: [
-      "Founder communities",
-      "LinkedIn outbound",
-      "WhatsApp business groups",
-      "Local accelerators and universities",
+      "LinkedIn outbound to RevOps / CI titles",
+      "Partner and marketplace co-sell",
+      "Content on competitive battlecards and pricing shifts",
+      "Pilot programs with sales enablement teams",
     ],
     launchPlan: [
-      "Validate pain points with 10-15 interviews",
-      "Ship MVP with one high-value workflow",
-      "Acquire first 10 pilot users",
-      "Improve retention from feedback loops",
+      "Validate ICP pain with 10-15 RevOps interviews",
+      "Ship monitor → evidence → HITL approval MVP",
+      "Run 5 paid pilots with one monitor type",
+      "Expand to multi-monitor and CRM field templates",
     ],
     pricingSuggestions: [
-      "Free trial with strict usage cap",
-      "Starter monthly plan for solo founders",
-      "Pro plan for teams with collaboration and exports",
+      "Pilot plan with capped monitors and evidence credits",
+      "Team plan for RevOps with collaboration and exports",
+      "Enterprise plan with SSO, audit logs, and webhook SLAs",
     ],
     positioningStatement:
-      "SANTRA AI turns startup ideas into actionable intelligence with clear GTM decisions and execution roadmaps.",
+      "SANTRA AI is an autonomous B2B GTM intelligence agent — monitors rivals, grounds briefs in live evidence, and only executes after human approval.",
     growthLoops: [
-      "Report sharing drives referral acquisition",
-      "Weekly watchlist alerts increase reactivation",
-      "Template playbooks increase expansion across teams",
+      "Shared executive briefs drive internal expansion",
+      "Monitor alerts increase weekly reactivation",
+      "Approved webhook actions prove ROI in CRM",
     ],
     marketingStrategy: [
-      "Publish startup teardown content weekly",
-      "Run problem-solution webinar demos",
-      "Partner with ecosystem communities for trusted distribution",
+      "Publish competitor-shift teardown content weekly",
+      "Run problem-solution demos for RevOps buyers",
+      "Partner with sales-enablement communities for distribution",
     ],
   },
   scores: {
@@ -119,19 +119,19 @@ const DEMO_REPORT: StartupIntelligenceReport = {
       "Localize messaging and support",
     ],
     marketGaps: [
-      "Entry-level pricing for early founders",
-      "Localized launch playbooks",
-      "Founder-focused execution support",
+      "Affordable mid-market CI with HITL automation",
+      "Monitor-native briefs with evidence trails",
+      "CRM/webhook execution after human approval",
     ],
     differentiationOpportunities: [
-      "Actionable daily roadmap outputs",
-      "Local market and channel intelligence",
-      "Transparent scoring logic with clear next steps",
+      "Autonomous monitor → brief → approval loop",
+      "Live web evidence with tool routing transparency",
+      "RevOps-ready webhook actions instead of chat-only insights",
     ],
     howToBeat: [
-      "Win speed and clarity over breadth",
-      "Package outcomes, not only features",
-      "Target underserved niche before expanding",
+      "Win speed and trust over feature breadth",
+      "Package GTM outcomes, not only dashboards",
+      "Beachhead one monitor type before expanding",
     ],
   },
   investorReadiness: {
@@ -165,27 +165,27 @@ const DEMO_REPORT: StartupIntelligenceReport = {
       { item: "Contract clarity for B2B sales", level: "green" },
     ],
     operationalRisks: [
-      { item: "Founder bandwidth constraints", level: "yellow" },
-      { item: "Dependence on few team members", level: "yellow" },
+      { item: "RevOps bandwidth for pilot setup", level: "yellow" },
+      { item: "Dependence on few power users", level: "yellow" },
     ],
     financialRisks: [
-      { item: "Runway pressure before PMF", level: "red" },
+      { item: "Runway pressure before paid pilots convert", level: "red" },
       { item: "Paid channel CAC volatility", level: "yellow" },
     ],
   },
   competitorBattleCard: {
     competitorName: "Category incumbent",
     featureComparison: [
-      "You: faster startup-specific workflow; Competitor: broader feature catalog",
-      "You: guided action plans; Competitor: generic dashboards",
+      "You: monitor → HITL agent loop; Competitor: broader feature catalog",
+      "You: evidence-grounded briefs + approvals; Competitor: generic dashboards",
     ],
     pricingComparison: [
-      "You: founder-friendly entry pricing",
+      "You: mid-market monitor/seat packaging",
       "Competitor: higher base plans and enterprise-first packaging",
     ],
     marketPositionComparison: [
-      "You: startup execution co-pilot",
-      "Competitor: general intelligence platform",
+      "You: autonomous B2B GTM intelligence agent",
+      "Competitor: general competitive intelligence platform",
     ],
     differentiation: [
       "Sri Lanka mode and local launch guidance",
@@ -196,37 +196,37 @@ const DEMO_REPORT: StartupIntelligenceReport = {
   },
   startupValidationEngine: {
     isProblemWorthSolving:
-      "Yes, if the product removes a recurring decision bottleneck and saves founders meaningful time each week.",
-    existingSolutions: ["Spreadsheets and manual research", "Generic analytics tools", "Agency and consultant support"],
+      "Yes, if the product removes recurring competitive-research bottlenecks and improves GTM response time for revenue teams.",
+    existingSolutions: ["Manual analyst research", "Legacy CI platforms", "Generic chat assistants without HITL"],
     customerPainPoints: [
-      "Too many unstructured data points",
-      "Slow competitor and market validation",
-      "No clear execution roadmap after analysis",
+      "Competitor changes discovered too late",
+      "Briefs lack live evidence trails",
+      "No safe path from insight to approved CRM action",
     ],
     validationScore: 77,
   },
   executiveBriefing: {
-    startupOverview: "A focused startup intelligence solution for founder decision-making.",
-    marketOpportunity: "Strong demand in underserved startup and SME segments.",
-    competition: "Incumbents are broad and expensive, leaving niche gaps for outcome-focused products.",
-    gtmStrategy: "Niche-first launch through founder channels, then expand through partnerships.",
-    risks: "Greatest risks are acquisition efficiency, retention, and early runway management.",
-    fundingReadiness: "Fundable with initial traction and a sharper moat narrative.",
-    actionPlan: "Validate quickly, launch narrow, iterate fast, and scale what converts.",
+    startupOverview: "A B2B GTM intelligence agent for competitive monitoring and human-approved automation.",
+    marketOpportunity: "Strong demand among mid-market RevOps and CI teams that outgrow spreadsheets.",
+    competition: "Incumbents are broad and expensive; generic AI lacks monitor + HITL loops.",
+    gtmStrategy: "Beachhead with one monitor type for RevOps buyers, then expand via webhook/CRM depth.",
+    risks: "Greatest risks are enterprise cycle length, tool credit limits, and trust in automated actions.",
+    fundingReadiness: "Fundable with pilot ARR, clear ICP, and differentiated HITL execution story.",
+    actionPlan: "Prove monitor→HITL ROI, lock ICP, then scale monitors and CRM templates.",
   },
   pitchDeckGenerator: {
-    problem: "Founders lack fast, actionable startup intelligence before launching.",
-    solution: "SANTRA AI generates validation, competition, GTM, and execution outputs in one flow.",
-    market: "Large and growing base of founders, startups, SMEs, and ecosystem programs.",
-    businessModel: "SaaS subscription with expansion plans for teams and incubators.",
-    competition: "Competes with generic tools and consultants by focusing on startup execution speed.",
-    gtm: "Founder communities, content-led acquisition, and ecosystem partnerships.",
-    financials: "Lean early burn with recurring revenue growth from retained cohorts.",
-    ask: "Seed funding to accelerate acquisition, product depth, and regional expansion.",
+    problem: "B2B revenue teams miss competitor pricing and positioning shifts until deals are already at risk.",
+    solution: "SANTRA AI monitors rivals, grounds briefs in live evidence, and executes only after human approval.",
+    market: "Growing spend on competitive intelligence, RevOps tooling, and GTM automation.",
+    businessModel: "B2B SaaS with monitor/seat tiers and evidence usage credits.",
+    competition: "Competes with legacy CI and generic AI by owning the monitor→HITL agent loop.",
+    gtm: "LinkedIn outbound to RevOps/CI, content-led demos, and enablement partnerships.",
+    financials: "Lean early burn with recurring revenue from retained GTM team seats.",
+    ask: "Seed capital to deepen CRM mapping, multi-monitor correlation, and enterprise readiness.",
   },
   firstCustomerPlaybook: {
     first10Customers: [
-      "Recruit from warm network and founder communities",
+      "Recruit RevOps and CI leads from warm B2B SaaS networks",
       "Offer hands-on onboarding to capture rapid feedback",
       "Document measurable outcomes as proof",
     ],
@@ -476,10 +476,10 @@ export async function generateStartupIntelligence(
 
   const sriLankaContext = input.sriLankaMode
     ? `
-Tailor all outputs for Sri Lankan startups and SMEs.
-- Include local channels: Facebook, WhatsApp, TikTok, university and founder communities.
-- Include Sri Lankan launch constraints and practical local recommendations.
-- Mention LKR pricing logic where useful.`
+Tailor outputs for B2B GTM in Sri Lanka and regional markets.
+- Prefer B2B channels: LinkedIn, partner networks, enterprise sales, WhatsApp Business for ops teams.
+- Include local procurement, pricing (LKR), and SME/enterprise buyer constraints.
+- Keep recommendations useful for revenue, competitive intel, and internal ops teams — not consumer apps.`
     : "";
 
   try {
@@ -489,17 +489,17 @@ Tailor all outputs for Sri Lankan startups and SMEs.
       messages: [
         {
           role: "system",
-          content: `You are SANTRA AI, a startup intelligence operating system advisor.
-Generate practical outputs for founders, startups, freelancers, incubators, and SMEs.
+          content: `You are SANTRA AI, a B2B GTM market-validation advisor for RevOps, competitive intelligence, and go-to-market teams.
+Evaluate B2B opportunities (workflows between businesses or internal business operations). Prefer ICP, competitive pressure, demand generation, and revenue impact over consumer or personal-productivity angles.
 Return only valid JSON matching the schema requested.${sriLankaContext}`,
         },
         {
           role: "user",
-          content: `Analyze this startup:
-Startup idea: ${input.startupIdea}
+          content: `Analyze this B2B market opportunity:
+Opportunity: ${input.startupIdea}
 Industry: ${input.industry}
 Country/Market: ${input.country}
-Target Audience: ${input.targetAudience}
+ICP / Target buyers: ${input.targetAudience}
 Primary Competitor (optional): ${input.competitorName || "Not provided"}
 Sri Lanka Mode: ${input.sriLankaMode ? "enabled" : "disabled"}
 

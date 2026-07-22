@@ -3,9 +3,9 @@ import { requireApiUser } from "@/lib/auth/session";
 import { getPendingAction, resolvePendingAction } from "@/lib/db/pending-actions";
 import { isMongoConfigured } from "@/lib/mongo/config";
 import {
-  getLocalPendingAction,
-  updateLocalPendingAction,
-} from "@/lib/pending-actions-storage";
+  getServerPendingAction,
+  updateServerPendingAction,
+} from "@/lib/pending-actions-server";
 import type { PendingActionStatus } from "@/types/pending-actions";
 
 export const runtime = "nodejs";
@@ -27,14 +27,17 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   }
 
   if (!isMongoConfigured()) {
-    const existing = getLocalPendingAction(id);
+    const existing = getServerPendingAction(auth.user.id, id);
     if (!existing) {
       return NextResponse.json({ error: "Action not found." }, { status: 404 });
     }
     if (body.status === "approved" && existing.status !== "pending") {
       return NextResponse.json({ error: "Only pending actions can be approved." }, { status: 409 });
     }
-    const action = updateLocalPendingAction(id, body.status);
+    if (body.status === "executed" && existing.status !== "approved") {
+      return NextResponse.json({ error: "Only approved actions can be executed." }, { status: 409 });
+    }
+    const action = updateServerPendingAction(auth.user.id, id, body.status);
     return NextResponse.json({ action });
   }
 

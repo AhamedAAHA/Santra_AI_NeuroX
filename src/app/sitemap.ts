@@ -11,7 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/dashboard",
     "/chat",
     "/alerts",
-    "/analyst",
     "/reports",
     "/settings",
   ].map((path) => ({

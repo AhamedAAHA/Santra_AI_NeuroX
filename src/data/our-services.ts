@@ -38,21 +38,39 @@ export const sentraServices: SentraService[] = [
     ],
   },
   {
+    id: "advisor",
+    title: "GTM Advisor",
+    tagline: "Ask + Deep brief",
+    summary:
+      "Ask SANTRA about competitor moves and GTM risk, or open Deep brief for visual competitor intelligence and battlecards.",
+    description:
+      "One hub for conversational GTM advice (chat, live call) and structured Competitor IQ briefs with maps, signals, and narrated strategy.",
+    href: "/chat",
+    icon: Bot,
+    highlights: ["Ask mode chat", "Deep brief visuals", "Live call", "Executive summaries"],
+    steps: [
+      "Open GTM Advisor from the sidebar.",
+      "Use Ask for fast competitor and pricing questions.",
+      "Switch to Deep brief for maps, signals, and battlecard-style analysis.",
+      "Continue in Ask when you want follow-up recommendations.",
+    ],
+  },
+  {
     id: "competitor-intelligence",
     title: "Competitor Intelligence",
-    tagline: "Analyze and differentiate",
+    tagline: "Deep brief mode",
     summary:
       "Break down competitor strengths, weaknesses, pricing, positioning, market gaps, and attack strategies.",
     description:
-      "Run practical competitor analysis with battle cards, differentiation opportunities, and a clear how-to-win playbook.",
-    href: "/analyst",
+      "Run practical competitor analysis with battle cards, differentiation opportunities, and a clear how-to-win playbook inside GTM Advisor.",
+    href: "/chat?mode=brief",
     icon: Swords,
     highlights: ["Strengths vs weaknesses", "Pricing model", "Battle card", "How to beat this competitor"],
     steps: [
-      "Open Competitor IQ from the sidebar.",
+      "Open GTM Advisor and switch to Deep brief.",
       "Enter your competitor and market question.",
       "Review strengths, weaknesses, and positioning outputs.",
-      "Use the recommended attack strategy to guide GTM moves.",
+      "Use Continue in Ask to turn findings into GTM moves.",
     ],
   },
   {
@@ -71,24 +89,6 @@ export const sentraServices: SentraService[] = [
       "Open the GTM Command Center section.",
       "Review persona, ICP, channels, and launch plan.",
       "Apply 7/30/90-day rollout actions.",
-    ],
-  },
-  {
-    id: "advisor",
-    title: "GTM Advisor",
-    tagline: "Ask strategic questions",
-    summary:
-      "Ask SANTRA about competitor moves, pricing risk, market signals, and recommended GTM responses.",
-    description:
-      "Interactive advisor for B2B GTM decisions with concise, evidence-backed intelligence for revops and strategy teams.",
-    href: "/chat",
-    icon: Bot,
-    highlights: ["Competitor briefs", "Pricing risk", "Market signals", "Executive summaries"],
-    steps: [
-      "Open GTM Advisor from the sidebar.",
-      "Ask one strategic question or paste a competitor URL.",
-      "Review the action-oriented response.",
-      "Queue key findings into a monitor or approval workflow.",
     ],
   },
 ];

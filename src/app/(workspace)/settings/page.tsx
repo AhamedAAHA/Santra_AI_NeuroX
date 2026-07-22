@@ -41,6 +41,11 @@ type IntegrationStatus = {
   speechmaticsStt?: boolean;
   featherless?: boolean;
   featherlessModels?: { chat: string; vision: string } | null;
+  brightData?: boolean;
+  brightDataReady?: boolean;
+  exa?: boolean;
+  band?: boolean;
+  toolsConfigured?: number;
 };
 
 type SettingSection = keyof SentraSettings;
@@ -241,10 +246,18 @@ export default function SettingsPage() {
             <StatusRow label="MongoDB connection" ok={status.mongodb} />
             <StatusRow label="MongoDB workspace ready" ok={status.mongodbReady ?? status.mongodb} />
             <StatusRow label={`API keys (${status.secretsSource ?? "env"})`} ok={status.aiml || status.openai} />
-            <StatusRow label="OpenAI API (LLM)" ok={status.openai || status.llm?.ready} />
+            <StatusRow label="LLM (AIML / OpenAI)" ok={status.openai || status.llm?.ready} />
+            <StatusRow label="Bright Data (web evidence)" ok={status.brightData} />
+            <StatusRow label="Exa Search (fallback)" ok={status.exa} />
+            <StatusRow label="Band.io notify" ok={status.band} optional />
             <StatusRow label="Featherless (open models)" ok={status.featherless} optional />
             <StatusRow label="Speechmatics voice (TTS)" ok={status.speechmaticsVoice ?? status.aimlVoice} />
             <StatusRow label="Speechmatics STT" ok={status.speechmaticsStt ?? status.speechmaticsVoice} />
+            {typeof status.toolsConfigured === "number" && (
+              <li className="text-sm text-white/55">
+                External tools ready: <span className="text-white">{status.toolsConfigured}+</span> (need 3+ for Phase 2)
+              </li>
+            )}
           </ul>
         </Card>
       ) : null}

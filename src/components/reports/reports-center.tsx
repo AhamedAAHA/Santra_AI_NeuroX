@@ -91,8 +91,8 @@ export function ReportsCenter() {
     <WorkspacePage>
       <WorkspacePageHeader
         badge="GTM history"
-        title="Competitive intelligence history"
-        description="Monitor reports, executive briefs, GTM plans, and approved agent runs are stored here."
+        title="History"
+        description="Monitor reports, executive briefs, GTM plans, and approved agent runs."
       />
 
       <WorkspaceSection>

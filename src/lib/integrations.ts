@@ -21,9 +21,13 @@ import { allowDemoLlmFallback } from "@/lib/demo/runtime";
 import { isMongoConfigured } from "@/lib/mongo/config";
 import { isExaConfigured } from "@/services/exa-search";
 import { getBandAgentProfile, isBandConfigured } from "@/services/band-agent";
+import { getBrightDataReadiness } from "@/lib/bright-data/config";
+import { getPlatformEnv } from "@/lib/secrets/platform-secrets";
 
 export function getIntegrationStatus() {
   const llmReady = isLlmConfigured();
+  const brightDataKey = Boolean(getPlatformEnv("BRIGHT_DATA_API_KEY")?.trim());
+  const brightData = getBrightDataReadiness("serp");
 
   return {
     secretsSource: "env" as const,
@@ -55,8 +59,11 @@ export function getIntegrationStatus() {
           vision: getFeatherlessVisionModel(),
         }
       : null,
+    brightData: brightDataKey,
+    brightDataReady: brightData.ready,
     exa: isExaConfigured(),
     band: isBandConfigured(),
+    toolsConfigured: [brightDataKey, isExaConfigured(), llmReady].filter(Boolean).length,
     deployment: {
       track: "B2B GTM Intelligence Agent" as const,
       production: process.env.NODE_ENV === "production",

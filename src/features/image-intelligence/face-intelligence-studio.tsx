@@ -613,11 +613,11 @@ export function FaceIntelligenceStudio() {
         <Card className="relative overflow-visible p-6 md:p-8" glow>
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/[0.08] blur-3xl" />
           <Badge variant="cyan">AI Face Intelligence / authenticity forensics</Badge>
-          <h1 className="type-display-lg relative mt-4 premium-gradient-text">
+          <h1 className="relative mt-3 text-2xl font-semibold tracking-tight text-white md:text-3xl">
             Detect faces, landmarks, and synthetic risk.
           </h1>
-          <p className="relative mt-4 max-w-3xl text-sm leading-7 text-white/57 md:text-base">
-            Upload facial evidence for landmark mapping, authenticity scoring, deepfake risk, and optional two-face comparison - without identity lookup or biometric search.
+          <p className="relative mt-2 max-w-2xl text-sm leading-6 text-white/55">
+            Upload facial evidence for landmark mapping, authenticity scoring, and deepfake risk — without identity lookup.
           </p>
 
           {!primary ? (

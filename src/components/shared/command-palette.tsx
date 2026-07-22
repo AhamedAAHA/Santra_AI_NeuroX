@@ -27,7 +27,8 @@ const actions = [
     href: "/chat?prompt=Draft%20an%20executive%20competitive%20brief",
   },
   { icon: Radar, label: "Review approval queue", hint: "Monitors", href: "/alerts" },
-  { icon: Globe2, label: "Run competitor battlecard analysis", hint: "Analyst", href: "/analyst" },
+  { icon: Globe2, label: "Run competitor battlecard analysis", hint: "Deep brief", href: "/chat?mode=brief" },
+  { icon: Rocket, label: "Validate a B2B market opportunity", hint: "Market validation", href: "/chat?mode=validate" },
   {
     icon: Sparkles,
     label: "Open GTM Monitors",

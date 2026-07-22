@@ -96,7 +96,7 @@ function RiskList({
   );
 }
 
-export function StartupIntelligenceScanner() {
+export function StartupIntelligenceScanner({ embedded = false }: { embedded?: boolean }) {
   const [startupIdea, setStartupIdea] = useState("");
   const [industry, setIndustry] = useState("");
   const [country, setCountry] = useState("");
@@ -121,7 +121,7 @@ export function StartupIntelligenceScanner() {
   async function generateBriefing() {
     if (!startupIdea.trim() || !industry.trim() || !country.trim() || !targetAudience.trim()) {
       toast.error("Complete all required fields", {
-        description: "Enter startup idea, industry, country, and target audience.",
+        description: "Enter opportunity, industry, country/market, and ICP / target buyers.",
       });
       return;
     }
@@ -154,7 +154,7 @@ export function StartupIntelligenceScanner() {
       if (data.report) {
         setReport(data.report);
         setProvider(data.provider ?? "openai");
-        toast.success("Startup intelligence ready", {
+        toast.success("Market validation ready", {
           description:
             data.provider === "demo" ? "Using demo data - add OpenAI key for live analysis." : "Powered by OpenAI.",
         });
@@ -169,15 +169,19 @@ export function StartupIntelligenceScanner() {
 
   return (
     <div className="grid gap-5">
-      <Card className="p-6" glow>
+      <Card className={cn("p-5 md:p-6", embedded && "border-white/[0.08]")} glow={!embedded}>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Sparkles className="h-5 w-5 text-sentra-cyan" />
-              <p className="font-semibold text-white">Startup Intelligence Scanner</p>
-            </div>
-            <p className="mt-2 text-sm text-white/50">
-              Generate startup validation, competitor intelligence, GTM strategy, investor readiness, risk heatmap, and execution playbooks.
+            {!embedded && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Sparkles className="h-5 w-5 text-sentra-cyan" />
+                <p className="font-semibold text-white">B2B Market Validation</p>
+              </div>
+            )}
+            <p className={cn("text-sm text-white/50", !embedded && "mt-2", embedded && "text-white/55")}>
+              {embedded
+                ? "Enter opportunity, ICP, and market — get competitive fit and GTM playbooks."
+                : "Validate a B2B opportunity for RevOps and GTM teams — ICP fit, competitive pressure, demand signals, and go-to-market playbooks."}
             </p>
           </div>
           <button
@@ -186,73 +190,73 @@ export function StartupIntelligenceScanner() {
             aria-checked={sriLankaMode}
             onClick={() => setSriLankaMode((value) => !value)}
             className={cn(
-              "sentra-focus flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition",
+              "sentra-focus flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition",
               sriLankaMode
                 ? "border-cyan-200/35 bg-cyan-300/12 text-cyan-50"
                 : "border-white/10 bg-white/[0.04] text-white/55",
             )}
           >
-            🇱🇰 Sri Lanka Mode
+            Sri Lanka mode
           </button>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <label className="grid gap-2 xl:col-span-2">
-            <span className="text-xs uppercase tracking-[0.2em] text-white/40">Startup idea</span>
+        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <label className="grid gap-1.5 md:col-span-2 xl:col-span-3">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-white/40">B2B opportunity</span>
             <input
               value={startupIdea}
               onChange={(event) => setStartupIdea(event.target.value)}
-              placeholder="e.g. AI-powered tutoring for rural students"
-              className="sentra-focus rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30"
+              placeholder="e.g. Autonomous competitor monitoring for RevOps teams"
+              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
-          <label className="grid gap-2">
-            <span className="text-xs uppercase tracking-[0.2em] text-white/40">Industry</span>
+          <label className="grid gap-1.5">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-white/40">Industry</span>
             <input
               value={industry}
               onChange={(event) => setIndustry(event.target.value)}
-              placeholder="e.g. EdTech"
-              className="sentra-focus rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30"
+              placeholder="e.g. B2B SaaS / RevOps"
+              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
-          <label className="grid gap-2">
-            <span className="text-xs uppercase tracking-[0.2em] text-white/40">Country</span>
+          <label className="grid gap-1.5">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-white/40">Country / market</span>
             <input
               value={country}
               onChange={(event) => setCountry(event.target.value)}
-              placeholder="e.g. Sri Lanka"
-              className="sentra-focus rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30"
+              placeholder="e.g. United States / APAC"
+              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
-          <label className="grid gap-2">
-            <span className="text-xs uppercase tracking-[0.2em] text-white/40">Target audience</span>
+          <label className="grid gap-1.5">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-white/40">ICP / buyers</span>
             <input
               value={targetAudience}
               onChange={(event) => setTargetAudience(event.target.value)}
-              placeholder="e.g. SME owners"
-              className="sentra-focus rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30"
+              placeholder="e.g. VP Sales, RevOps leads"
+              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
-          <label className="grid gap-2 md:col-span-2 xl:col-span-2">
-            <span className="text-xs uppercase tracking-[0.2em] text-white/40">Competitor (optional)</span>
+          <label className="grid gap-1.5 md:col-span-2 xl:col-span-3">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-white/40">Competitor (optional)</span>
             <input
               value={competitorName}
               onChange={(event) => setCompetitorName(event.target.value)}
-              placeholder="e.g. Notion, Canva, Stripe Atlas"
-              className="sentra-focus rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30"
+              placeholder="e.g. Crayon, Klue, Kompyte"
+              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
         </div>
 
         <Button variant="neon" className="mt-5" onClick={generateBriefing} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-          Generate Startup Intelligence
+          Validate market opportunity
         </Button>
       </Card>
 
       {loading && !report && (
         <Card className="p-6 text-sm text-white/55" glow>
-          Building startup intelligence modules with OpenAI...
+          Building B2B market validation with live model analysis...
         </Card>
       )}
 
@@ -354,7 +358,7 @@ export function StartupIntelligenceScanner() {
           <Card className="p-6" glow>
             <div className="flex items-center gap-2">
               <ShieldAlert className="h-5 w-5 text-sentra-cyan" />
-              <h3 className="text-xl font-semibold text-white">Startup Risk Intelligence</h3>
+              <h3 className="text-xl font-semibold text-white">GTM Risk Intelligence</h3>
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
               <RiskList title="Technical Risks" items={report.startupRiskIntelligence.technicalRisks} />
@@ -452,7 +456,7 @@ export function StartupIntelligenceScanner() {
             <Card className="p-6 xl:col-span-2" glow>
               <h3 className="text-xl font-semibold text-white">Executive Summary Page (One-Page Briefing)</h3>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <ListSection title="Startup Overview" items={[report.executiveBriefing.startupOverview]} />
+                <ListSection title="Opportunity overview" items={[report.executiveBriefing.startupOverview]} />
                 <ListSection title="Market Opportunity" items={[report.executiveBriefing.marketOpportunity]} />
                 <ListSection title="Competition" items={[report.executiveBriefing.competition]} />
                 <ListSection title="GTM Strategy" items={[report.executiveBriefing.gtmStrategy]} />
@@ -464,7 +468,7 @@ export function StartupIntelligenceScanner() {
             </Card>
 
             <Card className="p-6" glow>
-              <h3 className="text-xl font-semibold text-white">Startup DNA Score</h3>
+              <h3 className="text-xl font-semibold text-white">GTM Opportunity Score</h3>
               <div className="mt-4 grid gap-3">
                 <ScoreBar label="Innovation" value={report.startupDnaScore.innovation} />
                 <ScoreBar label="Scalability" value={report.startupDnaScore.scalability} />
