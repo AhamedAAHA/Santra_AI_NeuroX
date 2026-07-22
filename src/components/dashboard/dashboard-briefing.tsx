@@ -15,7 +15,7 @@ import type { IntelligenceAnalysis } from "@/types/intelligence";
 
 function briefingErrorHint(message: string) {
   if (/401|403|signed in|unauthorized|api.?key|authentication|inference provider/i.test(message)) {
-    return " Check OPENAI_API_KEY or AIML_API_KEY in the Supabase vault (npm run secrets:sync), then restart the dev server.";
+    return " Add AIML_API_KEY or FEATHERLESS_API_KEY in Vercel → Environment Variables (or .env.local locally), then redeploy.";
   }
   return "";
 }
