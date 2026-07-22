@@ -15,9 +15,9 @@ const workspaceLinks = [
 
 const platformLinks = [
   { label: "Platform", href: "#platform" },
-  { label: "Intelligence", href: "#intelligence" },
+  { label: "How it works", href: "#intelligence" },
   { label: "Our Services", href: "/services" },
-  { label: "Integrations", href: "#integrations" },
+  { label: "Trust", href: "#integrations" },
 ];
 
 const accountLinks = [
@@ -52,10 +52,8 @@ const itemVariants = {
 export function Footer() {
   return (
     <footer className="relative border-t border-white/[0.07] bg-gradient-to-b from-transparent to-sentra-ink/40">
-      {/* Top gradient accent line */}
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sentra-cyan/40 to-transparent" />
 
-      {/* Mini intelligence stats bar */}
       <div className="border-b border-white/[0.06] bg-white/[0.02]">
         <div className="container">
           <div className="flex items-stretch divide-x divide-white/[0.06] overflow-x-auto scrollbar-none">
@@ -72,7 +70,6 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Main footer grid */}
       <motion.div
         className="container py-16"
         variants={containerVariants}
@@ -81,8 +78,6 @@ export function Footer() {
         viewport={{ once: true, margin: "-40px" }}
       >
         <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr_1fr]">
-
-          {/* Brand column */}
           <motion.div variants={itemVariants}>
             <Link href="/" aria-label="Santra home" className="inline-block mb-5">
               <BrandLogo className="h-[52px] w-[78px]" />
@@ -93,7 +88,6 @@ export function Footer() {
               with human approval before automation runs.
             </p>
 
-            {/* Social links */}
             <div className="flex items-center gap-2 mb-6">
               {socialLinks.map(({ label, href, icon: Icon }) => (
                 <Link
@@ -107,14 +101,12 @@ export function Footer() {
               ))}
             </div>
 
-            {/* Live status indicator */}
             <div className="inline-flex items-center gap-2 rounded-full border border-sentra-cyan/20 bg-[rgba(83,244,255,0.05)] px-3.5 py-1.5">
               <span className="live-dot" />
               <span className="text-xs font-semibold tracking-widest text-sentra-cyan/70">SYSTEMS ONLINE</span>
             </div>
           </motion.div>
 
-          {/* Workspace links */}
           <motion.div variants={itemVariants}>
             <p className="type-caption text-white/30 mb-5">Workspace</p>
             <ul className="grid gap-3">
@@ -132,7 +124,6 @@ export function Footer() {
             </ul>
           </motion.div>
 
-          {/* Platform links */}
           <motion.div variants={itemVariants}>
             <p className="type-caption text-white/30 mb-5">Platform</p>
             <ul className="grid gap-3">
@@ -150,7 +141,6 @@ export function Footer() {
             </ul>
           </motion.div>
 
-          {/* Account + tagline card */}
           <motion.div variants={itemVariants}>
             <p className="type-caption text-white/30 mb-5">Account</p>
             <ul className="grid gap-3 mb-7">
@@ -167,7 +157,6 @@ export function Footer() {
               ))}
             </ul>
 
-            {/* NeuroX badge card */}
             <div className="rounded-2xl border border-white/[0.08] bg-[rgba(83,244,255,0.04)] p-4 relative overflow-hidden">
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sentra-cyan/25 to-transparent" />
               <p className="text-xs font-bold tracking-wider text-white mb-1">SANTRA GTM Agent</p>
@@ -190,7 +179,6 @@ export function Footer() {
           </motion.div>
         </div>
 
-        {/* Bottom bar */}
         <motion.div
           variants={itemVariants}
           className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 sm:flex-row"

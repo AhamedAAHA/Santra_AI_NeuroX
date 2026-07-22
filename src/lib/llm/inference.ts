@@ -8,9 +8,10 @@ import {
 } from "@/lib/llm/client";
 import {
   getFeatherlessChatModel,
-  getFeatherlessClient,
   getFeatherlessFastModel,
+  getFeatherlessClient,
 } from "@/lib/llm/featherless";
+import { getLlmProviderSetupMessage } from "@/lib/llm/setup-message";
 
 type ChatCompletionBody = OpenAI.Chat.ChatCompletionCreateParamsNonStreaming;
 
@@ -42,7 +43,7 @@ export function isLlmQuotaError(error: unknown) {
 }
 
 export function getInferenceAuthErrorMessage() {
-  return "AI provider API key was rejected. Update AIML_API_KEY or FEATHERLESS_API_KEY in .env.local (or run npm run secrets:sync), then restart npm run dev. This is not a SANTRA sign-in issue.";
+  return `AI provider API key was rejected. ${getLlmProviderSetupMessage()} This is not a SANTRA sign-in issue.`;
 }
 
 function getErrorMessage(error: unknown) {
@@ -103,7 +104,7 @@ export async function createChatCompletionWithFallback(
 
   const chain = buildProviderChain(preferFeatherless);
   if (!chain.length) {
-    throw new Error("Configure AIML_API_KEY or FEATHERLESS_API_KEY in the Supabase vault.");
+    throw new Error(getLlmProviderSetupMessage());
   }
 
   let lastError: unknown;

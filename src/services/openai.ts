@@ -1,5 +1,3 @@
-import { demoAnalysis } from "@/data/mock-intelligence";
-import { allowDemoLlmFallback } from "@/lib/demo/runtime";
 import {
   createChatCompletion,
   createLiveSearchChatCompletion,
@@ -27,6 +25,7 @@ import {
   isFeatherlessConfigured,
 } from "@/lib/llm/featherless";
 import { sliceDocumentForContext } from "@/lib/documents/extract-text";
+import { getLlmProviderSetupMessage } from "@/lib/llm/setup-message";
 import { formatWorkspaceContextForPrompt, type WorkspaceContext } from "@/lib/gtm/workspace-context";
 import {
   buildMonitorSearchQuery,
@@ -158,7 +157,7 @@ export async function analyzeMonitorIntent(input: string): Promise<MonitorIntent
 
 export async function transcribeAudio(file: File, context?: string) {
   if (!isAimlConfigured()) {
-    throw new Error("Configure AIML_API_KEY in the Supabase vault to use microphone transcription.");
+    throw new Error(`Configure AIML_API_KEY to use microphone transcription. ${getLlmProviderSetupMessage()}`);
   }
 
   try {
@@ -200,10 +199,7 @@ export async function generateEnterpriseAnalysis(
   workspaceContext?: WorkspaceContext | null,
 ): Promise<IntelligenceAnalysis> {
   if (!isLlmConfigured()) {
-    return {
-      ...demoAnalysis,
-      summary: `${demoAnalysis.summary} Demo analysis generated for: "${query}".`,
-    };
+    throw new Error(getLlmProviderSetupMessage());
   }
 
   const accountBlock = formatWorkspaceContextForPrompt(workspaceContext);
@@ -237,14 +233,16 @@ export async function generateEnterpriseAnalysis(
   } catch (error) {
     if (isLlmAuthError(error)) {
       throw new Error(
-        "AI provider authentication failed. Update AIML_API_KEY or FEATHERLESS_API_KEY in the Supabase vault (npm run secrets:sync), then restart the dev server.",
+        `AI provider authentication failed. ${getLlmProviderSetupMessage()}`,
       );
     }
     throw error;
   }
 
   const content = response.choices[0]?.message?.content;
-  if (!content) return demoAnalysis;
+  if (!content) {
+    throw new Error("LLM returned an empty analysis. Retry the monitor check.");
+  }
 
   const parsed = JSON.parse(content) as Partial<IntelligenceAnalysis> & {
     signals?: IntelligenceAnalysis["signals"];
@@ -255,21 +253,21 @@ export async function generateEnterpriseAnalysis(
       ? parsed.signals.map((signal, index) => ({
           id: `sig-${Date.now()}-${index}`,
           title: signal.title ?? "Intelligence signal",
-          source: signal.source ?? "OpenAI",
+          source: signal.source ?? "SANTRA",
           summary: signal.summary ?? "",
           category: signal.category ?? "market",
           severity: signal.severity ?? "medium",
           confidence: signal.confidence ?? 0.8,
           timestamp: signal.timestamp ?? "just now",
         }))
-      : demoAnalysis.signals;
+      : [];
 
   return {
-    summary: parsed.summary ?? demoAnalysis.summary,
-    risks: parsed.risks ?? demoAnalysis.risks,
-    opportunities: parsed.opportunities ?? demoAnalysis.opportunities,
-    recommendations: parsed.recommendations ?? demoAnalysis.recommendations,
-    confidenceScore: parsed.confidenceScore ?? demoAnalysis.confidenceScore,
+    summary: parsed.summary ?? `Analysis for: ${query}`,
+    risks: parsed.risks ?? [],
+    opportunities: parsed.opportunities ?? [],
+    recommendations: parsed.recommendations ?? [],
+    confidenceScore: parsed.confidenceScore ?? 0.7,
     signals,
   };
 }
@@ -459,36 +457,13 @@ async function repairHowToDeflection(
   return response.choices[0]?.message?.content?.trim() || answer;
 }
 
-function generateDemoChatResponse(message: string, context?: ChatContext) {
-  const evidence = context?.brightDataEvidence?.trim() || context?.documentEvidence?.text?.trim();
-  const summary = demoAnalysis.summary;
-  const recs = demoAnalysis.recommendations.slice(0, 3).map((item) => `- ${item}`).join("\n");
-
-  return [
-    `**SANTRA demo advisor** (no LLM API key — using heuristic briefing)`,
-    "",
-    `You asked: *${message.trim()}*`,
-    "",
-    summary,
-    evidence
-      ? `\n**Evidence on hand:**\n${evidence.slice(0, 1200)}`
-      : "\n_Add an AIML or Featherless API key later for full live-web reasoning. Exa + demo analysis still power monitors._",
-    "",
-    "**Recommended actions**",
-    recs,
-  ].join("\n");
-}
-
 export async function generateChatResponse(message: string, context?: ChatContext) {
   if (!isAimlConfigured() && !isFeatherlessConfigured()) {
-    if (allowDemoLlmFallback()) {
-      return generateDemoChatResponse(message, context);
-    }
-    throw new Error("Configure AIML_API_KEY or FEATHERLESS_API_KEY in .env.local for chat.");
+    throw new Error(getLlmProviderSetupMessage());
   }
 
   if (!isLlmConfigured()) {
-    throw new Error("Configure AIML_API_KEY or FEATHERLESS_API_KEY in .env.local for chat.");
+    throw new Error(getLlmProviderSetupMessage());
   }
 
   if (context?.documentEvidence || context?.brightDataEvidence) {

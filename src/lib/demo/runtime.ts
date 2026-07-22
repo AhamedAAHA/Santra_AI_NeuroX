@@ -1,8 +1,6 @@
-/** Shared demo / degraded-runtime flags (Cloudflare without MongoDB driver, no LLM key). */
+/** Demo / degraded-runtime flags. Phase 2: live systems only — demo is opt-in via env. */
 export function allowDemoRuntimeFallback() {
-  if (process.env.SENTRA_ALLOW_DEMO_FALLBACK === "true") return true;
-  if (process.env.SENTRA_ALLOW_DEMO_FALLBACK === "false") return false;
-  return process.env.NODE_ENV !== "production";
+  return process.env.SENTRA_ALLOW_DEMO_FALLBACK === "true";
 }
 
 export function allowDemoLlmFallback() {

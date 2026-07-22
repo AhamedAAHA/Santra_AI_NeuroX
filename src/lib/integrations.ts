@@ -17,6 +17,7 @@ import {
 } from "@/lib/llm/featherless";
 import { isSpeechmaticsConfigured } from "@/services/speechmatics-tts";
 import { isSpeechmaticsSttConfigured } from "@/services/speechmatics-stt";
+import { allowDemoLlmFallback } from "@/lib/demo/runtime";
 import { isMongoConfigured } from "@/lib/mongo/config";
 import { isExaConfigured } from "@/services/exa-search";
 import { getBandAgentProfile, isBandConfigured } from "@/services/band-agent";
@@ -59,7 +60,7 @@ export function getIntegrationStatus() {
     deployment: {
       track: "B2B GTM Intelligence Agent" as const,
       production: process.env.NODE_ENV === "production",
-      demoFallbackAllowed: true,
+      demoFallbackAllowed: allowDemoLlmFallback(),
     },
   };
 }

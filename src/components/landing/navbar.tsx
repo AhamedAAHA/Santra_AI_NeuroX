@@ -12,9 +12,9 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { label: "Platform", href: "#platform" },
+  { label: "How it works", href: "#intelligence" },
   { label: "Services", href: "/services" },
-  { label: "Intelligence", href: "#intelligence" },
-  { label: "Integrations", href: "#integrations" },
+  { label: "Trust", href: "#integrations" },
 ];
 
 export function Navbar() {
@@ -45,7 +45,6 @@ export function Navbar() {
           className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sentra-cyan/40 to-transparent"
           style={{ opacity: borderOpacity }}
         />
-        {/* Top micro-bar */}
         <div className="hidden border-b border-white/[0.06] md:block">
           <div className="container flex h-7 items-center justify-between">
             <div className="flex items-center gap-4">
@@ -67,7 +66,6 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Main nav */}
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="group flex items-center" aria-label="Santra home">
             <BrandLogo className="h-[52px] w-[78px]" />
@@ -89,7 +87,6 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            {/* Live signal badge */}
             <div className="hidden items-center gap-2 rounded-full border border-sentra-cyan/20 bg-sentra-cyan/5 px-3 py-1.5 sm:flex">
               <span className="live-dot" />
               <span className="text-xs font-medium text-sentra-cyan/75">Live</span>
@@ -101,7 +98,6 @@ export function Navbar() {
               </LandingAuthLink>
             </Button>
 
-            {/* Mobile menu toggle */}
             <button
               className="grid h-10 w-10 place-items-center rounded-2xl border border-white/10 bg-white/[0.05] text-white/70 md:hidden"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -113,7 +109,6 @@ export function Navbar() {
         </div>
       </motion.header>
 
-      {/* Mobile drawer */}
       <motion.div
         className="fixed inset-x-0 top-[calc(4rem+1.75rem)] z-30 md:hidden"
         initial={false}
