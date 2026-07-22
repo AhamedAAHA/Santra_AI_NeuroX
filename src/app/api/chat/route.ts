@@ -7,7 +7,6 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { ensurePlatformSecrets } from "@/lib/secrets/platform-secrets";
 import { isAimlConfigured, isLlmConfigured } from "@/lib/llm/client";
 import { isFeatherlessConfigured } from "@/lib/llm/featherless";
-import { allowDemoLlmFallback } from "@/lib/demo/runtime";
 import { formatInferenceError, isLlmAuthError } from "@/lib/llm/inference";
 import { generateChatResponse, resolveDocumentChatProvider } from "@/services/openai";
 import { runGtmAgentCollection } from "@/services/gtm-agent";
@@ -78,22 +77,19 @@ export async function POST(request: Request) {
     if (!isLlmConfigured()) {
       return NextResponse.json(
         {
-          error:
-            "AI is in demo mode only. Set SENTRA_ALLOW_DEMO_FALLBACK=true or add AIML_API_KEY.",
+          error: "Live AI requires AIML_API_KEY or FEATHERLESS_API_KEY in .env.local.",
         },
         { status: 503 },
       );
     }
 
     if (!documentEvidence && !isAimlConfigured() && !isFeatherlessConfigured()) {
-      if (!allowDemoLlmFallback()) {
-        return NextResponse.json(
-          {
-            error: "Live web chat requires AIML_API_KEY or FEATHERLESS_API_KEY.",
-          },
-          { status: 503 },
-        );
-      }
+      return NextResponse.json(
+        {
+          error: "Live web chat requires AIML_API_KEY or FEATHERLESS_API_KEY.",
+        },
+        { status: 503 },
+      );
     }
 
     const provider: ChatProvider = documentEvidence ? resolveDocumentChatProvider(false) : "aiml-search";
