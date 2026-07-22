@@ -67,12 +67,8 @@ export function AuthShell({ mode }: AuthShellProps) {
     ? "Checking workspace…"
     : allowLocalAuth
       ? isSignUp
-        ? demoAuthAllowed && mongoEnabled
-          ? "Create demo account"
-          : "Create local account"
-        : demoAuthAllowed && mongoEnabled
-          ? "Sign in (demo mode)"
-          : "Sign in locally"
+        ? "Create local account"
+        : "Sign in locally"
       : mongoWorkspaceReady
         ? isSignUp
           ? "Create intelligence workspace"
