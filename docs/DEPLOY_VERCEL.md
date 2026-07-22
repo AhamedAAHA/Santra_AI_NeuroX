@@ -33,6 +33,8 @@ Set in Vercel → Project → Settings → Environment Variables:
 | `GITHUB_OAUTH_CLIENT_SECRET` | GitHub OAuth secret |
 | `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth secret |
+| `AIML_API_KEY` | Live LLM chat + monitor synthesis ([aimlapi.com](https://aimlapi.com)) |
+| `FEATHERLESS_API_KEY` | Optional alternate LLM provider |
 
 ## Cron (Hobby plan)
 
