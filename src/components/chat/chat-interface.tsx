@@ -100,7 +100,7 @@ export function ChatInterface() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [useGtmAgent, setUseGtmAgent] = useState(false);
-  const [liveChatReady, setLiveChatReady] = useState<boolean | null>(null);
+  const [chatMode, setChatMode] = useState<"live" | "unavailable" | null>(null);
   const [attachedDocument, setAttachedDocument] = useState<ChatDocumentEvidence | null>(null);
   const [parsingDocument, setParsingDocument] = useState(false);
   const documentInputRef = useRef<HTMLInputElement | null>(null);
@@ -170,10 +170,21 @@ export function ChatInterface() {
   useEffect(() => {
     fetch("/api/health/integrations")
       .then((response) => response.json())
-      .then((data: { aiml?: boolean; llm?: { ready?: boolean } }) => {
-        setLiveChatReady(Boolean(data?.aiml ?? data?.llm?.ready));
-      })
-      .catch(() => setLiveChatReady(false));
+      .then(
+        (data: {
+          aiml?: boolean;
+          featherless?: boolean;
+          llm?: { ready?: boolean };
+        }) => {
+          const hasProvider = Boolean(data?.aiml || data?.featherless);
+          if (hasProvider || data?.llm?.ready) {
+            setChatMode("live");
+            return;
+          }
+          setChatMode("unavailable");
+        },
+      )
+      .catch(() => setChatMode("unavailable"));
   }, []);
 
   useEffect(() => {
@@ -447,13 +458,11 @@ export function ChatInterface() {
         title="GTM advisor chat"
         description="Ask about competitors, pricing risk, monitor signals, battlecards, or executive briefs."
       />
-      {liveChatReady === false && (
+      {chatMode === "unavailable" && (
         <p className="-mt-4 rounded-2xl border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-          Live chat needs <code className="font-mono text-xs">AIML_API_KEY</code> from{" "}
-          <a href="https://aimlapi.com" target="_blank" rel="noreferrer" className="underline">
-            aimlapi.com
-          </a>{" "}
-          in <code className="font-mono text-xs">.env.local</code>, then restart{" "}
+          Live chat needs <code className="font-mono text-xs">AIML_API_KEY</code> or{" "}
+          <code className="font-mono text-xs">FEATHERLESS_API_KEY</code> in{" "}
+          <code className="font-mono text-xs">.env.local</code>, then restart{" "}
           <code className="font-mono text-xs">npm run dev</code>.
         </p>
       )}
