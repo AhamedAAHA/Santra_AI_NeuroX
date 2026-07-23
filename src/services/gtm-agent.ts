@@ -1,6 +1,7 @@
 import { planGtmCollection } from "@/lib/bright-data/router";
 import { collectFromPlan } from "@/services/gtm-research";
 import { collectExaIntelligence, isExaConfigured } from "@/services/exa-search";
+import { getPlatformEnv } from "@/lib/secrets/platform-secrets";
 import type { GtmAgentCollectionResult, GtmAgentStage } from "@/types/gtm-agent";
 import type { GtmEvidenceBundle } from "@/services/bright-data";
 
@@ -10,6 +11,10 @@ function stage(
   detail: string,
 ): GtmAgentStage {
   return { stage: stageName, label, detail, timestamp: new Date().toISOString() };
+}
+
+function isBrightDataApiConfigured() {
+  return Boolean(getPlatformEnv("BRIGHT_DATA_API_KEY")?.trim());
 }
 
 export function buildAgentCollectionQuery(input: {
@@ -62,7 +67,40 @@ export async function runGtmAgentCollection(input: {
   const targetUrl = input.targetUrl?.trim() || undefined;
   push(stage("intake", "Goal received", query.slice(0, 240)));
 
-  const plan = planGtmCollection(query, { preferMcp: true });
+  const brightDataReady = isBrightDataApiConfigured();
+  const exaReady = isExaConfigured();
+
+  // Prefer Exa when Bright Data is not configured (common local/dev setup).
+  if (!brightDataReady && exaReady) {
+    push(
+      stage(
+        "routing",
+        "Tool route planned",
+        "Bright Data not configured — using Exa web search",
+      ),
+    );
+    const exaBundle = await collectWithExaFallback(query, targetUrl);
+    if (exaBundle) {
+      push(
+        stage(
+          "collection",
+          "Evidence collected",
+          `Exa: ${exaBundle.steps.map((step) => step.label).join(", ")}`,
+        ),
+      );
+      return {
+        evidence: exaBundle.evidence,
+        provider: exaBundle.provider,
+        query: exaBundle.query,
+        targetUrl: exaBundle.targetUrl,
+        plan: planGtmCollection(query, { preferMcp: false }),
+        steps: exaBundle.steps,
+        stages,
+      };
+    }
+  }
+
+  const plan = planGtmCollection(query, { preferMcp: brightDataReady });
   const routeSummary = plan.steps.map((step) => step.label).join(" → ") || "SERP API";
   push(
     stage(
@@ -73,7 +111,7 @@ export async function runGtmAgentCollection(input: {
   );
 
   let bundle = await collectFromPlan(plan, { multiSource: true });
-  if (bundle.provider === "demo" && plan.steps.length > 1) {
+  if (bundle.provider === "demo" && plan.steps.length > 1 && brightDataReady) {
     push(
       stage(
         "fallback",
@@ -87,12 +125,14 @@ export async function runGtmAgentCollection(input: {
     );
   }
 
-  if (bundle.provider === "demo" && isExaConfigured()) {
+  if (bundle.provider === "demo" && exaReady) {
     push(
       stage(
         "fallback",
         "Switching to Exa",
-        "Bright Data unavailable or credits exhausted — using Exa web search",
+        brightDataReady
+          ? "Bright Data unavailable or credits exhausted — using Exa web search"
+          : "Using Exa web search for live evidence",
       ),
     );
     const exaBundle = await collectWithExaFallback(query, targetUrl);
@@ -115,7 +155,9 @@ export async function runGtmAgentCollection(input: {
       stage(
         "fallback",
         "Live evidence unavailable",
-        "Continuing with demo or partial evidence for analysis",
+        exaReady
+          ? "Exa search returned no usable evidence — continuing with partial analysis"
+          : "Add EXA_API_KEY (or Bright Data) for live evidence — continuing with partial analysis",
       ),
     );
   }
