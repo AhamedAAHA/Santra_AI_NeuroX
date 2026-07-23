@@ -148,9 +148,12 @@ export function MonitorCenter() {
   const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
-    setNotificationPermission(
-      typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
-    );
+    const timeout = window.setTimeout(() => {
+      setNotificationPermission(
+        typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
+      );
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
