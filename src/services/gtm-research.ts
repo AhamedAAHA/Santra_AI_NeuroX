@@ -1,4 +1,4 @@
-import { planGtmCollection, planToPrimaryRequest, type GtmRoutePlan } from "@/lib/bright-data/router";
+import { planGtmCollection, type GtmRoutePlan } from "@/lib/bright-data/router";
 import { collectMcpGtmEvidence, isBrightDataMcpConfigured } from "@/services/bright-data-mcp";
 import {
   collectWebIntelligence,
@@ -62,10 +62,12 @@ export async function collectFromPlan(
   }
 
   const provider = steps.length ? ("bright-data" as const) : ("demo" as const);
+  // Do not call Bright Data again here — that re-throws when the API key is missing
+  // and blocks Exa fallback in runGtmAgentCollection.
   const evidence =
     steps.length > 0
       ? steps.map((s) => `### ${s.label} (${s.mode})\n${s.evidence}`).join("\n\n").slice(0, 16_000)
-      : (await collectWebIntelligence(planToPrimaryRequest(plan))).evidence;
+      : "";
 
   return {
     provider,
