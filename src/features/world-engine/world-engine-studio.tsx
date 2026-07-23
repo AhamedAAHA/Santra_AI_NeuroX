@@ -562,25 +562,27 @@ export function WorldEngineStudio({
 
   return (
     <>
-      <section className={cn("mb-7 grid gap-5", !compactHero && "xl:grid-cols-[1fr_360px]")}>
-        <Card className={cn("relative overflow-hidden", compactHero ? "p-5 md:p-6" : "p-6 md:p-8")} glow>
+      <section className={cn(compactHero ? "mb-4" : "mb-7 grid gap-5 xl:grid-cols-[1fr_360px]")}>
+        <Card className={cn("relative overflow-hidden", compactHero ? "border-white/[0.08] p-4 md:p-5" : "p-6 md:p-8")} glow={!compactHero}>
           {!compactHero && (
             <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-violet-400/10 blur-3xl" />
           )}
-          <Badge variant="cyan">AI Startup Advisor / competitor intelligence</Badge>
-          <h1
-            className={cn(
-              "relative mt-3 font-semibold tracking-tight text-white",
-              compactHero ? "text-xl md:text-2xl" : "text-2xl md:text-3xl",
-            )}
-          >
-            {compactHero ? "Deep brief" : "Understand startup competition as a living system."}
-          </h1>
-          <p className="relative mt-2 max-w-2xl text-sm leading-6 text-white/55">
-            {compactHero
-              ? "Resolve live evidence, map relationships, and narrate strategy — then continue in Ask."
-              : "Ask a startup or competitor question. SANTRA resolves live evidence, maps relationships, and narrates strategy."}
-          </p>
+          {!compactHero && (
+            <>
+              <Badge variant="cyan">AI Startup Advisor / competitor intelligence</Badge>
+              <h1 className="relative mt-3 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                Understand startup competition as a living system.
+              </h1>
+              <p className="relative mt-2 max-w-2xl text-sm leading-6 text-white/55">
+                Ask a startup or competitor question. SANTRA resolves live evidence, maps relationships, and narrates strategy.
+              </p>
+            </>
+          )}
+          {compactHero && (
+            <p className="mb-3 text-sm text-white/50">
+              Ask a competitor or market question — live evidence, maps, and narrated strategy.
+            </p>
+          )}
           <Textarea
             value={prompt}
             onChange={(event) => setPrompt(event.target.value)}
@@ -590,8 +592,9 @@ export function WorldEngineStudio({
                 void runWorldEngine();
               }
             }}
-            className="relative mt-6 min-h-20"
-            aria-label="Startup intelligence question"
+            className={cn("relative min-h-20", compactHero ? "mt-0" : "mt-6")}
+            aria-label="Competitive intelligence question"
+            placeholder={compactHero ? "e.g. Map ApexAnalytics pricing and enterprise positioning…" : undefined}
           />
           <div className="relative mt-3 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-white/40">
@@ -601,7 +604,9 @@ export function WorldEngineStudio({
                   : "Listening - transcript appears as you speak."
                 : transcribing
                   ? "Refining transcript..."
-                  : "Type a startup or competitor question or use voice input."}
+                  : compactHero
+                    ? "Type a competitor question or use voice."
+                    : "Type a startup or competitor question or use voice input."}
             </p>
             {settings.voice.microphone && (
               <Button
@@ -617,13 +622,14 @@ export function WorldEngineStudio({
               </Button>
             )}
           </div>
-          <div className="relative z-20 mt-6 flex flex-col gap-3">
+          <div className="relative z-20 mt-4 flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <SuggestedPromptsMenu
                 prompts={prompts}
                 disabled={loading || !settings.analyst.worldIntelligence}
                 menuId="world-engine-suggested-menu"
-                menuSubtitle="Pick one to run the Competitor Intelligence Center."
+                buttonLabel={compactHero ? "Prompts" : "Suggested questions"}
+                menuSubtitle="Pick one to run competitive intelligence."
                 onSelect={(suggestion) => void runWorldEngine(suggestion)}
               />
               {(loading || logs.length > 0) && settings.analyst.liveLogs && (
@@ -649,10 +655,11 @@ export function WorldEngineStudio({
               onClick={() => void runWorldEngine()}
               disabled={loading || !prompt.trim() || !settings.analyst.worldIntelligence}
             >
-              <Send className="h-4 w-4" /> {loading ? "Running…" : "Launch Competitor Intelligence"}
+              <Send className="h-4 w-4" /> {loading ? "Running…" : compactHero ? "Run deep brief" : "Launch Competitor Intelligence"}
             </Button>
           </div>
         </Card>
+        {!compactHero && (
         <Card className="flex flex-col items-center justify-center p-6 text-center" glow>
           <AiOrb speaking={loading || speaking || synthesizing || listening || transcribing} size="md" />
           <h2 className="mt-5 text-xl font-semibold text-white">AI Intelligence Narrator</h2>
@@ -662,6 +669,7 @@ export function WorldEngineStudio({
             Command sounds {muted ? "off" : "on"}
           </Button>
         </Card>
+        )}
       </section>
 
       {loading && settings.analyst.liveLogs && (
