@@ -707,9 +707,9 @@ export function ChatInterface({
                 prompts={prompts}
                 disabled={liveCall.active || loading}
                 menuId="gtm-ask-suggested-menu"
+                buttonLabel="Prompts"
                 menuSubtitle="Quick GTM questions"
                 onSelect={(suggestion) => void sendMessage(suggestion)}
-                triggerClassName="h-8 rounded-full px-3 text-xs"
               />
             </div>
             {liveCall.active && (
@@ -756,9 +756,9 @@ export function ChatInterface({
             <input
               ref={documentInputRef}
               type="file"
-              accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp"
               className="hidden"
-              onChange={(event) => void handleDocumentPick(event)}
+              accept=".pdf,.docx,.txt,.md,.csv,.png,.jpg,.jpeg,.webp,application/pdf,text/plain,text/markdown,text/csv,image/png,image/jpeg,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              onChange={(event) => void handleDocumentSelect(event.target.files?.[0] ?? null)}
             />
             <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
               <Textarea
@@ -771,12 +771,13 @@ export function ChatInterface({
                   }
                 }}
                 placeholder={
-                  liveCall.active
-                    ? "Live call active — speak or type…"
-                    : "Ask about competitors, pricing, or GTM risk…"
+                  attachedDocument
+                    ? "Ask about this document, or press Send to summarize it…"
+                    : liveCall.active
+                      ? "Live call active — speak or type…"
+                      : "Ask about competitors, pricing, or GTM risk…"
                 }
                 className="min-h-[3.25rem] resize-none sm:min-h-14"
-                disabled={liveCall.active && !input}
               />
               <div className="grid grid-cols-3 gap-2 sm:contents">
                 <Button
@@ -802,10 +803,10 @@ export function ChatInterface({
                       listening && "ring-1 ring-rose-400/50",
                     )}
                     onClick={() => void toggleSpeechInput()}
-                    disabled={!listening && (transcribing || loading || liveCall.active)}
+                    disabled={liveCall.active || (!listening && (transcribing || loading))}
                     aria-label={listening ? "Stop voice input" : "Voice input"}
                   >
-                    {transcribing ? (
+                    {transcribing && !listening ? (
                       <Sparkles className="h-5 w-5 animate-pulse" />
                     ) : listening ? (
                       <MicOff className="h-5 w-5" />
@@ -928,213 +929,6 @@ export function ChatInterface({
             </Card>
           </aside>
         )}
-      </div>
-                        {liveCall.lastHeard}
-                      </>
-                    )}
-                  </p>
-                )}
-              </div>
-            )}
-            {attachedDocument && (
-              <div className="mb-3 flex items-center gap-2 rounded-2xl border border-cyan-200/20 bg-cyan-300/[0.06] px-3 py-2 text-sm text-cyan-50/90">
-                <FileText className="h-4 w-4 shrink-0" />
-                <span className="min-w-0 flex-1 truncate">
-                  {attachedDocument.fileName}
-                  {attachedDocument.ocrUsed ? " · OCR" : ""}
-                </span>
-                <button
-                  type="button"
-                  className="rounded-full p-1 text-white/50 transition hover:bg-white/10 hover:text-white"
-                  onClick={() => setAttachedDocument(null)}
-                  aria-label="Remove attached document"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            )}
-            <input
-              ref={documentInputRef}
-              type="file"
-              className="hidden"
-              accept=".pdf,.docx,.txt,.md,.csv,.png,.jpg,.jpeg,.webp,application/pdf,text/plain,text/markdown,text/csv,image/png,image/jpeg,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={(event) => void handleDocumentSelect(event.target.files?.[0] ?? null)}
-            />
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
-              <Textarea
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey) {
-                    event.preventDefault();
-                    sendMessage();
-                  }
-                }}
-                placeholder={
-                  attachedDocument
-                    ? "Ask about this document, or press Send to summarize it..."
-                    : "Ask SANTRA to analyze competitors, monitor a market, or brief leadership..."
-                }
-                className="min-h-24 sm:min-h-16"
-              />
-              <div className="grid grid-cols-3 gap-3 sm:contents">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-14 w-full shrink-0 sm:h-16 sm:w-16"
-                  onClick={() => documentInputRef.current?.click()}
-                  disabled={parsingDocument || loading}
-                  aria-label="Attach PDF or document"
-                >
-                  {parsingDocument ? (
-                    <Sparkles className="h-5 w-5 animate-pulse" />
-                  ) : (
-                    <Paperclip className="h-5 w-5" />
-                  )}
-                </Button>
-                {settings.voice.microphone && (
-                  <Button
-                    type="button"
-                    variant={listening ? "neon" : "ghost"}
-                    size="icon"
-                    className={cn(
-                      "h-14 w-full shrink-0 sm:h-16 sm:w-16",
-                      listening && "ring-2 ring-rose-400/70 ring-offset-2 ring-offset-sentra-ink",
-                    )}
-                    onClick={() => void toggleSpeechInput()}
-                    disabled={liveCall.active || (!listening && transcribing)}
-                    aria-pressed={listening}
-                    aria-label={listening ? "Stop voice recording" : transcribing ? "Transcribing voice prompt" : "Record voice prompt"}
-                    title={
-                      liveCall.active
-                        ? "Mic is used by live call"
-                        : listening
-                          ? "Stop recording"
-                          : transcribing
-                            ? "Transcribing…"
-                            : "Start voice input"
-                    }
-                  >
-                    {transcribing && !listening ? (
-                      <Sparkles className="h-5 w-5 animate-pulse" />
-                    ) : listening ? (
-                      <MicOff className="h-5 w-5" />
-                    ) : (
-                      <Mic2 className="h-5 w-5" />
-                    )}
-                  </Button>
-                )}
-                <Button
-                  variant="neon"
-                  size="icon"
-                  className="h-14 w-full shrink-0 sm:h-16 sm:w-16"
-                  onClick={() => sendMessage()}
-                  disabled={loading || (!input.trim() && !attachedDocument)}
-                  aria-label="Send message"
-                >
-                  <Send className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-            <p className="mt-2 text-xs text-white/40">
-              {listening
-                ? liveTranscript
-                  ? `Listening: ${liveTranscript}`
-                  : "Listening - tap the mic again or Stop below when you are done."
-                : !settings.voice.microphone
-                  ? "Microphone input is disabled in Settings."
-                  : transcribing
-                  ? "Refining transcript..."
-                  : "Attach PDF, DOCX, TXT, or images (smart OCR). Ask about competitors, pricing, or GTM risk."}
-            </p>
-            {listening && settings.voice.microphone && (
-              <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-rose-300/25 bg-rose-400/10 px-4 py-3">
-                <div className="flex items-center gap-2 text-sm text-rose-100">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-rose-400" />
-                  </span>
-                  Recording…
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="border border-rose-300/30 bg-rose-400/10 text-rose-50 hover:bg-rose-400/20"
-                  onClick={() => void toggleSpeechInput()}
-                >
-                  <MicOff className="h-4 w-4" />
-                  Stop
-                </Button>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        <aside className="min-w-0">
-          <Card className="p-6 text-center xl:sticky xl:top-24" glow>
-            <AiOrb speaking={speaking || listening || transcribing || loading || liveCall.active} size="md" className="mx-auto" />
-            <h3 className="mt-6 text-xl font-semibold text-white">Voice analyst</h3>
-            <p className="mt-2 text-sm leading-6 text-white/55">
-              {loading
-                ? "Collecting live evidence and synthesizing your briefing…"
-                : voiceStatus === "loading"
-                  ? "Preparing first sentence…"
-                  : voiceStatus === "playing"
-                    ? "Speaking sentence by sentence. Click the active voice button to stop."
-                    : listening
-                      ? "Tap Stop below or the mic button again when you are done speaking."
-                      : "Use the microphone beside the prompt box to speak your request, or click a response voice button."}
-            </p>
-            {listening && settings.voice.microphone && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-4 w-full border border-rose-300/30 bg-rose-400/10 text-rose-50 hover:bg-rose-400/20"
-                onClick={() => void toggleSpeechInput()}
-              >
-                <MicOff className="h-4 w-4" />
-                Stop listening
-              </Button>
-            )}
-            <VoiceLanguageSelector
-              className="mt-5 w-full"
-              compact
-              value={settings.voice.language}
-              onChange={(language) =>
-                updateSettings((current) => ({
-                  ...current,
-                  voice: { ...current.voice, language },
-                }))
-              }
-            />
-            <Button
-              variant="ghost"
-              className="mt-5 w-full"
-              onClick={() => {
-                const latestAssistant = [...messages]
-                  .reverse()
-                  .find((message) => message.role === "assistant");
-
-                if (!latestAssistant) {
-                  toast.message("No analyst response available yet.");
-                  return;
-                }
-
-                void playVoice(latestAssistant.content);
-              }}
-              disabled={!settings.voice.enabled}
-            >
-              {voiceStatus === "loading" ? (
-                <Sparkles className="h-4 w-4 animate-pulse" />
-              ) : (
-                <Mic2 className="h-4 w-4" />
-              )}
-              {speaking ? "Stop voice" : "Voice controls"}
-            </Button>
-          </Card>
-        </aside>
       </div>
 
       <StudioModal
