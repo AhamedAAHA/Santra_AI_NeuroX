@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, BellRing, Bot, CheckCircle2, Pause, Play, Radar, Sparkles, TimerReset, Trash2, TrendingUp, X, Zap } from "lucide-react";
+import { AlertTriangle, BellRing, Bot, CheckCircle2, Pencil, Pause, Play, Radar, Sparkles, TimerReset, Trash2, TrendingUp, X, Zap } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { AutomationWebhookPanel } from "@/components/gtm/crm-export-button";
 import { ActionQueuePanel } from "@/components/gtm/action-queue-panel";
 import { AgentActivityLog } from "@/components/gtm/agent-activity-log";
@@ -26,7 +27,7 @@ import {
 } from "@/lib/monitor-history";
 import { repairLocalStorageQuota, syncLocalSessionToCookie } from "@/lib/local-auth";
 import { MonitorPromptField } from "@/components/dashboard/monitor-prompt-field";
-import { getAlertWebhookUrl, getAutomationWebhookUrl, saveAlertWebhookUrl, saveAutomationWebhookUrl } from "@/lib/webhooks";
+import { getAlertWebhookUrl, getAutomationWebhookUrl, saveAlertWebhookUrl } from "@/lib/webhooks";
 import { WorkspaceSection } from "@/components/workspace/workspace-page";
 import { cn } from "@/lib/utils";
 import { looksLikeTechnicalPayload } from "@/lib/evidence/format-evidence";
@@ -126,20 +127,31 @@ export function MonitorCenter() {
   const [aiError, setAiError] = useState("");
   const [demoAutopilot, setDemoAutopilot] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const [automationWebhookUrl, setAutomationWebhookUrl] = useState("");
   const [webhookSending, setWebhookSending] = useState(false);
   const [detectedChanges, setDetectedChanges] = useState<DetectedChange[]>([]);
   const [demoLoading, setDemoLoading] = useState(false);
   const [creatingMonitor, setCreatingMonitor] = useState(false);
   const [timelineKey, setTimelineKey] = useState(0);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission | "unsupported">(() =>
-    typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
-  );
+  // Start null on server + first client paint to avoid Notification.permission hydration mismatch.
+  const [notificationPermission, setNotificationPermission] = useState<
+    NotificationPermission | "unsupported" | null
+  >(null);
   const [agentStages, setAgentStages] = useState<GtmAgentStage[]>([]);
   const [actionQueueRefreshKey, setActionQueueRefreshKey] = useState(0);
   const [selectedPendingActionId, setSelectedPendingActionId] = useState<string | undefined>();
+  const [editingMonitor, setEditingMonitor] = useState<Monitor | null>(null);
+  const [editRequirement, setEditRequirement] = useState("");
+  const [editCategory, setEditCategory] = useState<Monitor["category"]>("any");
+  const [editSeverity, setEditSeverity] = useState<Severity>("medium");
+  const [editTargetUrl, setEditTargetUrl] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  useEffect(() => {
+    setNotificationPermission(
+      typeof window !== "undefined" && "Notification" in window ? Notification.permission : "unsupported",
+    );
+  }, []);
 
   useEffect(() => {
     repairLocalStorageQuota();
@@ -190,7 +202,6 @@ export function MonitorCenter() {
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       setWebhookUrl(getAlertWebhookUrl());
-      setAutomationWebhookUrl(getAutomationWebhookUrl());
     }, 0);
     return () => window.clearTimeout(timeout);
   }, []);
@@ -198,10 +209,6 @@ export function MonitorCenter() {
   useEffect(() => {
     saveAlertWebhookUrl(webhookUrl);
   }, [webhookUrl]);
-
-  useEffect(() => {
-    saveAutomationWebhookUrl(automationWebhookUrl);
-  }, [automationWebhookUrl]);
 
   useEffect(() => {
     const guidePrompt = searchParams.get("guidePrompt");
@@ -891,6 +898,95 @@ export function MonitorCenter() {
     setMonitors((current) => current.filter((monitor) => monitor.id !== id));
   }
 
+  function openEditMonitor(monitor: Monitor) {
+    setEditingMonitor(monitor);
+    setEditRequirement(monitor.requirement);
+    setEditCategory(monitor.category);
+    setEditSeverity(monitor.minimumSeverity);
+    setEditTargetUrl(monitor.targetUrl ?? "");
+  }
+
+  function closeEditMonitor() {
+    if (savingEdit) return;
+    setEditingMonitor(null);
+  }
+
+  async function saveEditMonitor() {
+    if (!editingMonitor) return;
+    const trimmed = editRequirement.trim();
+    if (!trimmed) {
+      toast.error("Monitor requirement cannot be empty.");
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      const resolvedIntent = enrichIntent(await fetchMonitorIntent(trimmed), trimmed);
+      const interpretedRequirement = cleanMonitorRequirement(resolvedIntent.normalizedRequirement);
+      const searchQuery = resolvedIntent.searchQuery?.trim() || interpretedRequirement;
+      if (interpretedRequirement.length < 3) {
+        toast.error("Describe what you want to watch in a few words.");
+        return;
+      }
+
+      const plainSummary =
+        resolvedIntent.plainSummary ??
+        plainEnglishMonitorSummary({
+          requirement: trimmed,
+          normalizedRequirement: interpretedRequirement,
+          category: editCategory === "any" ? resolvedIntent.category : editCategory,
+          minimumSeverity: editSeverity || resolvedIntent.minimumSeverity,
+        });
+      const category = editCategory === "any" ? resolvedIntent.category : editCategory;
+      const minimumSeverity = editSeverity || resolvedIntent.minimumSeverity;
+      const keywords = resolvedIntent.keywords ?? editingMonitor.keywords ?? [];
+      const targetUrl = editTargetUrl.trim() || resolvedIntent.targetUrl || undefined;
+
+      const response = await fetch(`/api/monitors/${editingMonitor.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requirement: interpretedRequirement,
+          searchQuery,
+          plainSummary,
+          category,
+          minimumSeverity,
+          keywords,
+          targetUrl: targetUrl ?? null,
+        }),
+      });
+      const data = await readResponseJson<{ error?: string }>(response);
+      if (!response.ok && response.status !== 404) {
+        throw new Error(data.error || "Could not update monitor.");
+      }
+
+      setMonitors((current) =>
+        current.map((monitor) =>
+          monitor.id === editingMonitor.id
+            ? {
+                ...monitor,
+                requirement: interpretedRequirement,
+                searchQuery,
+                plainSummary,
+                category,
+                minimumSeverity,
+                keywords,
+                targetUrl,
+              }
+            : monitor,
+        ),
+      );
+      recordMonitorHistory({ requirement: interpretedRequirement, category });
+      toast.success("Monitor updated");
+      setEditingMonitor(null);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update monitor.");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   return (
     <>
       <Card className="mb-4 border-cyan-300/20 bg-cyan-300/[0.04] p-4 md:p-5" glow>
@@ -1005,56 +1101,74 @@ export function MonitorCenter() {
           <details className="group mt-6 rounded-2xl border border-white/10 bg-white/[0.03] open:bg-white/[0.02]">
             <summary className="sentra-focus cursor-pointer list-none px-4 py-3 text-sm text-white/55 marker:content-none hover:text-white/75 [&::-webkit-details-marker]:hidden">
               <span className="font-medium text-white/70">Options</span>
-              <span className="text-white/40"> - category, severity, webhooks</span>
+              <span className="text-white/40"> — category, severity, alert webhook, demo</span>
             </summary>
-            <div className="space-y-4 border-t border-white/10 px-4 pb-4 pt-2">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="grid gap-2 text-xs text-white/45">
-                Category
-                <select
-                  value={category}
-                  onChange={(event) => setCategory(event.target.value as "any" | SignalCategory)}
-                  className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
-                >
-                  {categories.map((item) => (
-                    <option key={item} value={item}>
-                      {item === "any" ? "Any category" : item}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="grid gap-2 text-xs text-white/45">
-                Minimum severity
-                <select
-                  value={minimumSeverity}
-                  onChange={(event) => setMinimumSeverity(event.target.value as Severity)}
-                  className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
-                >
-                  {severities.map((severity) => (
-                    <option key={severity} value={severity}>
-                      {severity}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+            <div className="space-y-5 border-t border-white/10 px-4 pb-4 pt-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-2 text-xs text-white/45">
+                  Category
+                  <select
+                    value={category}
+                    onChange={(event) => setCategory(event.target.value as "any" | SignalCategory)}
+                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                  >
+                    {categories.map((item) => (
+                      <option key={item} value={item}>
+                        {item === "any" ? "Any category" : item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="grid gap-2 text-xs text-white/45">
+                  Minimum severity
+                  <select
+                    value={minimumSeverity}
+                    onChange={(event) => setMinimumSeverity(event.target.value as Severity)}
+                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                  >
+                    {severities.map((severity) => (
+                      <option key={severity} value={severity}>
+                        {severity}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
 
-            <div>
-            <Button
-              type="button"
-              variant="ghost"
-              className="h-auto px-0 text-sm text-white/45 hover:text-white/70"
-              onClick={() => setShowAdvanced((value) => !value)}
-            >
-              {showAdvanced ? "Hide" : "Show"} webhooks &amp; demo
-            </Button>
-            {showAdvanced && (
-              <div className="mt-3 grid gap-3">
+              <div className="grid gap-2">
+                <label htmlFor="alert-webhook-url" className="text-xs font-medium text-white/60">
+                  Alert webhook
+                  <span className="ml-1 font-normal text-white/35">(Slack, Discord — optional)</span>
+                </label>
+                <Input
+                  id="alert-webhook-url"
+                  value={webhookUrl}
+                  onChange={(event) => setWebhookUrl(event.target.value)}
+                  placeholder="https://hooks.slack.com/services/…"
+                  className="h-10"
+                  aria-label="Alert webhook URL"
+                />
+                <p className="text-[11px] leading-4 text-white/35">
+                  CRM / automation destination lives in the Action Queue above — not here.
+                </p>
+                {webhookUrl.trim() && (
+                  <Badge variant={webhookSending ? "cyan" : "success"} className="w-fit">
+                    {webhookSending ? "Sending" : "Alert webhook saved"}
+                  </Badge>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 border-t border-white/8 pt-4">
                 <Button
+                  type="button"
                   variant="ghost"
                   className="w-fit"
                   onClick={enableBrowserNotifications}
-                  disabled={notificationPermission === "granted" || notificationPermission === "unsupported"}
+                  disabled={
+                    notificationPermission === null ||
+                    notificationPermission === "granted" ||
+                    notificationPermission === "unsupported"
+                  }
                 >
                   <BellRing className="h-4 w-4" />
                   {notificationPermission === "granted" ? "Browser alerts on" : "Enable browser alerts"}
@@ -1063,38 +1177,15 @@ export function MonitorCenter() {
                   <Zap className="h-4 w-4" />
                   {demoLoading ? "Loading…" : "Load pricing demo"}
                 </Button>
-                <Input
-                  value={webhookUrl}
-                  onChange={(event) => setWebhookUrl(event.target.value)}
-                  placeholder="Alert webhook (Slack, Discord…)"
-                  className="h-10"
-                  aria-label="Alert webhook URL"
-                />
-                <Input
-                  value={automationWebhookUrl}
-                  onChange={(event) => setAutomationWebhookUrl(event.target.value)}
-                  placeholder="CRM / automation webhook (optional)"
-                  className="h-10"
-                  aria-label="Automation webhook URL"
-                />
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    variant={demoAutopilot ? "neon" : "ghost"}
-                    onClick={() => setDemoAutopilot((current) => !current)}
-                    disabled={!activeMonitorCount}
-                  >
-                    <TimerReset className="h-4 w-4" />
-                    {demoAutopilot ? "Autopilot on" : "Autopilot"}
-                  </Button>
-                  {webhookUrl.trim() && (
-                    <Badge variant={webhookSending ? "cyan" : "success"}>
-                      {webhookSending ? "Sending" : "Webhook saved"}
-                    </Badge>
-                  )}
-                </div>
+                <Button
+                  variant={demoAutopilot ? "neon" : "ghost"}
+                  onClick={() => setDemoAutopilot((current) => !current)}
+                  disabled={!activeMonitorCount}
+                >
+                  <TimerReset className="h-4 w-4" />
+                  {demoAutopilot ? "Autopilot on" : "Autopilot"}
+                </Button>
               </div>
-            )}
-            </div>
             </div>
           </details>
 
@@ -1193,6 +1284,14 @@ export function MonitorCenter() {
                       onClick={() => checkMonitorNow(monitor.id)}
                     >
                       {checkingId === monitor.id ? "Checking…" : "Check now"}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEditMonitor(monitor)}
+                      aria-label="Edit monitor"
+                    >
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => toggleMonitor(monitor.id)} aria-label="Pause or resume">
                       {monitor.active ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -1500,6 +1599,107 @@ export function MonitorCenter() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {editingMonitor && (
+        <div
+          className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-sentra-ink/80 px-4 py-8 backdrop-blur-xl"
+          onClick={closeEditMonitor}
+          role="presentation"
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-monitor-title"
+            className="w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-sentra-panel shadow-2xl shadow-black/40"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-white/10 px-5 py-4">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">GTM monitor</p>
+                <h4 id="edit-monitor-title" className="mt-1 text-lg font-semibold text-white">
+                  Edit monitor
+                </h4>
+                <p className="mt-1 text-xs leading-5 text-white/45">
+                  Update the watch goal. Live scans use Exa when Bright Data is not configured.
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                onClick={closeEditMonitor}
+                aria-label="Close edit monitor"
+                disabled={savingEdit}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4 px-5 py-4">
+              <label className="grid gap-2 text-xs text-white/55">
+                What should SANTRA watch?
+                <Textarea
+                  value={editRequirement}
+                  onChange={(event) => setEditRequirement(event.target.value)}
+                  placeholder="Alert me when…"
+                  className="min-h-28"
+                  disabled={savingEdit}
+                />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-2 text-xs text-white/45">
+                  Category
+                  <select
+                    value={editCategory}
+                    onChange={(event) => setEditCategory(event.target.value as Monitor["category"])}
+                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                    disabled={savingEdit}
+                  >
+                    {categories.map((item) => (
+                      <option key={item} value={item}>
+                        {item === "any" ? "Any category" : item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="grid gap-2 text-xs text-white/45">
+                  Minimum severity
+                  <select
+                    value={editSeverity}
+                    onChange={(event) => setEditSeverity(event.target.value as Severity)}
+                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                    disabled={savingEdit}
+                  >
+                    {severities.map((severity) => (
+                      <option key={severity} value={severity}>
+                        {severity}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label className="grid gap-2 text-xs text-white/45">
+                Target URL <span className="text-white/30">(optional)</span>
+                <Input
+                  value={editTargetUrl}
+                  onChange={(event) => setEditTargetUrl(event.target.value)}
+                  placeholder="https://competitor.com/pricing"
+                  className="h-11"
+                  disabled={savingEdit}
+                />
+              </label>
+            </div>
+
+            <div className="flex flex-wrap justify-end gap-2 border-t border-white/10 px-5 py-4">
+              <Button variant="ghost" onClick={closeEditMonitor} disabled={savingEdit}>
+                Cancel
+              </Button>
+              <Button variant="neon" onClick={() => void saveEditMonitor()} disabled={savingEdit}>
+                {savingEdit ? "Saving…" : "Save changes"}
+              </Button>
             </div>
           </div>
         </div>
