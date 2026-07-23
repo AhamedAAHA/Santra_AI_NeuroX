@@ -132,8 +132,8 @@ export function AutomationWebhookPanel({
   return (
     <div className="grid gap-3">
       <p className="text-xs text-white/45">
-        Prefer Approve & run in the Action Queue. Use this panel to retry CRM export or workflow
-        triggers for an already-approved action ID.
+        Prefer Approve &amp; run in the Action Queue (destination is set there). Use this panel to retry
+        CRM export or workflow triggers for an already-approved action ID.
       </p>
       <Input
         value={approvedActionId}
@@ -146,7 +146,7 @@ export function AutomationWebhookPanel({
         value={webhookUrl}
         onChange={(event) => setWebhookUrl(event.target.value)}
         onBlur={persistUrl}
-        placeholder="CRM / automation webhook (HubSpot, Zapier, TriggerWare…)"
+        placeholder="Same CRM webhook as Action Queue (optional override)"
         className="h-10"
         aria-label="CRM and automation webhook URL"
       />
