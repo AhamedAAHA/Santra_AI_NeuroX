@@ -71,6 +71,37 @@ export async function updateMonitorActive(userId: string, monitorId: string, act
     .updateOne({ id: monitorId, user_id: userId }, { $set: { active, updated_at: new Date().toISOString() } });
 }
 
+export type MonitorUpdateFields = {
+  requirement?: string;
+  category?: string;
+  minimum_severity?: Severity;
+  keywords?: string[];
+  target_url?: string | null;
+  active?: boolean;
+  search_query?: string | null;
+  plain_summary?: string | null;
+};
+
+export async function updateMonitor(userId: string, monitorId: string, fields: MonitorUpdateFields) {
+  await ensureMongoReady();
+  const db = await getDb();
+  const $set: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (typeof fields.requirement === "string") $set.requirement = fields.requirement;
+  if (typeof fields.category === "string") $set.category = fields.category;
+  if (fields.minimum_severity) $set.minimum_severity = fields.minimum_severity;
+  if (fields.keywords) $set.keywords = fields.keywords;
+  if (fields.target_url !== undefined) $set.target_url = fields.target_url;
+  if (typeof fields.active === "boolean") $set.active = fields.active;
+  if (fields.search_query !== undefined) $set.search_query = fields.search_query;
+  if (fields.plain_summary !== undefined) $set.plain_summary = fields.plain_summary;
+
+  const result = await db.collection("monitors").updateOne(
+    { id: monitorId, user_id: userId },
+    { $set },
+  );
+  return result.matchedCount > 0;
+}
+
 export async function deleteMonitor(userId: string, monitorId: string) {
   await ensureMongoReady();
   const db = await getDb();
