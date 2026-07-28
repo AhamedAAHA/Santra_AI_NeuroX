@@ -10,9 +10,7 @@ import {
 } from "@/lib/mongo/config";
 
 declare global {
-  // eslint-disable-next-line no-var
   var __santraMongoClient: MongoClient | undefined;
-  // eslint-disable-next-line no-var
   var __santraMongoIndexes: Promise<void> | undefined;
 }
 
@@ -105,6 +103,9 @@ async function ensureIndexes(db: Awaited<ReturnType<typeof getDb>>) {
         { unique: true, partialFilterExpression: { oauth_id: { $type: "string" } } },
       ),
     db.collection("monitors").createIndex({ user_id: 1, created_at: -1 }),
+    // Cron due-query: active monitors ordered by staleness.
+    db.collection("monitors").createIndex({ active: 1, last_checked_at: 1 }),
+    db.collection("bd_cache").createIndex({ cache_key: 1 }),
     db.collection("signals").createIndex({ user_id: 1, created_at: -1 }),
     db.collection("signals").createIndex({ run_id: 1 }),
     db.collection("intelligence_runs").createIndex({ user_id: 1, created_at: -1 }),
