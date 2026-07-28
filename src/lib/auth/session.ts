@@ -20,7 +20,10 @@ export type ApiAuthContext = {
 
 async function getLocalSessionFromCookies() {
   const cookieStore = await cookies();
-  return parseLocalSessionCookie(cookieStore.get(LOCAL_SESSION_COOKIE)?.value);
+  return (
+    parseLocalSessionCookie(cookieStore.get(LOCAL_SESSION_COOKIE)?.value) ||
+    parseLocalSessionCookie(cookieStore.get("sentra-local-session")?.value)
+  );
 }
 
 export function buildSessionCookie(session: LocalSessionPayload) {

@@ -20,10 +20,10 @@ export type LocalSession = LocalSessionPayload;
 
 const SESSION_MAX_BYTES = 4_096;
 
-const USERS_KEY = "sentra-local-users";
-const SESSION_KEY = "sentra-local-session";
-const GUIDE_KEY = "sentra-new-user-guide";
-const PROFILE_KEY = "sentra-user-profile";
+const USERS_KEY = "santra-local-users";
+const SESSION_KEY = "santra-local-session";
+const GUIDE_KEY = "santra-new-user-guide";
+const PROFILE_KEY = "santra-user-profile";
 
 export type UserProfile = {
   displayName?: string;
@@ -191,12 +191,14 @@ export function repairLocalSessionFromCookie() {
   if (typeof window === "undefined") return;
   if (getLocalSession()) return;
 
-  const match = document.cookie
-    .split("; ")
-    .find((entry) => entry.startsWith(`${LOCAL_SESSION_COOKIE}=`));
+  const match =
+    document.cookie.split("; ").find((entry) => entry.startsWith(`${LOCAL_SESSION_COOKIE}=`)) ||
+    document.cookie.split("; ").find((entry) => entry.startsWith("sentra-local-session="));
   if (!match) return;
 
-  const value = match.slice(LOCAL_SESSION_COOKIE.length + 1);
+  const value = match.includes(`${LOCAL_SESSION_COOKIE}=`)
+    ? match.slice(LOCAL_SESSION_COOKIE.length + 1)
+    : match.slice("sentra-local-session=".length);
   const session = parseLocalSessionCookie(value);
   if (session) {
     writeSession(session);

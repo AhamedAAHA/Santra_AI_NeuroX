@@ -14,7 +14,9 @@ function isProtectedPath(pathname: string) {
 }
 
 function hasLocalSession(request: NextRequest) {
-  return Boolean(parseLocalSessionCookie(request.cookies.get(LOCAL_SESSION_COOKIE)?.value));
+  const current = request.cookies.get(LOCAL_SESSION_COOKIE)?.value;
+  const legacy = request.cookies.get("sentra-local-session")?.value;
+  return Boolean(parseLocalSessionCookie(current) || parseLocalSessionCookie(legacy));
 }
 
 export async function middleware(request: NextRequest) {

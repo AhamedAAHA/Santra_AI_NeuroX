@@ -1,4 +1,4 @@
-export const LOCAL_SESSION_COOKIE = "sentra-local-session";
+export const LOCAL_SESSION_COOKIE = "santra-local-session";
 
 export type LocalSessionPayload = {
   userId: string;

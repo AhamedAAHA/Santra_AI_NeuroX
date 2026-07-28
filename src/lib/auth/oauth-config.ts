@@ -2,6 +2,7 @@ export type OAuthProvider = "github" | "google";
 
 export function getAppOrigin() {
   return (
+    process.env.SANTRA_APP_URL?.trim() ||
     process.env.SENTRA_APP_URL?.trim() ||
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
     "http://localhost:3001"

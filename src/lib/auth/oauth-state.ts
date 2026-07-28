@@ -2,7 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import type { OAuthProvider } from "@/lib/auth/oauth-config";
 
-export const OAUTH_STATE_COOKIE = "sentra-oauth-state";
+export const OAUTH_STATE_COOKIE = "santra-oauth-state";
 
 type OAuthStatePayload = {
   nonce: string;
