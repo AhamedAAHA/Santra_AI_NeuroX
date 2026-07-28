@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import { AlertTriangle, BriefcaseBusiness, LineChart, Megaphone, Tags } from "lucide-react";
-import { signalStream } from "@/data/mock-intelligence";
 import { cn } from "@/lib/utils";
 import type { IntelligenceSignal, Severity } from "@/types/intelligence";
 import { Card } from "@/components/ui/card";
@@ -41,7 +40,7 @@ function formatSignalTime(value: string) {
 }
 
 export function SignalFeed({
-  signals = signalStream,
+  signals = [],
   headerMeta,
   variant = "card",
   footer,
@@ -103,7 +102,7 @@ export function SignalFeed({
         })}
         {signals.length === 0 && (
           <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.03] p-8 text-center text-sm text-white/45">
-            No matching signals for this.
+            No live signals yet. Run a monitor or briefing to populate this feed.
           </div>
         )}
       </div>
