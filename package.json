@@ -22,6 +22,7 @@
     "type-check": "next typegen && tsc --noEmit",
     "prepare": "node scripts/install-githooks.js",
     "auth:configure": "node scripts/configure-supabase-auth.mjs",
+    "cron:local": "node scripts/run-local-cron.mjs",
     "db:provider-usage": "node scripts/apply-provider-usage-migration.mjs"
   },
   "dependencies": {
@@ -47,6 +48,9 @@
     "next": "^15.5.18",
     "openai": "^6.39.0",
     "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.19.1",
+    "pptxgenjs": "^4.0.1",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-is": "^19.1.0",
@@ -62,6 +66,7 @@
     "@playwright/test": "^1.56.1",
     "@types/node": "^25.9.1",
     "@types/pdf-parse": "^1.1.5",
+    "@types/pdfkit": "^0.17.6",
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.184.1",
