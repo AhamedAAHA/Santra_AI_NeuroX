@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Provide an automation webhook URL or set SENTRA_AUTOMATION_WEBHOOK_URL (or TRIGGERWARE_WEBHOOK_URL).",
+          "Provide an automation webhook URL or set SANTRA_AUTOMATION_WEBHOOK_URL (or TRIGGERWARE_WEBHOOK_URL).",
       },
       { status: 400 },
     );

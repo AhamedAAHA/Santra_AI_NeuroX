@@ -28,7 +28,7 @@ function Kpi({
         <span
           className={cn(
             "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
-            tone === "attention" ? "bg-rose-400/10 text-rose-200" : "bg-cyan-300/10 text-sentra-cyan",
+            tone === "attention" ? "bg-rose-400/10 text-rose-200" : "bg-cyan-300/10 text-santra-cyan",
           )}
         >
           <Icon className="h-4 w-4" />
@@ -117,7 +117,7 @@ export default function DashboardPage() {
       </WorkspaceSection>
 
       <p className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-white/40">
-        <Link href="/alerts" className="text-sentra-cyan/90 underline-offset-2 hover:underline">
+        <Link href="/alerts" className="text-santra-cyan/90 underline-offset-2 hover:underline">
           Monitors
         </Link>
         <Link href="/chat?mode=ask" className="underline-offset-2 hover:text-white/70 hover:underline">

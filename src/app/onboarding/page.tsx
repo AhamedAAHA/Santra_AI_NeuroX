@@ -136,8 +136,8 @@ export default function OnboardingPage() {
         alertedSignalIds: [],
       }));
     if (localMonitors.length) {
-      const existing = JSON.parse(window.localStorage.getItem("sentra-monitors") || "[]") as unknown[];
-      window.localStorage.setItem("sentra-monitors", JSON.stringify([...localMonitors, ...existing]));
+      const existing = JSON.parse(window.localStorage.getItem("santra-monitors") || "[]") as unknown[];
+      window.localStorage.setItem("santra-monitors", JSON.stringify([...localMonitors, ...existing]));
     }
   }
 
@@ -165,7 +165,7 @@ export default function OnboardingPage() {
     }
 
     window.localStorage.setItem(
-      "sentra-workspace-profile",
+      "santra-workspace-profile",
       JSON.stringify({
         companyName,
         industry,
@@ -218,7 +218,7 @@ export default function OnboardingPage() {
                 <select
                   value={alertPreference}
                   onChange={(event) => setAlertPreference(event.target.value)}
-                  className="sentra-focus h-12 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                  className="santra-focus h-12 rounded-2xl border border-white/10 bg-santra-panel px-4 text-sm text-white"
                   aria-label="Alert threshold"
                 >
                   <option value="medium">Medium+ alerts</option>
@@ -253,12 +253,12 @@ export default function OnboardingPage() {
         <section className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {guideSections.map((section) => (
             <Card key={section.title} className="p-5" glow>
-              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-300/10 text-sentra-cyan">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-300/10 text-santra-cyan">
                 <section.icon className="h-5 w-5" />
               </span>
               <h2 className="mt-5 text-xl font-semibold text-white">{section.title}</h2>
               <p className="mt-2 min-h-20 text-sm leading-6 text-white/55">{section.description}</p>
-              <Link href={section.href} className="mt-4 inline-flex items-center gap-2 text-sm text-sentra-cyan">
+              <Link href={section.href} className="mt-4 inline-flex items-center gap-2 text-sm text-santra-cyan">
                 Open
                 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -269,7 +269,7 @@ export default function OnboardingPage() {
         <section className="mt-6 grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
           <Card className="p-6" glow>
             <div className="flex items-center gap-3">
-              <Sparkles className="h-5 w-5 text-sentra-cyan" />
+              <Sparkles className="h-5 w-5 text-santra-cyan" />
               <h2 className="text-xl font-semibold text-white">First 10 minutes</h2>
             </div>
             <div className="mt-5 grid gap-3">
@@ -286,7 +286,7 @@ export default function OnboardingPage() {
 
           <Card className="p-6" glow>
             <div className="flex items-center gap-3">
-              <Radar className="h-5 w-5 text-sentra-cyan" />
+              <Radar className="h-5 w-5 text-santra-cyan" />
               <h2 className="text-xl font-semibold text-white">Example monitor prompts</h2>
             </div>
             <div className="mt-5 grid gap-3">
@@ -299,7 +299,7 @@ export default function OnboardingPage() {
                 <Link
                   key={prompt}
                   href={`/alerts?guidePrompt=${encodeURIComponent(prompt)}`}
-                  className="sentra-focus rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm leading-6 text-white/62 transition"
+                  className="santra-focus rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm leading-6 text-white/62 transition"
                 >
                   {prompt}
                 </Link>
@@ -332,7 +332,7 @@ function StatusRow({
       {ready ? (
         <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
       ) : (
-        <DatabaseZap className="mt-0.5 h-5 w-5 shrink-0 text-sentra-cyan" />
+        <DatabaseZap className="mt-0.5 h-5 w-5 shrink-0 text-santra-cyan" />
       )}
       <div className="min-w-0">
         <p className="font-medium text-white">{label}</p>

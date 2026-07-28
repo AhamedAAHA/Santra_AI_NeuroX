@@ -91,18 +91,18 @@ body > main {
 
 :root[data-mouse-hover="off"] .nav-glow-link,
 :root[data-mouse-hover="off"] [data-float],
-:root[data-mouse-hover="off"] .sentra-focus {
+:root[data-mouse-hover="off"] .santra-focus {
   transition-duration: 0.01ms !important;
 }
 
 :root[data-mouse-hover="off"] .nav-glow-link:hover,
 :root[data-mouse-hover="off"] [data-float]:hover,
-:root[data-mouse-hover="off"] .sentra-focus:hover {
+:root[data-mouse-hover="off"] .santra-focus:hover {
   transform: none !important;
   box-shadow: none !important;
 }
 
-:root[data-fullscreen-command="on"] .sentra-workspace-shell {
+:root[data-fullscreen-command="on"] .santra-workspace-shell {
   max-width: 100% !important;
 }
 
@@ -113,16 +113,16 @@ body:has(.pitch-deck-root) .global-3d-field {
 
 /* Phone chrome: keep content clear of fixed bottom nav + home indicator */
 :root {
-  --sentra-mobile-nav-clearance: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  --santra-mobile-nav-clearance: calc(5.5rem + env(safe-area-inset-bottom, 0px));
   /* Sticky top bar (~3.25rem) + workspace top padding (~1rem) */
-  --sentra-mobile-top-chrome: 4.25rem;
-  --sentra-mobile-strategy-height: calc(
-    100dvh - var(--sentra-mobile-top-chrome) - var(--sentra-mobile-nav-clearance)
+  --santra-mobile-top-chrome: 4.25rem;
+  --santra-mobile-strategy-height: calc(
+    100dvh - var(--santra-mobile-top-chrome) - var(--santra-mobile-nav-clearance)
   );
 }
 
 @media (max-width: 1023px) {
-  .sentra-workspace-shell {
+  .santra-workspace-shell {
     padding-bottom: 0;
   }
 }
@@ -318,8 +318,8 @@ textarea {
     font-family: var(--font-body);
   }
 
-  .sentra-focus {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/65 focus-visible:ring-offset-2 focus-visible:ring-offset-sentra-ink;
+  .santra-focus {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/65 focus-visible:ring-offset-2 focus-visible:ring-offset-santra-ink;
   }
 
   .terminal-panel {
@@ -350,7 +350,7 @@ textarea {
   }
 
   .terminal-cursor {
-    @apply ml-0.5 inline-block text-sentra-cyan;
+    @apply ml-0.5 inline-block text-santra-cyan;
     animation: terminalBlink 1s steps(2, start) infinite;
   }
 }
@@ -424,7 +424,7 @@ select:-webkit-autofill {
 
 button:not(:disabled),
 a,
-.sentra-focus {
+.santra-focus {
   transition:
     color 220ms ease,
     background-color 220ms ease,
@@ -710,16 +710,16 @@ select option:checked {
   border-radius: inherit;
 }
 
-.sentra-ambient-glow {
+.santra-ambient-glow {
   background:
     radial-gradient(760px circle at 16% 14%, rgba(83, 244, 255, 0.105), transparent 62%),
     radial-gradient(860px circle at 76% 12%, rgba(104, 124, 255, 0.085), transparent 62%),
     radial-gradient(720px circle at 52% 86%, rgba(255, 79, 216, 0.052), transparent 64%);
-  animation: sentra-ambient-drift 24s ease-in-out infinite alternate;
+  animation: santra-ambient-drift 24s ease-in-out infinite alternate;
   will-change: transform, opacity;
 }
 
-.sentra-soft-depth {
+.santra-soft-depth {
   background:
     linear-gradient(115deg, rgba(4, 9, 18, 0.18), transparent 34%, rgba(10, 12, 26, 0.3) 78%),
     radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.035), transparent 56%),
@@ -741,7 +741,7 @@ select option:checked {
   }
 }
 
-@keyframes sentra-ambient-drift {
+@keyframes santra-ambient-drift {
   0% {
     transform: translate3d(-1.5%, -1%, 0) scale(1.04);
     opacity: 0.75;

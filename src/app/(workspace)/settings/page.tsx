@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 import { WorkspacePage, WorkspacePageHeader } from "@/components/workspace/workspace-page";
 import { VoiceLanguageSelector } from "@/components/voice/language-selector";
 import { getVoiceLanguageOption, resolveBrowserTtsLanguage } from "@/lib/voice/languages";
-import { type SentraSettings, type VoiceMode, useSettings } from "@/settings/settings-context";
+import { type SantraSettings, type VoiceMode, useSettings } from "@/settings/settings-context";
 
 type IntegrationStatus = {
   mongodb: boolean;
@@ -48,7 +48,7 @@ type IntegrationStatus = {
   toolsConfigured?: number;
 };
 
-type SettingSection = keyof SentraSettings;
+type SettingSection = keyof SantraSettings;
 
 const voiceModes: Array<{ id: VoiceMode; label: string }> = [
   { id: "professional", label: "Professional" },
@@ -57,7 +57,9 @@ const voiceModes: Array<{ id: VoiceMode; label: string }> = [
   { id: "fast", label: "Fast Briefing" },
 ];
 
-const SHOW_INTEGRATION_STATUS = process.env.NEXT_PUBLIC_SENTRA_SHOW_INTEGRATION_STATUS === "true";
+const SHOW_INTEGRATION_STATUS =
+  process.env.NEXT_PUBLIC_SANTRA_SHOW_INTEGRATION_STATUS === "true" ||
+  process.env.NEXT_PUBLIC_SENTRA_SHOW_INTEGRATION_STATUS === "true";
 
 export default function SettingsPage() {
   const { settings, updateSettings, resetSettings, exportSettings, clearAnalysisHistory } = useSettings();
@@ -73,14 +75,14 @@ export default function SettingsPage() {
     void testConnection(false);
   }, []);
 
-  function save(mutator: (current: SentraSettings) => SentraSettings, message = "Settings saved") {
+  function save(mutator: (current: SantraSettings) => SantraSettings, message = "Settings saved") {
     updateSettings(mutator);
     toast.success(message);
   }
 
   function patchSection<TSection extends SettingSection>(
     section: TSection,
-    patch: Partial<SentraSettings[TSection]>,
+    patch: Partial<SantraSettings[TSection]>,
     message?: string,
   ) {
     save((current) => ({ ...current, [section]: { ...current[section], ...patch } }), message);
@@ -279,7 +281,7 @@ function SettingsCard({
   return (
     <Card className="p-5 md:p-6" glow>
       <div className="mb-5 flex items-start gap-3 border-b border-white/10 pb-5">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-200/15 bg-cyan-300/[0.08] text-sentra-cyan">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-cyan-200/15 bg-cyan-300/[0.08] text-santra-cyan">
           <Icon className="h-5 w-5" />
         </span>
         <div>
@@ -336,7 +338,7 @@ function ToggleRow({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          "sentra-focus relative h-8 w-14 shrink-0 overflow-hidden rounded-full border transition",
+          "santra-focus relative h-8 w-14 shrink-0 overflow-hidden rounded-full border transition",
           "self-end sm:self-auto",
           checked ? "border-cyan-200/35 bg-cyan-300/24 shadow-[inset_0_0_18px_rgba(83,244,255,.12)]" : "border-white/12 bg-white/[0.06]",
         )}
@@ -376,7 +378,7 @@ function Segmented<TValue extends string>({
             type="button"
             onClick={() => onChange(option.id)}
             className={cn(
-              "sentra-focus rounded-full border px-3 py-2 text-xs transition",
+              "santra-focus rounded-full border px-3 py-2 text-xs transition",
               value === option.id ? "border-cyan-200/35 bg-cyan-300/12 text-cyan-50" : "border-white/10 text-white/52",
             )}
           >

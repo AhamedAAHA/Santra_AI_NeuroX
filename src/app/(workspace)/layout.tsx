@@ -7,7 +7,7 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-sentra-ink" />}>
+    <Suspense fallback={<main className="min-h-screen bg-santra-ink" />}>
       <AppShell>{children}</AppShell>
     </Suspense>
   );
