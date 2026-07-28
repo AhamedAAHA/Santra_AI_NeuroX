@@ -3,7 +3,7 @@ export type MonitorPromptSelection = {
   category?: "any" | "competitor" | "market" | "risk" | "pricing" | "hiring" | "sentiment";
 };
 
-const HISTORY_KEY = "sentra-monitor-history";
+const HISTORY_KEY = "santra-monitor-history";
 const MAX_ENTRIES = 12;
 
 export type MonitorHistoryEntry = {

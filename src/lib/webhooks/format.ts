@@ -416,7 +416,7 @@ export function formatAlertWebhookPayload(webhookUrl: string, report: ExecutiveI
       destination,
       event: "monitor_alert",
       structured: {
-        sentra: {
+        santra: {
           requirement: report.monitorRequirement,
           riskScore: report.riskScore,
           confidence: report.confidence,

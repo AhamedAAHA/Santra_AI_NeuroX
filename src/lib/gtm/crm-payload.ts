@@ -2,7 +2,7 @@ import type { ExecutiveIntelligenceReport, IntelligenceAnalysis } from "@/types/
 import type { WorkspaceContext } from "@/lib/gtm/workspace-context";
 
 export type CrmExportPayload = {
-  source: "sentra-ai";
+  source: "santra-ai";
   event: "gtm_intelligence_export";
   exportedAt: string;
   account: {
@@ -52,7 +52,7 @@ export function buildCrmExportPayload(options: {
   const { workspace, report, analysis, requirement } = options;
 
   return {
-    source: "sentra-ai",
+    source: "santra-ai",
     event: "gtm_intelligence_export",
     exportedAt: new Date().toISOString(),
     account: {

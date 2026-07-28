@@ -55,7 +55,7 @@ export function downloadWorldReport(report: WorldEngineReport, format: "json" | 
 
   const link = document.createElement("a");
   link.href = URL.createObjectURL(new Blob([content], { type: mime }));
-  link.download = `sentra-world-insight-${slug || "report"}.${extension}`;
+  link.download = `santra-world-insight-${slug || "report"}.${extension}`;
   link.click();
   URL.revokeObjectURL(link.href);
 }

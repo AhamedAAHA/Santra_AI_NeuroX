@@ -8,13 +8,13 @@ import type {
 import type { WorldEngineReport } from "@/types/world-engine";
 import { buildNamedVerdict, isGenericVerdict } from "@/lib/gtm/report-headline";
 
-export const WORKSPACE_HISTORY_KEY = "sentra-workspace-history";
-export const WORKSPACE_HISTORY_EVENT = "sentra:workspace-history-updated";
+export const WORKSPACE_HISTORY_KEY = "santra-workspace-history";
+export const WORKSPACE_HISTORY_EVENT = "santra:workspace-history-updated";
 
-const LEGACY_REPORTS_KEY = "sentra-intelligence-reports";
-const LEGACY_IMAGE_KEY = "sentra-image-investigations";
-const LEGACY_FACE_KEY = "sentra-face-intelligence";
-const MIGRATION_FLAG = "sentra-workspace-history-migrated-v1";
+const LEGACY_REPORTS_KEY = "santra-intelligence-reports";
+const LEGACY_IMAGE_KEY = "santra-image-investigations";
+const LEGACY_FACE_KEY = "santra-face-intelligence";
+const MIGRATION_FLAG = "santra-workspace-history-migrated-v1";
 
 const MAX_ENTRIES = 120;
 

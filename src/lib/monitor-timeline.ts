@@ -1,6 +1,6 @@
 import type { MonitorTimelineEvent, Severity } from "@/types/intelligence";
 
-const TIMELINE_KEY = "sentra-monitor-timeline";
+const TIMELINE_KEY = "santra-monitor-timeline";
 
 const serverTimeline = new Map<string, MonitorTimelineEvent[]>();
 

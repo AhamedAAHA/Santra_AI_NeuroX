@@ -100,7 +100,7 @@ export async function createChatCompletionWithFallback(
 ) {
   const preferFeatherless =
     options?.preferFeatherless ??
-    process.env.SENTRA_AGENT_PROVIDER?.trim().toLowerCase() === "featherless";
+    (process.env.SANTRA_AGENT_PROVIDER || process.env.SENTRA_AGENT_PROVIDER)?.trim().toLowerCase() === "featherless";
 
   const chain = buildProviderChain(preferFeatherless);
   if (!chain.length) {
@@ -132,7 +132,8 @@ export async function createChatCompletionWithFallback(
 export async function createIntentCompletionWithFallback(
   params: Omit<ChatCompletionBody, "model">,
 ) {
-  const preferFeatherless = process.env.SENTRA_AGENT_PROVIDER?.trim().toLowerCase() === "featherless";
+  const preferFeatherless =
+    (process.env.SANTRA_AGENT_PROVIDER || process.env.SENTRA_AGENT_PROVIDER)?.trim().toLowerCase() === "featherless";
   return createChatCompletionWithFallback(params, {
     aimlModel: getIntentModel(),
     featherlessModel: getFeatherlessFastModel(),

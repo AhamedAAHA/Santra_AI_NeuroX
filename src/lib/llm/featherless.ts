@@ -16,7 +16,8 @@ export function getFeatherlessClient(): OpenAI | null {
     apiKey,
     baseURL: getPlatformEnv("FEATHERLESS_BASE_URL") || FEATHERLESS_BASE_URL,
     defaultHeaders: {
-      "HTTP-Referer": process.env.SENTRA_APP_URL?.trim() || "http://localhost:3001",
+      "HTTP-Referer":
+        process.env.SANTRA_APP_URL?.trim() || process.env.SENTRA_APP_URL?.trim() || "http://localhost:3001",
       "X-Title": "SANTRA AI",
     },
   });
@@ -38,7 +39,7 @@ export function getFeatherlessVisionModel() {
 
 /** Prefer AIML when both are configured; invalid Featherless keys should not block briefings. */
 export function getAgentInferenceClient() {
-  const prefer = process.env.SENTRA_AGENT_PROVIDER?.trim().toLowerCase();
+  const prefer = (process.env.SANTRA_AGENT_PROVIDER || process.env.SENTRA_AGENT_PROVIDER)?.trim().toLowerCase();
   if (prefer === "featherless") {
     return getFeatherlessClient() ?? getLlmClient();
   }

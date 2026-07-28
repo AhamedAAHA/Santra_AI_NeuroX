@@ -104,7 +104,7 @@ async function ensureMcpSession() {
   await mcpJsonRpc("initialize", {
     protocolVersion: "2024-11-05",
     capabilities: {},
-    clientInfo: { name: "sentra-ai", version: "1.0.0" },
+    clientInfo: { name: "santra-ai", version: "1.0.0" },
   });
   await mcpJsonRpc("notifications/initialized", {});
   mcpInitialized = true;

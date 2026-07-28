@@ -1,8 +1,8 @@
 /** Slack, Discord, or simple alert webhooks for monitor notifications. */
-export const ALERT_WEBHOOK_STORAGE_KEY = "sentra-alert-webhook";
+export const ALERT_WEBHOOK_STORAGE_KEY = "santra-alert-webhook";
 
 /** CRM, Zapier, Make, TriggerWare, and other automation webhooks. */
-export const AUTOMATION_WEBHOOK_STORAGE_KEY = "sentra-automation-webhook";
+export const AUTOMATION_WEBHOOK_STORAGE_KEY = "santra-automation-webhook";
 
 export function isAllowedWebhook(url: string) {
   try {

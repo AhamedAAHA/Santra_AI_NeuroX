@@ -7,7 +7,7 @@ export type WorkspaceContext = {
   completedAt?: string;
 };
 
-export const WORKSPACE_PROFILE_KEY = "sentra-workspace-profile";
+export const WORKSPACE_PROFILE_KEY = "santra-workspace-profile";
 
 export function getWorkspaceContext(): WorkspaceContext {
   if (typeof window === "undefined") return {};

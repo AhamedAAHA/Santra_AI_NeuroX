@@ -86,7 +86,7 @@ type ChatContext = {
 };
 
 function getFreshnessDate() {
-  const timeZone = process.env.SENTRA_TIMEZONE || "Asia/Colombo";
+  const timeZone = process.env.SANTRA_TIMEZONE || process.env.SENTRA_TIMEZONE || "Asia/Colombo";
   const date = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "long",
     timeZone,

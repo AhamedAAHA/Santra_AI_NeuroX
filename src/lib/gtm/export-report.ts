@@ -122,7 +122,7 @@ export function downloadMonitorReport(
   const extension = format === "json" ? "json" : "md";
   const slug = slugify(reportHeadline(report) || report.monitorRequirement || report.id);
 
-  triggerDownload(`sentra-intel-report-${slug || report.id}.${extension}`, content, mime);
+  triggerDownload(`santra-intel-report-${slug || report.id}.${extension}`, content, mime);
 }
 
 export function buildGtmBriefingMarkdown(query: string, analysis: IntelligenceAnalysis, provider?: string) {
@@ -180,5 +180,5 @@ export function downloadGtmBriefing(
   const extension = format === "json" ? "json" : "md";
   const slug = slugify(query);
 
-  triggerDownload(`sentra-gtm-briefing-${slug || "report"}.${extension}`, content, mime);
+  triggerDownload(`santra-gtm-briefing-${slug || "report"}.${extension}`, content, mime);
 }

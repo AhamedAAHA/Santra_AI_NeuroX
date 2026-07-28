@@ -55,7 +55,7 @@ const report: ExecutiveIntelligenceReport = {
 };
 
 const crm: CrmExportPayload = {
-  source: "sentra-ai",
+  source: "santra-ai",
   event: "gtm_intelligence_export",
   exportedAt: new Date().toISOString(),
   account: { companyName: "Meridian Health" },
@@ -126,7 +126,7 @@ describe("webhook destination formatting", () => {
       summary: expect.stringContaining("Next actions:"),
       markdown: expect.stringContaining("**"),
       destination: "generic",
-      sentra: expect.objectContaining({ riskScore: 77, verdict: report.verdict }),
+      santra: expect.objectContaining({ riskScore: 77, verdict: report.verdict }),
     });
   });
 
@@ -137,7 +137,7 @@ describe("webhook destination formatting", () => {
       crm,
       monitorId: "mon-1",
       automation: {
-        source: "sentra-ai",
+        source: "santra-ai",
         action: "crm_export",
         description: "Structured GTM intel exported from SANTRA",
       },
@@ -145,7 +145,7 @@ describe("webhook destination formatting", () => {
 
     expect(destination).toBe("generic");
     expect(body).toMatchObject({
-      source: "sentra-ai",
+      source: "santra-ai",
       event: "crm_export",
       monitorId: "mon-1",
       summary: expect.stringContaining("Meridian Health"),

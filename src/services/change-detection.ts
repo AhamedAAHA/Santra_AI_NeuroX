@@ -6,8 +6,8 @@ import type {
   Severity,
 } from "@/types/intelligence";
 
-const SNAPSHOTS_KEY = "sentra-page-snapshots";
-const CHANGES_KEY = "sentra-detected-changes";
+const SNAPSHOTS_KEY = "santra-page-snapshots";
+const CHANGES_KEY = "santra-detected-changes";
 
 const PRICE_PATTERN = /\$[\d,]+(?:\.\d{2})?/g;
 const PLAN_PRICE_PATTERN =

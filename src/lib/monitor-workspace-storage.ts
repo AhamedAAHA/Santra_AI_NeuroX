@@ -1,12 +1,12 @@
 import { PRESET_DEMO_MONITOR_ID } from "@/lib/demo/preset-scenario";
 import type { DetectedChange, ExecutiveIntelligenceReport, IntelligenceSignal } from "@/types/intelligence";
 
-const MONITORS_KEY = "sentra-monitors";
-const REPORTS_KEY = "sentra-intelligence-reports";
-const SIGNALS_KEY = "sentra-monitor-signals-by-id";
-const CHANGES_KEY = "sentra-detected-changes";
-const SNAPSHOTS_KEY = "sentra-page-snapshots";
-const TIMELINE_KEY = "sentra-monitor-timeline";
+const MONITORS_KEY = "santra-monitors";
+const REPORTS_KEY = "santra-intelligence-reports";
+const SIGNALS_KEY = "santra-monitor-signals-by-id";
+const CHANGES_KEY = "santra-detected-changes";
+const SNAPSHOTS_KEY = "santra-page-snapshots";
+const TIMELINE_KEY = "santra-monitor-timeline";
 
 export type PersistedMonitor = {
   id: string;

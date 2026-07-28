@@ -55,7 +55,7 @@ export function getLiveSearchWebOptions(): {
   const raw = process.env.AIML_SEARCH_CONTEXT_SIZE?.trim().toLowerCase();
   const search_context_size: "low" | "medium" | "high" =
     raw === "low" || raw === "high" ? raw : "medium";
-  const timezone = process.env.SENTRA_TIMEZONE?.trim() || "Asia/Colombo";
+  const timezone = process.env.SANTRA_TIMEZONE?.trim() || process.env.SENTRA_TIMEZONE?.trim() || "Asia/Colombo";
   const country = timezone.includes("Colombo") ? "LK" : timezone.startsWith("America/") ? "US" : "US";
 
   return {

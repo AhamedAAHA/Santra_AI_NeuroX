@@ -27,8 +27,8 @@ export function isProductionDeploy() {
 
 /** Local dev may use sample evidence when Bright Data zones are missing. */
 export function allowBrightDataDemoFallback() {
-  if (process.env.SENTRA_ALLOW_DEMO_FALLBACK === "true") return true;
-  if (process.env.SENTRA_ALLOW_DEMO_FALLBACK === "false") return false;
+  if (process.env.SANTRA_ALLOW_DEMO_FALLBACK === "true" || process.env.SENTRA_ALLOW_DEMO_FALLBACK === "true") return true;
+  if (process.env.SANTRA_ALLOW_DEMO_FALLBACK === "false" || process.env.SENTRA_ALLOW_DEMO_FALLBACK === "false") return false;
   return !isProductionDeploy();
 }
 
