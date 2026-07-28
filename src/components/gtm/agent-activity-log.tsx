@@ -14,6 +14,7 @@ const stageTone: Record<GtmAgentStageName, string> = {
   change_detection: "text-rose-200",
   report: "text-emerald-200",
   hitl_queue: "text-amber-100",
+  notify_email: "text-teal-200",
 };
 
 const TRAIL_STEPS: Array<{ id: string; label: string; stages: GtmAgentStageName[] }> = [
@@ -21,7 +22,7 @@ const TRAIL_STEPS: Array<{ id: string; label: string; stages: GtmAgentStageName[
   { id: "route", label: "2 · Tool route", stages: ["routing", "memory"] },
   { id: "tools", label: "3 · Tools", stages: ["fallback", "collection"] },
   { id: "decide", label: "4 · Decide", stages: ["change_detection", "analysis"] },
-  { id: "result", label: "5 · Result", stages: ["report", "hitl_queue"] },
+  { id: "result", label: "5 · Result", stages: ["report", "hitl_queue", "notify_email"] },
 ];
 
 /** Expected stages shown while a check is in flight (transparent reasoning for demos). */
@@ -32,7 +33,7 @@ export const LIVE_REASONING_PREVIEW: Array<Pick<GtmAgentStage, "stage" | "label"
   { stage: "change_detection", label: "Change detection", detail: "Diffing against prior snapshot…" },
   { stage: "analysis", label: "Executive analysis", detail: "Synthesizing grounded brief…" },
   { stage: "report", label: "Executive report", detail: "Packaging verdict, risks, actions…" },
-  { stage: "hitl_queue", label: "HITL gate", detail: "Queueing CRM action for human approval…" },
+  { stage: "hitl_queue", label: "Your OK", detail: "Adding to Approval inbox before anything is sent…" },
 ];
 
 type AgentActivityLogProps = {
