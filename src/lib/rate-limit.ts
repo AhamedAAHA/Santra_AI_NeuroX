@@ -12,6 +12,7 @@ const LIMITS: Record<string, RateLimitConfig> = {
   chat: { action: "chat", limit: 30, windowMs: 60 * 60 * 1000 },
   intelligence: { action: "intelligence", limit: 15, windowMs: 24 * 60 * 60 * 1000 },
   monitor_check: { action: "monitor_check", limit: 20, windowMs: 24 * 60 * 60 * 1000 },
+  monitor_intent: { action: "monitor_intent", limit: 60, windowMs: 60 * 60 * 1000 },
   transcribe: { action: "transcribe", limit: 100, windowMs: 60 * 60 * 1000 },
   voice: { action: "voice", limit: 40, windowMs: 60 * 60 * 1000 },
 };
@@ -19,6 +20,7 @@ const LIMITS: Record<string, RateLimitConfig> = {
 const PROVIDER_BY_ACTION: Partial<Record<keyof typeof LIMITS, ProviderId>> = {
   intelligence: "aiml",
   monitor_check: "bright_data",
+  monitor_intent: "aiml",
   transcribe: "speechmatics",
   voice: "speechmatics",
 };
@@ -29,47 +31,70 @@ function getWindowStart(windowMs: number) {
   return start.toISOString();
 }
 
-export async function checkRateLimit(userId: string, key: keyof typeof LIMITS) {
+export type RateLimitResult =
+  | { allowed: true }
+  | { allowed: false; message: string };
+
+/** Fails closed: if usage cannot be counted, the request is denied rather than let through. */
+export async function checkRateLimit(
+  userId: string,
+  key: keyof typeof LIMITS,
+): Promise<RateLimitResult> {
   const config = LIMITS[key];
-  if (!config) return { allowed: true as const };
+  if (!config) return { allowed: true };
 
   if (!isMongoConfigured()) {
-    const provider = PROVIDER_BY_ACTION[key];
-    if (provider) void recordProviderUsage(provider);
-    return { allowed: true as const };
+    await recordProviderUsageFor(key);
+    return { allowed: true };
   }
 
-  await ensureMongoReady();
-  const db = await getDb();
-  const windowStart = getWindowStart(config.windowMs);
+  try {
+    await ensureMongoReady();
+    const db = await getDb();
+    const windowStart = getWindowStart(config.windowMs);
 
-  const existing = await db.collection("api_usage").findOne({
-    user_id: userId,
-    action: config.action,
-    window_start: windowStart,
-  });
-
-  if (existing && Number(existing.count) >= config.limit) {
-    return {
-      allowed: false as const,
-      message: `Rate limit reached for ${config.action}. Try again later.`,
-    };
-  }
-
-  if (existing) {
-    await db.collection("api_usage").updateOne({ id: existing.id }, { $inc: { count: 1 } });
-  } else {
-    await db.collection("api_usage").insertOne({
-      id: crypto.randomUUID(),
+    const existing = await db.collection("api_usage").findOne({
       user_id: userId,
       action: config.action,
       window_start: windowStart,
-      count: 1,
     });
+
+    if (existing && Number(existing.count) >= config.limit) {
+      return {
+        allowed: false,
+        message: `Rate limit reached for ${config.action}. Try again later.`,
+      };
+    }
+
+    if (existing) {
+      await db.collection("api_usage").updateOne({ id: existing.id }, { $inc: { count: 1 } });
+    } else {
+      await db.collection("api_usage").insertOne({
+        id: crypto.randomUUID(),
+        user_id: userId,
+        action: config.action,
+        window_start: windowStart,
+        count: 1,
+      });
+    }
+  } catch (error) {
+    console.warn(`Rate limit check failed for ${config.action}`, error);
+    return {
+      allowed: false,
+      message: "Usage limits are temporarily unavailable. Try again in a moment.",
+    };
   }
 
-  const provider = PROVIDER_BY_ACTION[key];
-  if (provider) void recordProviderUsage(provider);
+  await recordProviderUsageFor(key);
+  return { allowed: true };
+}
 
-  return { allowed: true as const };
+async function recordProviderUsageFor(key: keyof typeof LIMITS) {
+  const provider = PROVIDER_BY_ACTION[key];
+  if (!provider) return;
+  try {
+    await recordProviderUsage(provider);
+  } catch (error) {
+    console.warn(`Provider usage not recorded for ${provider}`, error);
+  }
 }
