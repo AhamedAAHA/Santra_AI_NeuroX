@@ -10,9 +10,7 @@ export const runtime = "nodejs";
 export async function GET() {
   try {
     const auth = await requireApiUser();
-    if ("error" in auth) {
-      return NextResponse.json({ events: [] });
-    }
+    if ("error" in auth) return auth.error;
 
     if (isMongoConfigured()) {
       const events = await listTimelineEvents(auth.user.id);
