@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const auth = await requireApiUser();
     if ("error" in auth) return auth.error;
 
-    const limited = await checkRateLimit(auth.user.id, "intelligence").catch(() => ({ allowed: true as const }));
+    const limited = await checkRateLimit(auth.user.id, "intelligence");
     if (!limited.allowed) {
       return NextResponse.json({ error: limited.message }, { status: 429 });
     }
