@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { AutomationWebhookPanel } from "@/components/gtm/crm-export-button";
-import { ActionQueuePanel } from "@/components/gtm/action-queue-panel";
+import { BackgroundEmailWatchPanel } from "@/components/gtm/background-email-watch-panel";
+import { ReportApprovalPanel } from "@/components/gtm/report-approval-panel";
 import { AgentActivityLog } from "@/components/gtm/agent-activity-log";
 import { MonitorIntelBrief } from "@/components/reports/monitor-intel-brief";
 import { getWorkspaceContext } from "@/lib/gtm/workspace-context";
@@ -30,7 +30,7 @@ import {
 } from "@/lib/monitor-history";
 import { repairLocalStorageQuota, syncLocalSessionToCookie } from "@/lib/local-auth";
 import { MonitorPromptField } from "@/components/dashboard/monitor-prompt-field";
-import { getAlertWebhookUrl, getAutomationWebhookUrl, saveAlertWebhookUrl } from "@/lib/webhooks";
+import { getAlertWebhookUrl, saveAlertWebhookUrl } from "@/lib/webhooks";
 import { WorkspaceSection } from "@/components/workspace/workspace-page";
 import { cn } from "@/lib/utils";
 import { ChangeDetectionPanel } from "@/components/dashboard/change-detection-panel";
@@ -165,6 +165,7 @@ export function MonitorCenter() {
   const [agentStages, setAgentStages] = useState<GtmAgentStage[]>([]);
   const [actionQueueRefreshKey, setActionQueueRefreshKey] = useState(0);
   const [selectedPendingActionId, setSelectedPendingActionId] = useState<string | undefined>();
+  const [waitingApprovalCount, setWaitingApprovalCount] = useState(0);
   const [editingMonitor, setEditingMonitor] = useState<Monitor | null>(null);
   const [editRequirement, setEditRequirement] = useState("");
   const [editCategory, setEditCategory] = useState<Monitor["category"]>("any");
@@ -408,8 +409,37 @@ export function MonitorCenter() {
     );
   }
 
-  async function openReport(monitor: Monitor, signal?: IntelligenceSignal, report?: ExecutiveIntelligenceReport) {
+  async function openReport(
+    monitor: Monitor,
+    signal?: IntelligenceSignal,
+    report?: ExecutiveIntelligenceReport,
+    pendingActionId?: string,
+  ) {
     aiAbortRef.current?.abort();
+    if (pendingActionId) {
+      setSelectedPendingActionId(pendingActionId);
+    } else if (report) {
+      setSelectedPendingActionId(undefined);
+      void (async () => {
+        try {
+          const response = await fetch("/api/pending-actions", { credentials: "include" });
+          const data = await readResponseJson<{ actions?: PendingAction[] }>(response);
+          const match = (data.actions ?? []).find(
+            (action) =>
+              (action.status === "pending" || action.status === "approved") &&
+              (action.reportId === report.id ||
+                action.reportSnapshot?.id === report.id ||
+                action.monitorId === monitor.id),
+          );
+          if (match) setSelectedPendingActionId(match.id);
+        } catch {
+          // optional link
+        }
+      })();
+    } else {
+      setSelectedPendingActionId(undefined);
+    }
+
     if (report) {
       setSelectedReport({ monitor, signal, report });
       setAiSummary("");
@@ -487,9 +517,73 @@ export function MonitorCenter() {
     aiAbortRef.current?.abort();
     aiAbortRef.current = null;
     setSelectedReport(null);
+    setSelectedPendingActionId(undefined);
     setAiSummary("");
     setAiError("");
     setAiLoading(false);
+  }
+
+  function openPendingAction(action: PendingAction) {
+    const report = action.reportSnapshot;
+    if (!report) {
+      toast.info("No report snapshot for this item yet.");
+      return;
+    }
+
+    const matchedMonitor =
+      (action.monitorId ? monitors.find((item) => item.id === action.monitorId) : undefined) ??
+      monitors.find((item) => item.requirement === action.monitorRequirement);
+
+    const monitor: Monitor = matchedMonitor ?? {
+      id: action.monitorId ?? `pending-${action.id}`,
+      requirement: action.monitorRequirement ?? report.monitorRequirement ?? "Monitor",
+      category: "any",
+      minimumSeverity: "medium",
+      active: true,
+      createdAt: action.createdAt,
+      alertedSignalIds: [],
+    };
+
+    void openReport(monitor, undefined, report, action.id);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const response = await fetch("/api/pending-actions", { credentials: "include" });
+          const data = await readResponseJson<{ actions?: PendingAction[] }>(response);
+          if (cancelled || !response.ok) return;
+          const waiting = (data.actions ?? []).filter((item) => item.status === "pending").length;
+          setWaitingApprovalCount(waiting);
+        } catch {
+          if (!cancelled) setWaitingApprovalCount(0);
+        }
+      })();
+    }, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [actionQueueRefreshKey]);
+
+  async function openFirstWaitingApproval() {
+    try {
+      const response = await fetch("/api/pending-actions", { credentials: "include" });
+      const data = await readResponseJson<{ actions?: PendingAction[]; error?: string }>(response);
+      if (!response.ok) throw new Error(data.error || "Unable to load approvals.");
+      const first =
+        (data.actions ?? []).find((item) => item.status === "pending") ??
+        (data.actions ?? []).find((item) => item.status === "approved");
+      if (!first) {
+        toast.info("Nothing waiting for your OK right now.");
+        return;
+      }
+      openPendingAction(first);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to open approvals.");
+    }
   }
 
   async function createMonitor() {
@@ -611,28 +705,6 @@ export function MonitorCenter() {
     }
   }
 
-  async function sendAutomationTrigger(report: ExecutiveIntelligenceReport, monitorId?: string) {
-    const automationUrl = getAutomationWebhookUrl();
-    if (!automationUrl) return;
-
-    try {
-      await fetch("/api/automation/webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          webhookUrl: automationUrl,
-          event: "monitor_alert",
-          workspace: getWorkspaceContext(),
-          report,
-          requirement: report.monitorRequirement,
-          monitorId,
-        }),
-      });
-    } catch {
-      // Optional automation path - alert webhook remains primary.
-    }
-  }
-
   async function sendWebhookAlert(report: ExecutiveIntelligenceReport, monitorId?: string) {
     const trimmed = webhookUrl.trim();
     if (!trimmed) return;
@@ -647,17 +719,17 @@ export function MonitorCenter() {
       const data = (await response.json().catch(() => ({}))) as { error?: string };
       if (!response.ok) throw new Error(data.error || "Webhook delivery failed.");
       toast.success("Webhook alert delivered.");
-      sendAutomationTrigger(report, monitorId).catch(() => {});
+      // CRM/automation delivery stays behind the approval inbox; this is notification only.
       fetch("/api/timeline", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "workflow_triggered",
+          type: "notification_sent",
           monitorId,
           monitorRequirement: report.monitorRequirement,
-          summary: "Slack + HubSpot workflow triggered for monitor alert",
-          metadata: { workflowType: "Slack + HubSpot" },
+          summary: "Alert webhook delivered",
+          metadata: { channel: "webhook" },
         }),
       }).catch(() => {});
       setTimelineKey((current) => current + 1);
@@ -776,6 +848,13 @@ export function MonitorCenter() {
         detectedChanges?: DetectedChange[];
         agentStages?: GtmAgentStage[];
         pendingAction?: PendingAction;
+        emailNotification?: {
+          sent: boolean;
+          reason?: string;
+          detail?: string;
+          hint?: string;
+          to?: string;
+        };
         error?: string;
       }>(response);
 
@@ -798,6 +877,22 @@ export function MonitorCenter() {
 
       if (data.agentStages?.length) {
         setAgentStages(data.agentStages);
+      }
+
+      const emailOutcome = data.emailNotification;
+      if (emailOutcome?.sent) {
+        toast.success(
+          emailOutcome.to ? `Alert email sent to ${emailOutcome.to}` : "Alert email sent",
+        );
+      } else if (
+        emailOutcome &&
+        emailOutcome.reason !== "watch_disabled" &&
+        emailOutcome.reason !== "no_findings"
+      ) {
+        toast.error("Alert email not sent", {
+          description: [emailOutcome.detail, emailOutcome.hint].filter(Boolean).join(" "),
+          duration: 12_000,
+        });
       }
 
       const matched = data.signals ?? [];
@@ -854,6 +949,11 @@ export function MonitorCenter() {
           description: data.report.verdict,
           action: { label: "Open", onClick: () => openReport(monitor, displaySignal, data.report) },
         });
+
+        const hasFindings = matched.length > 0 || (data.detectedChanges?.length ?? 0) > 0;
+        if (hasFindings) {
+          void sendWebhookAlert(data.report, monitorId);
+        }
       }
 
       setTimelineKey((current) => current + 1);
@@ -861,7 +961,10 @@ export function MonitorCenter() {
       matched.forEach((signal) => {
         toast.success("Monitor match", {
           description: signal.title,
-          action: { label: "Report", onClick: () => openReport(monitor, signal, data.report) },
+          action: {
+            label: "Report",
+            onClick: () => openReport(monitor, signal, data.report, data.pendingAction?.id),
+          },
         });
       });
 
@@ -873,11 +976,18 @@ export function MonitorCenter() {
         }
       }
 
+      let queuedActionId = data.pendingAction?.id;
       if (data.pendingAction) {
         setSelectedPendingActionId(data.pendingAction.id);
         setActionQueueRefreshKey((current) => current + 1);
-        toast.message("Action queued for approval", {
+        toast.message("Waiting in Approval inbox", {
           description: data.pendingAction.proposedAction,
+          action: data.report
+            ? {
+                label: "Open report",
+                onClick: () => openReport(monitor, matched[0], data.report, data.pendingAction?.id),
+              }
+            : undefined,
         });
       } else if (data.report && (matched.length > 0 || (data.detectedChanges?.length ?? 0) > 0)) {
         try {
@@ -896,10 +1006,15 @@ export function MonitorCenter() {
           });
           const queueData = await readResponseJson<{ action?: PendingAction }>(queueResponse);
           if (queueResponse.ok && queueData.action) {
+            queuedActionId = queueData.action.id;
             setSelectedPendingActionId(queueData.action.id);
             setActionQueueRefreshKey((current) => current + 1);
-            toast.message("Action queued for approval", {
+            toast.message("Waiting in Approval inbox", {
               description: queueData.action.proposedAction,
+              action: {
+                label: "Open report",
+                onClick: () => openReport(monitor, matched[0], data.report, queueData.action?.id),
+              },
             });
           }
         } catch {
@@ -919,7 +1034,10 @@ export function MonitorCenter() {
       if (options?.automated && data.report && monitor) {
         toast.message("Autopilot run complete", {
           description: data.report.verdict,
-          action: { label: "Open report", onClick: () => openReport(monitor, matched[0], data.report) },
+          action: {
+            label: "Open report",
+            onClick: () => openReport(monitor, matched[0], data.report, queuedActionId),
+          },
         });
       }
 
@@ -1105,19 +1223,35 @@ export function MonitorCenter() {
           </li>
           <li className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
             <span className="block text-[10px] uppercase tracking-wider text-white/35">4</span>
-            Approve (HITL)
+            Your OK
           </li>
           <li className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
             <span className="block text-[10px] uppercase tracking-wider text-white/35">5</span>
-            Webhook execute
+            Send to your tools
           </li>
         </ol>
         <p className="mt-3 text-xs text-white/45">
-          Watch Agent reasoning below for dynamic tool routing. Nothing hits CRM until a human approves.
+          Watch Agent reasoning below for dynamic tool routing. Nothing is sent until you approve.
         </p>
       </Card>
 
-      <ActionQueuePanel refreshKey={actionQueueRefreshKey} />
+      {waitingApprovalCount > 0 && (
+        <Card className="mb-4 border-amber-300/25 bg-amber-400/[0.06] p-4 md:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white">
+                {waitingApprovalCount} waiting for your OK
+              </p>
+              <p className="mt-1 text-xs text-white/50">
+                Open a full report to review the Approval inbox and send to your tools.
+              </p>
+            </div>
+            <Button size="sm" variant="neon" onClick={() => void openFirstWaitingApproval()}>
+              Open report
+            </Button>
+          </div>
+        </Card>
+      )}
 
       <WorkspaceSection id="create-signal-monitor">
         {sessionReady && !signedIn && (
@@ -1137,7 +1271,7 @@ export function MonitorCenter() {
           <h2 className="mt-3 text-2xl font-semibold text-white">What should we watch?</h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
             Describe a B2B competitive signal in plain language. The GTM agent interprets intent, collects live
-            evidence, and queues automation for human approval.
+            evidence, and waits for your OK before sending anything out.
           </p>
 
           <div className="mt-6 space-y-5">
@@ -1247,7 +1381,7 @@ export function MonitorCenter() {
                   aria-label="Alert webhook URL"
                 />
                 <p className="text-[11px] leading-4 text-white/35">
-                  Slack/Discord post a readable alert. Generic URLs (webhook.site, Zapier) include a plain <span className="font-mono text-white/50">summary</span>. CRM automation still lives in the Action Queue.
+                  Slack/Discord post a readable alert. Generic URLs (webhook.site, Zapier) include a plain <span className="font-mono text-white/50">summary</span>. Approve &amp; send still lives in the report popup.
                 </p>
                 {webhookUrl.trim() && (
                   <Badge variant={webhookSending ? "cyan" : "success"} className="w-fit">
@@ -1464,6 +1598,7 @@ export function MonitorCenter() {
                   <div className="p-5 md:p-6">
                     <MonitorIntelBrief
                       report={selectedReport.report}
+                      monitorId={selectedReport.monitor.id}
                       onHeadlineChange={(headline) => {
                         const nextReport = { ...selectedReport.report!, verdict: headline };
                         setSelectedReport({ ...selectedReport, report: nextReport });
@@ -1472,13 +1607,18 @@ export function MonitorCenter() {
                     />
                   </div>
                   <div className="border-t border-white/10 p-5 md:p-6">
-                    <p className="mb-3 text-xs uppercase tracking-[0.2em] text-white/35">CRM & automation</p>
-                    <AutomationWebhookPanel
+                    <ReportApprovalPanel
+                      pendingActionId={selectedPendingActionId}
                       report={selectedReport.report}
                       requirement={selectedReport.monitor.requirement}
                       monitorId={selectedReport.monitor.id}
-                      pendingActionId={selectedPendingActionId}
+                      refreshKey={actionQueueRefreshKey}
+                      onSelectAction={openPendingAction}
+                      onResolved={() => setActionQueueRefreshKey((value) => value + 1)}
                     />
+                  </div>
+                  <div className="border-t border-white/10 p-5 md:p-6">
+                    <BackgroundEmailWatchPanel monitorId={selectedReport.monitor.id} />
                   </div>
                 </div>
               ) : (
