@@ -19,14 +19,6 @@ export function getWorkspaceContext(): WorkspaceContext {
   }
 }
 
-export function saveWorkspaceContext(context: WorkspaceContext) {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(
-    WORKSPACE_PROFILE_KEY,
-    JSON.stringify({ ...context, updatedAt: new Date().toISOString() }),
-  );
-}
-
 export function formatWorkspaceContextForPrompt(context?: WorkspaceContext | null) {
   if (!context) return "";
 
