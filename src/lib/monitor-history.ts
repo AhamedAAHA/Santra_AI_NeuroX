@@ -56,10 +56,6 @@ export function recordMonitorHistory(entry: { requirement: string; category: str
   window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
 }
 
-export function getMonitorHistory() {
-  return loadHistory();
-}
-
 /** Strip nested suggestion wrappers so history does not compound "Keep watching…" text. */
 export function cleanMonitorRequirement(requirement: string) {
   let text = requirement.trim();
