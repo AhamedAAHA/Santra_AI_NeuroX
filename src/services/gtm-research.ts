@@ -1,23 +1,11 @@
-import { planGtmCollection, type GtmRoutePlan } from "@/lib/bright-data/router";
+import type { GtmRoutePlan } from "@/lib/bright-data/router";
 import { collectMcpGtmEvidence, isBrightDataMcpConfigured } from "@/services/bright-data-mcp";
-import {
-  collectWebIntelligence,
-  type BrightDataEvidence,
-  type GtmEvidenceBundle,
-} from "@/services/bright-data";
+import { collectWebIntelligence, type GtmEvidenceBundle } from "@/services/bright-data";
 
 export type GtmResearchOptions = {
   preferMcp?: boolean;
   multiSource?: boolean;
 };
-
-export async function runGtmResearch(
-  message: string,
-  options?: GtmResearchOptions,
-): Promise<GtmEvidenceBundle> {
-  const plan = planGtmCollection(message, { preferMcp: options?.preferMcp !== false });
-  return collectFromPlan(plan, options);
-}
 
 export async function collectFromPlan(
   plan: GtmRoutePlan,
@@ -76,14 +64,5 @@ export async function collectFromPlan(
     steps,
     evidence,
     plan,
-  };
-}
-
-export function bundleToLegacyEvidence(bundle: GtmEvidenceBundle): BrightDataEvidence {
-  return {
-    provider: bundle.provider,
-    query: bundle.query,
-    evidence: bundle.evidence,
-    collectionMode: bundle.steps[0]?.mode,
   };
 }
