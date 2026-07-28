@@ -1,0 +1,61 @@
+# dependencies
+node_modules
+
+# next
+.next
+.next-dev
+.open-next
+out
+.dev.vars
+.wrangler
+
+# production
+build
+
+# hackathon guide (requirements PDFs — not part of source)
+Hackathon Guide/
+
+# local env files
+.env
+.env*.local
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+next-dev*.log
+
+# misc
+tmp/
+.DS_Store
+*.pem
+scripts/restore-vault-now.mjs
+*.mjs
+!netlify/functions/*.mjs
+!postcss.config.mjs
+!eslint.config.mjs
+scripts/*
+!scripts/configure-supabase-auth.mjs
+!scripts/apply-provider-usage-migration.mjs
+!scripts/install-githooks.js
+.vercel
+.env*
+!postcss.config.cjs
+
+.env
+.env*.local
+node_modules
+.next
+.next-dev
+*.wav
+tsconfig.tsbuildinfo
+
+# safety extras
+.env
+.env*.local
+node_modules/
+.next/
+.next-dev/
+*.wav
+tsconfig.tsbuildinfo
