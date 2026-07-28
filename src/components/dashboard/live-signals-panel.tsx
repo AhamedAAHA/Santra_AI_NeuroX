@@ -36,7 +36,9 @@ export function LiveSignalsPanel({
                 ? "Live briefing signals"
                 : source === "monitor"
                   ? "Watchlist intelligence signals"
-                  : "Preview signals"}
+                  : source === "empty"
+                    ? "Waiting for live signals"
+                    : "Preview signals"}
           </Badge>
         </div>
       }
