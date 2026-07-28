@@ -28,13 +28,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const auth = await requireApiUser();
     if ("error" in auth) return auth.error;
 
-    try {
-      const limited = await checkRateLimit(auth.user.id, "monitor_check");
-      if (!limited.allowed) {
-        return NextResponse.json({ error: limited.message }, { status: 429 });
-      }
-    } catch (rateError) {
-      console.warn("Monitor check rate limit skipped", rateError);
+    const limited = await checkRateLimit(auth.user.id, "monitor_check");
+    if (!limited.allowed) {
+      return NextResponse.json({ error: limited.message }, { status: 429 });
     }
 
     const body = (await request.json().catch(() => ({}))) as LocalMonitorPayload;
@@ -102,6 +98,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       evidencePreview: result.evidencePreview,
       agentStages: result.agentStages,
       pendingAction: result.pendingAction,
+      emailNotification: result.emailNotification,
     });
   } catch (error) {
     console.error("Monitor check failed", error);
