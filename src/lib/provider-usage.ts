@@ -117,6 +117,7 @@ export async function fetchBrightDataBalance() {
     const response = await fetch("https://api.brightdata.com/customer/balance", {
       cache: "no-store",
       headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
+      signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok) return null;
     const json = (await response.json()) as { balance?: number; pending_balance?: number };
