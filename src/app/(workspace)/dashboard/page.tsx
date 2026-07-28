@@ -57,7 +57,13 @@ export default function DashboardPage() {
   const marketSignals = signals.filter((signal) => signal.category === "market").length;
 
   const sourceHint =
-    source === "sample" ? "Preview data" : source === "monitor" ? "From monitors" : "Live analysis";
+    source === "empty"
+      ? "No live data yet"
+      : source === "sample"
+        ? "Preview data"
+        : source === "monitor"
+          ? "From monitors"
+          : "Live analysis";
 
   return (
     <WorkspacePage>
@@ -81,7 +87,7 @@ export default function DashboardPage() {
           label="Total signals"
           value={loading ? "…" : String(signals.length)}
           hint={sourceHint}
-          tone={source === "sample" ? "neutral" : "live"}
+          tone={source === "live" || source === "monitor" ? "live" : "neutral"}
         />
         <Kpi
           icon={Target}
