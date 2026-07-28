@@ -48,7 +48,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sentra: {
+        santra: {
           cyan: "#53f4ff",
           blue: "#6272ff",
           violet: "#a855f7",

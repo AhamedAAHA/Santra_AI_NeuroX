@@ -27,8 +27,8 @@ In [Cloudflare Dashboard](https://dash.cloudflare.com) â†’ **Workers & Pages** â
 |----------|--------|
 | `MONGODB_URI` | MongoDB Atlas connection string |
 | `MONGODB_DB_NAME` | `santra` |
-| `SENTRA_APP_URL` | `https://santra-ai-neurox.<account>.workers.dev` (update after first deploy) |
-| `NEXT_PUBLIC_APP_URL` | Same as `SENTRA_APP_URL` |
+| `SANTRA_APP_URL` | `https://santra-ai-neurox.<account>.workers.dev` (update after first deploy) |
+| `NEXT_PUBLIC_APP_URL` | Same as `SANTRA_APP_URL` |
 | `CRON_SECRET` | Long random string for `/api/cron/monitors` |
 | `EXA_API_KEY` | Exa fallback search |
 | `AIML_API_KEY` | LLM provider (or Featherless/OpenAI) |

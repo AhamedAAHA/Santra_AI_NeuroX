@@ -43,7 +43,7 @@ GITHUB_OAUTH_CLIENT_ID=
 GITHUB_OAUTH_CLIENT_SECRET=
 GOOGLE_OAUTH_CLIENT_ID=
 GOOGLE_OAUTH_CLIENT_SECRET=
-SENTRA_APP_URL=https://santra-ai-neurox.vercel.app
+SANTRA_APP_URL=https://santra-ai-neurox.vercel.app
 NEXT_PUBLIC_APP_URL=https://santra-ai-neurox.vercel.app
 ```
 

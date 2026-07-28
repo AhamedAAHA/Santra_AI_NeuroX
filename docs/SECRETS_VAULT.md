@@ -24,8 +24,8 @@ Set **only** these environment variables:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
-SENTRA_APP_URL=https://your-domain.com
-SENTRA_TIMEZONE=Asia/Colombo
+SANTRA_APP_URL=https://your-domain.com
+SANTRA_TIMEZONE=Asia/Colombo
 CRON_SECRET=your-random-secret-for-vercel-cron
 ```
 

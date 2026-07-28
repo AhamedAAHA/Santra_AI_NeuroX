@@ -23,11 +23,11 @@ Set in Vercel → Project → Settings → Environment Variables:
 | `MONGODB_URI` | MongoDB Atlas SRV URI |
 | `MONGODB_URI_DIRECT` | Optional direct URI if SRV DNS fails |
 | `MONGODB_DB_NAME` | `santra` |
-| `SENTRA_APP_URL` | `https://santra-ai-neurox.vercel.app` |
+| `SANTRA_APP_URL` | `https://santra-ai-neurox.vercel.app` |
 | `NEXT_PUBLIC_APP_URL` | Same as above |
 | `CRON_SECRET` | Random string for `/api/cron/monitors` |
 | `EXA_API_KEY` | Exa fallback search |
-| `SENTRA_ALLOW_DEMO_FALLBACK` | `true` if no LLM key yet |
+| `SANTRA_ALLOW_DEMO_FALLBACK` | `true` if no LLM key yet |
 | `BAND_*` | Optional HITL notifications |
 | `GITHUB_OAUTH_CLIENT_ID` | GitHub OAuth (see `docs/MONGODB_OAUTH.md`) |
 | `GITHUB_OAUTH_CLIENT_SECRET` | GitHub OAuth secret |

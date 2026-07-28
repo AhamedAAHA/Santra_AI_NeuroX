@@ -42,7 +42,7 @@ Set in Vercel project settings:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
-SENTRA_APP_URL=https://your-app.vercel.app
+SANTRA_APP_URL=https://your-app.vercel.app
 CRON_SECRET=<long random string>
 ```
 

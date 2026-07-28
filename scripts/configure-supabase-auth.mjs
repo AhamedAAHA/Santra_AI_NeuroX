@@ -48,7 +48,7 @@ const projectRef =
   projectRefFromUrl(env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "") ||
   "rgvjmtpimjvgusrqrldj";
 
-const appUrl = (env.SENTRA_APP_URL?.trim() || "http://localhost:3001").replace(/\/$/, "");
+const appUrl = (env.SANTRA_APP_URL?.trim() || "http://localhost:3001").replace(/\/$/, "");
 const netlifyUrl = env.NETLIFY_SITE_URL?.trim().replace(/\/$/, "");
 
 const redirectUrls = new Set([
@@ -82,7 +82,7 @@ if (googleId && googleSecret) {
   payload.external_google_skip_nonce_check = true;
 }
 
-console.log("Sentra - configure Supabase Auth\n");
+console.log("Santra - configure Supabase Auth\n");
 console.log(`  Project ref: ${projectRef}`);
 console.log(`  Site URL:    ${payload.site_url}`);
 console.log(`  Redirects:   ${payload.uri_allow_list}\n`);

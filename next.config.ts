@@ -32,8 +32,8 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 
 // Cloudflare OpenNext breaks local `next dev` on some Node builds (`[object Object]` in edge-runtime).
-// Opt in only when needed: SENTRA_CLOUDFLARE_DEV=true
-if (process.env.SENTRA_CLOUDFLARE_DEV === "true") {
+// Opt in only when needed: SANTRA_CLOUDFLARE_DEV=true
+if (process.env.SANTRA_CLOUDFLARE_DEV === "true" || process.env.SENTRA_CLOUDFLARE_DEV === "true") {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { initOpenNextCloudflareForDev } = require("@opennextjs/cloudflare");
   initOpenNextCloudflareForDev();

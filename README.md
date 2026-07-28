@@ -33,7 +33,6 @@ for human approval before anything executes.
 ```bash
 npm install
 cp .env.example .env.local
-npm run env:check
 npm run dev
 ```
 

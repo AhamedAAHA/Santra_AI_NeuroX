@@ -61,7 +61,7 @@ GOOGLE_OAUTH_CLIENT_SECRET=
 
 # Production (optional)
 NETLIFY_SITE_URL=https://aisantra.netlify.app
-SENTRA_APP_URL=http://localhost:3001
+SANTRA_APP_URL=http://localhost:3001
 ```
 
 Then:
@@ -97,7 +97,7 @@ Open `/sign-in` - **GitHub** and **Google** should redirect and return to `/dash
 ## 6. Netlify production
 
 Add the same vars in **Netlify → Environment variables** (not the OAuth secrets in git).  
-Run `auth:configure` locally once with `SENTRA_APP_URL` / `NETLIFY_SITE_URL` set, or paste redirect URLs in Supabase UI.
+Run `auth:configure` locally once with `SANTRA_APP_URL` / `NETLIFY_SITE_URL` set, or paste redirect URLs in Supabase UI.
 
 ---
 

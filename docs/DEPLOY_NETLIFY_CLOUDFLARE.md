@@ -26,7 +26,7 @@ For **Vercel**, use `vercel.json` (built-in cron). See [USER_SETUP.md](./USER_SE
    | `NEXT_PUBLIC_SUPABASE_URL` | Required |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Required |
    | `SUPABASE_SECRET_KEY` or `SUPABASE_SERVICE_ROLE_KEY` | Required |
-   | `SENTRA_APP_URL` | Public URL, no trailing slash |
+   | `SANTRA_APP_URL` | Public URL, no trailing slash |
    | `CRON_SECRET` | Long random string; same value for cron callers |
 
 5. Local sanity check: `npm run build` and `npm run env:check`.
@@ -48,7 +48,7 @@ For **Vercel**, use `vercel.json` (built-in cron). See [USER_SETUP.md](./USER_SE
 
 5. Set:
    ```env
-   SENTRA_APP_URL=https://your-site-name.netlify.app
+   SANTRA_APP_URL=https://your-site-name.netlify.app
    CRON_SECRET=<openssl rand -hex 32 or similar>
    ```
 
@@ -58,9 +58,9 @@ For **Vercel**, use `vercel.json` (built-in cron). See [USER_SETUP.md](./USER_SE
 
 `netlify/functions/cron-monitors.mjs` runs **every 30 minutes** and calls:
 
-`GET {SENTRA_APP_URL}/api/cron/monitors` with `Authorization: Bearer {CRON_SECRET}`.
+`GET {SANTRA_APP_URL}/api/cron/monitors` with `Authorization: Bearer {CRON_SECRET}`.
 
-Uses `SENTRA_APP_URL` if set; otherwise Netlify’s `URL` / `DEPLOY_PRIME_URL`.
+Uses `SANTRA_APP_URL` if set; otherwise Netlify’s `URL` / `DEPLOY_PRIME_URL`.
 
 After first deploy, confirm in **Functions** → `cron-monitors` logs (or trigger a deploy and wait 30m).
 
@@ -68,7 +68,7 @@ After first deploy, confirm in **Functions** → `cron-monitors` logs (or trigge
 
 1. Netlify → **Domain management** → add domain.
 2. Point DNS to Netlify (or use Cloudflare DNS below).
-3. Update `SENTRA_APP_URL` and Supabase redirect URL to the custom domain.
+3. Update `SANTRA_APP_URL` and Supabase redirect URL to the custom domain.
 
 ### Limits
 
@@ -88,7 +88,7 @@ Use Cloudflare only for **DNS, SSL, and caching**; keep the app on Netlify.
 3. **DNS** → `CNAME` `www` → `your-site.netlify.app` (Proxied).
 4. Netlify → add the same custom domain; enable HTTPS.
 5. Supabase redirect: `https://yourdomain.com/auth/callback`.
-6. `SENTRA_APP_URL=https://yourdomain.com`.
+6. `SANTRA_APP_URL=https://yourdomain.com`.
 
 SSL mode: **Full (strict)** once Netlify has a certificate.
 
@@ -101,7 +101,7 @@ cd cloudflare/cron-worker
 npm install
 npx wrangler login
 npx wrangler secret put CRON_SECRET
-npx wrangler secret put SENTRA_APP_URL   # e.g. https://your-app.netlify.app
+npx wrangler secret put SANTRA_APP_URL   # e.g. https://your-app.netlify.app
 npm run deploy
 ```
 
