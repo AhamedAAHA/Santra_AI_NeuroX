@@ -167,7 +167,3 @@ export async function collectMcpGtmEvidence(query: string, targetUrl?: string) {
   };
 }
 
-export function resetMcpSessionForTests() {
-  mcpSessionId = null;
-  mcpInitialized = false;
-}
