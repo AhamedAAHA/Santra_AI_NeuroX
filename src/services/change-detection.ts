@@ -288,7 +288,3 @@ export function seedSnapshot(snapshot: PageSnapshot) {
   }
 }
 
-export function changesThisWeek(changes: DetectedChange[]): number {
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  return changes.filter((change) => new Date(change.detectedAt).getTime() >= weekAgo).length;
-}
