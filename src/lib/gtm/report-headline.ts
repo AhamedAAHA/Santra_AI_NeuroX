@@ -171,14 +171,6 @@ export function buildSeverityChartData(report: ExecutiveIntelligenceReport) {
   for (const change of report.detectedChanges ?? []) {
     counts[change.severity] = (counts[change.severity] ?? 0) + 1;
   }
-  // Fall back to claim severity proxy via observed facts length buckets if no changes.
-  if (!(report.detectedChanges?.length)) {
-    const n = report.observedFacts?.length ?? 0;
-    if (report.riskScore >= 80) counts.critical = Math.max(1, n);
-    else if (report.riskScore >= 65) counts.high = Math.max(1, n);
-    else if (report.riskScore >= 45) counts.medium = Math.max(1, n || 1);
-    else counts.low = Math.max(1, n || 1);
-  }
   return (["critical", "high", "medium", "low"] as const).map((severity) => ({
     severity,
     count: counts[severity] ?? 0,
@@ -186,7 +178,7 @@ export function buildSeverityChartData(report: ExecutiveIntelligenceReport) {
 }
 
 export function buildReliabilityChartData(report: ExecutiveIntelligenceReport) {
-  return report.evidenceSources.slice(0, 6).map((source) => ({
+  return (report.evidenceSources ?? []).slice(0, 6).map((source) => ({
     name: (source.publisher || "Source").slice(0, 18),
     reliability: source.reliability,
   }));
