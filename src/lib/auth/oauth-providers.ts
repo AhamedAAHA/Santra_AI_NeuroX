@@ -12,6 +12,13 @@ export type OAuthProfile = {
   displayName?: string;
 };
 
+const OAUTH_TIMEOUT_MS = 15_000;
+
+/** Provider calls sit in the sign-in path, so they must not hang indefinitely. */
+function oauthFetch(url: string, init?: RequestInit) {
+  return fetch(url, { ...init, signal: AbortSignal.timeout(OAUTH_TIMEOUT_MS) });
+}
+
 function buildAuthorizeUrl(provider: OAuthProvider, state: string) {
   const redirectUri = encodeURIComponent(getOAuthCallbackUrl(provider));
 
@@ -32,7 +39,7 @@ export function getOAuthAuthorizeUrl(provider: OAuthProvider, state: string) {
 
 async function exchangeGithubCode(code: string) {
   const { clientId, clientSecret } = getGithubOAuthConfig();
-  const response = await fetch("https://github.com/login/oauth/access_token", {
+  const response = await oauthFetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -51,7 +58,7 @@ async function exchangeGithubCode(code: string) {
     throw new Error(payload.error || "GitHub token exchange failed.");
   }
 
-  const userResponse = await fetch("https://api.github.com/user", {
+  const userResponse = await oauthFetch("https://api.github.com/user", {
     headers: {
       Authorization: `Bearer ${payload.access_token}`,
       Accept: "application/vnd.github+json",
@@ -71,7 +78,7 @@ async function exchangeGithubCode(code: string) {
 
   let email = user.email?.trim().toLowerCase() ?? "";
   if (!email) {
-    const emailsResponse = await fetch("https://api.github.com/user/emails", {
+    const emailsResponse = await oauthFetch("https://api.github.com/user/emails", {
       headers: {
         Authorization: `Bearer ${payload.access_token}`,
         Accept: "application/vnd.github+json",
@@ -110,7 +117,7 @@ async function exchangeGoogleCode(code: string) {
     grant_type: "authorization_code",
   });
 
-  const response = await fetch("https://oauth2.googleapis.com/token", {
+  const response = await oauthFetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
@@ -121,7 +128,7 @@ async function exchangeGoogleCode(code: string) {
     throw new Error(payload.error || "Google token exchange failed.");
   }
 
-  const profileResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+  const profileResponse = await oauthFetch("https://www.googleapis.com/oauth2/v3/userinfo", {
     headers: { Authorization: `Bearer ${payload.access_token}` },
   });
   const profile = (await profileResponse.json()) as {
