@@ -1,0 +1,14 @@
+#!/bin/sh
+
+commit_msg_file=$1
+
+if [ -z "$commit_msg_file" ] || [ ! -f "$commit_msg_file" ]; then
+  exit 0
+fi
+
+tmp_file="${commit_msg_file}.sentra-tmp"
+
+awk '!/^Co-authored-by:.*Cursor/' "$commit_msg_file" > "$tmp_file" &&
+  cat "$tmp_file" > "$commit_msg_file"
+
+rm -f "$tmp_file"
