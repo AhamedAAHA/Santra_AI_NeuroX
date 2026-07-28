@@ -298,7 +298,7 @@ export function ActionQueuePanel({ refreshKey = 0, onActionResolved }: ActionQue
               type="button"
               onClick={() => openDestination()}
               className={cn(
-                "sentra-focus inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition",
+                "santra-focus inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition",
                 webhookConnected
                   ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100 hover:bg-emerald-400/15"
                   : "border-white/12 bg-white/[0.04] text-white/65 hover:border-white/20 hover:text-white/85",
@@ -310,7 +310,7 @@ export function ActionQueuePanel({ refreshKey = 0, onActionResolved }: ActionQue
               {webhookConnected ? "Connected" : "Not connected"}
               <Settings2 className="h-3 w-3 opacity-70" />
             </button>
-            <ShieldCheck className="hidden h-5 w-5 text-sentra-cyan sm:block" />
+            <ShieldCheck className="hidden h-5 w-5 text-santra-cyan sm:block" />
           </div>
         </div>
 
@@ -507,9 +507,9 @@ export function ActionQueuePanel({ refreshKey = 0, onActionResolved }: ActionQue
 
       {destinationOpen && (
         <div
-          className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-sentra-ink/80 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
+          className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-santra-ink/80 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
           style={{
-            paddingBottom: "max(1rem, var(--sentra-mobile-nav-clearance))",
+            paddingBottom: "max(1rem, var(--santra-mobile-nav-clearance))",
           }}
           onClick={() => setDestinationOpen(false)}
           role="presentation"
@@ -518,7 +518,7 @@ export function ActionQueuePanel({ refreshKey = 0, onActionResolved }: ActionQue
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="my-auto w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-sentra-panel shadow-2xl shadow-black/40"
+            className="my-auto w-full max-w-md overflow-hidden rounded-3xl border border-white/10 bg-santra-panel shadow-2xl shadow-black/40"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 border-b border-white/10 px-5 py-4">

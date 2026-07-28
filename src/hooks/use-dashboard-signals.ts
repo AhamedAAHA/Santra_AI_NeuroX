@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { IntelligenceSignal } from "@/types/intelligence";
 
-export const DASHBOARD_SIGNALS_UPDATED_EVENT = "sentra:dashboard-signals-updated";
-const SESSION_SNAPSHOT_KEY = "sentra-dashboard-signal-snapshot";
+export const DASHBOARD_SIGNALS_UPDATED_EVENT = "santra:dashboard-signals-updated";
+const SESSION_SNAPSHOT_KEY = "santra-dashboard-signal-snapshot";
 
 export type DashboardSignalSource = "live" | "sample" | "monitor";
 

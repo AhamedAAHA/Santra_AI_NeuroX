@@ -67,8 +67,8 @@ export function SignalFeed({
         <div className="flex items-center gap-3">
           {headerMeta}
           <span className="relative flex h-3 w-3 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sentra-cyan opacity-75 motion-reduce:animate-none" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-sentra-cyan" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-santra-cyan opacity-75 motion-reduce:animate-none" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-santra-cyan" />
           </span>
         </div>
       </div>
@@ -82,7 +82,7 @@ export function SignalFeed({
               className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-3 transition-colors"
             >
               <div className="flex gap-3">
-                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-sentra-cyan">
+                <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white/10 text-santra-cyan">
                   <Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">

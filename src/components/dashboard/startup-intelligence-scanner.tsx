@@ -41,11 +41,11 @@ function ScoreBar({ label, value, highlight }: { label: string; value: number; h
     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm text-white/65">{label}</span>
-        <span className={cn("text-lg font-semibold", highlight ? "text-sentra-cyan" : "text-white")}>{value}</span>
+        <span className={cn("text-lg font-semibold", highlight ? "text-santra-cyan" : "text-white")}>{value}</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
         <div
-          className={cn("h-full rounded-full transition-all duration-700", highlight ? "bg-sentra-cyan" : "bg-violet-400/80")}
+          className={cn("h-full rounded-full transition-all duration-700", highlight ? "bg-santra-cyan" : "bg-violet-400/80")}
           style={{ width: `${value}%` }}
         />
       </div>
@@ -60,7 +60,7 @@ function ListSection({ title, items, accent }: { title: string; items: string[];
       <ul className="mt-3 space-y-2">
         {items.map((item) => (
           <li key={item} className="flex gap-2 text-sm leading-6 text-white/62">
-            <span className={cn("mt-2 h-1.5 w-1.5 shrink-0 rounded-full", accent === "rose" ? "bg-rose-300" : "bg-sentra-cyan")} />
+            <span className={cn("mt-2 h-1.5 w-1.5 shrink-0 rounded-full", accent === "rose" ? "bg-rose-300" : "bg-santra-cyan")} />
             {item}
           </li>
         ))}
@@ -174,7 +174,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
           <div>
             {!embedded && (
               <div className="flex flex-wrap items-center gap-2">
-                <Sparkles className="h-5 w-5 text-sentra-cyan" />
+                <Sparkles className="h-5 w-5 text-santra-cyan" />
                 <p className="font-semibold text-white">B2B Market Validation</p>
               </div>
             )}
@@ -190,7 +190,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
             aria-checked={sriLankaMode}
             onClick={() => setSriLankaMode((value) => !value)}
             className={cn(
-              "sentra-focus flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition",
+              "santra-focus flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition",
               sriLankaMode
                 ? "border-cyan-200/35 bg-cyan-300/12 text-cyan-50"
                 : "border-white/10 bg-white/[0.04] text-white/55",
@@ -207,7 +207,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
               value={startupIdea}
               onChange={(event) => setStartupIdea(event.target.value)}
               placeholder="e.g. Autonomous competitor monitoring for RevOps teams"
-              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
+              className="santra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
           <label className="grid gap-1.5">
@@ -216,7 +216,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
               value={industry}
               onChange={(event) => setIndustry(event.target.value)}
               placeholder="e.g. B2B SaaS / RevOps"
-              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
+              className="santra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
           <label className="grid gap-1.5">
@@ -225,7 +225,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
               value={country}
               onChange={(event) => setCountry(event.target.value)}
               placeholder="e.g. United States / APAC"
-              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
+              className="santra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
           <label className="grid gap-1.5">
@@ -234,7 +234,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
               value={targetAudience}
               onChange={(event) => setTargetAudience(event.target.value)}
               placeholder="e.g. VP Sales, RevOps leads"
-              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
+              className="santra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
           <label className="grid gap-1.5 md:col-span-2 xl:col-span-3">
@@ -243,7 +243,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
               value={competitorName}
               onChange={(event) => setCompetitorName(event.target.value)}
               placeholder="e.g. Crayon, Klue, Kompyte"
-              className="sentra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
+              className="santra-focus rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30"
             />
           </label>
         </div>
@@ -281,7 +281,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
             <ListSection title="Key Risks" items={report.risks} accent="rose" />
             <Card className="p-4" glow>
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-sentra-cyan" />
+                <TrendingUp className="h-4 w-4 text-santra-cyan" />
                 <p className="text-sm font-medium text-white">Growth Potential</p>
               </div>
               <p className="mt-3 text-sm leading-6 text-white/62">{report.growthPotential}</p>
@@ -291,14 +291,14 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
           <div className="grid gap-5 lg:grid-cols-2">
             <Card className="p-6" glow>
               <div className="flex items-center gap-2">
-                <LineChart className="h-5 w-5 text-sentra-cyan" />
+                <LineChart className="h-5 w-5 text-santra-cyan" />
                 <h3 className="text-xl font-semibold text-white">Market Size Estimate</h3>
               </div>
               <p className="mt-3 text-sm leading-7 text-white/68">{report.marketSizeEstimate}</p>
             </Card>
             <Card className="p-6" glow>
               <div className="flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-sentra-cyan" />
+                <Rocket className="h-5 w-5 text-santra-cyan" />
                 <h3 className="text-xl font-semibold text-white">Suggested Business Model</h3>
               </div>
               <p className="mt-3 text-sm leading-7 text-white/68">{report.suggestedBusinessModel}</p>
@@ -307,13 +307,13 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
 
           <Card className="p-6" glow>
             <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-sentra-cyan" />
+              <Target className="h-5 w-5 text-santra-cyan" />
               <h3 className="text-xl font-semibold text-white">GTM Command Center</h3>
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               <Card className="p-4">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-sentra-cyan" />
+                  <Users className="h-4 w-4 text-santra-cyan" />
                   <p className="text-sm font-medium text-white">Customer Persona</p>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-white/62">{report.gtm.customerPersona}</p>
@@ -329,7 +329,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
               <ListSection title="Marketing Strategy" items={report.gtm.marketingStrategy} />
               <Card className="p-4 lg:col-span-2">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-sentra-cyan" />
+                  <MapPin className="h-4 w-4 text-santra-cyan" />
                   <p className="text-sm font-medium text-white">Positioning Statement</p>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-white/72">{report.gtm.positioningStatement}</p>
@@ -340,7 +340,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
           <Card className="p-6" glow>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Gauge className="h-5 w-5 text-sentra-cyan" />
+                <Gauge className="h-5 w-5 text-santra-cyan" />
                 <h3 className="text-xl font-semibold text-white">Opportunity Score Engine</h3>
               </div>
               <div className="rounded-2xl border border-cyan-200/25 bg-cyan-300/10 px-4 py-2 text-center">
@@ -357,7 +357,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
 
           <Card className="p-6" glow>
             <div className="flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-sentra-cyan" />
+              <ShieldAlert className="h-5 w-5 text-santra-cyan" />
               <h3 className="text-xl font-semibold text-white">GTM Risk Intelligence</h3>
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -372,7 +372,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
           <div className="grid gap-5 lg:grid-cols-2">
             <Card className="p-6" glow>
               <div className="flex items-center gap-2">
-                <Swords className="h-5 w-5 text-sentra-cyan" />
+                <Swords className="h-5 w-5 text-santra-cyan" />
                 <h3 className="text-xl font-semibold text-white">Competitor Intelligence</h3>
               </div>
               <p className="mt-3 text-sm text-white/68">Focused competitor: {report.competitorIntelligence.competitorName}</p>
@@ -387,7 +387,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
 
             <Card className="p-6" glow>
               <div className="flex items-center gap-2">
-                <Swords className="h-5 w-5 text-sentra-cyan" />
+                <Swords className="h-5 w-5 text-santra-cyan" />
                 <h3 className="text-xl font-semibold text-white">Competitor Battle Card</h3>
               </div>
               <p className="mt-3 text-sm text-white/68">You vs {report.competitorBattleCard.competitorName}</p>
@@ -441,7 +441,7 @@ export function StartupIntelligenceScanner({ embedded = false }: { embedded?: bo
 
           <Card className="p-6" glow>
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-sentra-cyan" />
+              <Calendar className="h-5 w-5 text-santra-cyan" />
               <h3 className="text-xl font-semibold text-white">Founder Action Plan</h3>
             </div>
             <div className="mt-5 grid gap-4 xl:grid-cols-4">

@@ -47,7 +47,7 @@ export function CommandPalette({ className }: { className?: string }) {
     <>
       <button
         className={cn(
-          "sentra-focus flex w-full min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/60 backdrop-blur-xl transition",
+          "santra-focus flex w-full min-w-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/60 backdrop-blur-xl transition",
           className,
         )}
         onClick={() => setOpen(true)}
@@ -61,22 +61,22 @@ export function CommandPalette({ className }: { className?: string }) {
       {open &&
         createPortal(
           <div
-            className="fixed inset-0 z-50 grid place-items-start bg-sentra-ink/70 px-3 pt-16 backdrop-blur-md sm:px-4 sm:pt-24"
+            className="fixed inset-0 z-50 grid place-items-start bg-santra-ink/70 px-3 pt-16 backdrop-blur-md sm:px-4 sm:pt-24"
             onClick={() => setOpen(false)}
           >
             <Command
-              className="mx-auto max-h-[min(32rem,calc(100dvh-6rem-var(--sentra-mobile-nav-clearance)))] w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-sentra-panel shadow-2xl shadow-black/30"
+              className="mx-auto max-h-[min(32rem,calc(100dvh-6rem-var(--santra-mobile-nav-clearance)))] w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-santra-panel shadow-2xl shadow-black/30"
               onClick={(event) => event.stopPropagation()}
             >
               <div className="flex items-center gap-3 border-b border-white/10 px-4 sm:px-5">
-                <Search className="h-4 w-4 shrink-0 text-sentra-cyan" />
+                <Search className="h-4 w-4 shrink-0 text-santra-cyan" />
                 <Command.Input
                   autoFocus
                   placeholder="Command SANTRA AI..."
                   className="h-12 min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/40 sm:h-14"
                 />
               </div>
-              <Command.List className="max-h-[min(24rem,calc(100dvh-12rem-var(--sentra-mobile-nav-clearance)))] overflow-y-auto overscroll-contain p-3">
+              <Command.List className="max-h-[min(24rem,calc(100dvh-12rem-var(--santra-mobile-nav-clearance)))] overflow-y-auto overscroll-contain p-3">
                 <Command.Empty className="p-4 text-sm text-white/50">No match found.</Command.Empty>
                 <Command.Group heading="GTM Agent" className="text-xs text-white/40">
                   {actions.map((action) => (
@@ -88,7 +88,7 @@ export function CommandPalette({ className }: { className?: string }) {
                         router.push(action.href);
                       }}
                     >
-                      <action.icon className="h-4 w-4 shrink-0 text-sentra-cyan" />
+                      <action.icon className="h-4 w-4 shrink-0 text-santra-cyan" />
                       <span className="min-w-0 flex-1 truncate">{action.label}</span>
                       <span className="ml-auto hidden shrink-0 text-xs text-white/40 sm:inline">{action.hint}</span>
                     </Command.Item>

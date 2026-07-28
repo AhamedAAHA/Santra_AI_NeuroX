@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Brain, ChevronRight, Globe, Shield, Zap } from "lucide-react";
 import { LandingAuthLink } from "@/components/landing/landing-auth-link";
 import { Button } from "@/components/ui/button";
-import { SENTRA_HOME } from "@/lib/landing/auth-links";
+import { SANTRA_HOME } from "@/lib/landing/auth-links";
 
 const HeroVisual = dynamic(
   () => import("@/components/landing/hero-visual").then((m) => m.HeroVisual),
@@ -54,12 +54,12 @@ function IntelligenceTicker() {
   const doubled = [...tickerItems, ...tickerItems];
   return (
     <div className="relative overflow-hidden border-y border-white/[0.07] py-2.5" aria-hidden>
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-sentra-ink to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-sentra-ink to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-santra-ink to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-santra-ink to-transparent" />
       <div className="flex animate-ticker-slide gap-0">
         {doubled.map((item, i) => (
           <div key={i} className="flex shrink-0 items-center gap-3 px-6">
-            <span className="h-1 w-1 rounded-full bg-sentra-cyan/60" />
+            <span className="h-1 w-1 rounded-full bg-santra-cyan/60" />
             <span className="whitespace-nowrap text-xs font-medium uppercase tracking-[0.22em] text-white/30">
               {item}
             </span>
@@ -81,7 +81,7 @@ function StatCard({ value, label, suffix = "", icon: Icon, delay = 0 }: {
       className="glass-panel cyber-card rounded-2xl p-4"
     >
       <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-3.5 w-3.5 text-sentra-cyan" />
+        <Icon className="h-3.5 w-3.5 text-santra-cyan" />
         <span className="type-caption text-white/35">{label}</span>
       </div>
       <p className="text-2xl font-bold text-white heading-gradient-sweep">
@@ -124,11 +124,11 @@ export function Hero() {
               initial={{ opacity: 1, x: 0 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-sentra-cyan/20 bg-sentra-cyan/5 px-4 py-1.5"
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-santra-cyan/20 bg-santra-cyan/5 px-4 py-1.5"
             >
               <span className="live-dot" />
-              <span className="type-caption text-sentra-cyan/80">NEUROX 2026 · B2B AGENTIC GTM</span>
-              <ChevronRight className="h-3 w-3 text-sentra-cyan/50" />
+              <span className="type-caption text-santra-cyan/80">NEUROX 2026 · B2B AGENTIC GTM</span>
+              <ChevronRight className="h-3 w-3 text-santra-cyan/50" />
             </motion.div>
 
             <h1 className="font-display font-bold tracking-[-0.04em]">
@@ -160,7 +160,7 @@ export function Hero() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" variant="neon" className="group relative overflow-hidden">
-                <LandingAuthLink href={SENTRA_HOME}>
+                <LandingAuthLink href={SANTRA_HOME}>
                   <span className="relative z-10 flex items-center gap-2">
                     Open GTM Monitors
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -180,7 +180,7 @@ export function Hero() {
             >
               {["Autonomous Agent Loop", "Human-in-the-Loop", "Exa + LLM Evidence", "B2B Competitive Intel"].map((item) => (
                 <span key={item} className="flex items-center gap-1.5">
-                  <span className="h-1 w-1 rounded-full bg-sentra-cyan/50" />
+                  <span className="h-1 w-1 rounded-full bg-santra-cyan/50" />
                   {item}
                 </span>
               ))}

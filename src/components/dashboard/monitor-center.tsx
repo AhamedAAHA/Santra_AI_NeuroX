@@ -1125,7 +1125,7 @@ export function MonitorCenter() {
             Sign in to save monitors and run live checks.{" "}
             <button
               type="button"
-              className="sentra-focus font-medium underline underline-offset-2"
+              className="santra-focus font-medium underline underline-offset-2"
               onClick={() => router.push(signInFor("/alerts"))}
             >
               Sign in
@@ -1157,7 +1157,7 @@ export function MonitorCenter() {
             {(intentLoading || monitorIntent) && (
               <div className="rounded-xl border border-cyan-200/15 bg-cyan-300/5 px-4 py-3 text-sm">
                 <div className="flex items-start gap-2">
-                  <Sparkles className={cn("mt-0.5 h-4 w-4 shrink-0 text-sentra-cyan", intentLoading && "animate-pulse")} />
+                  <Sparkles className={cn("mt-0.5 h-4 w-4 shrink-0 text-santra-cyan", intentLoading && "animate-pulse")} />
                   <div className="min-w-0 space-y-2">
                     {intentLoading ? (
                       <p className="text-white/50">SANTRA is understanding what you want to watch…</p>
@@ -1197,7 +1197,7 @@ export function MonitorCenter() {
           </div>
 
           <details className="group mt-6 rounded-2xl border border-white/10 bg-white/[0.03] open:bg-white/[0.02]">
-            <summary className="sentra-focus cursor-pointer list-none px-4 py-3 text-sm text-white/55 marker:content-none hover:text-white/75 [&::-webkit-details-marker]:hidden">
+            <summary className="santra-focus cursor-pointer list-none px-4 py-3 text-sm text-white/55 marker:content-none hover:text-white/75 [&::-webkit-details-marker]:hidden">
               <span className="font-medium text-white/70">Options</span>
               <span className="text-white/40"> — category, severity, alert webhook, demo</span>
             </summary>
@@ -1208,7 +1208,7 @@ export function MonitorCenter() {
                   <select
                     value={category}
                     onChange={(event) => setCategory(event.target.value as "any" | SignalCategory)}
-                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                    className="santra-focus h-11 rounded-2xl border border-white/10 bg-santra-panel px-4 text-sm text-white"
                   >
                     {categories.map((item) => (
                       <option key={item} value={item}>
@@ -1222,7 +1222,7 @@ export function MonitorCenter() {
                   <select
                     value={minimumSeverity}
                     onChange={(event) => setMinimumSeverity(event.target.value as Severity)}
-                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                    className="santra-focus h-11 rounded-2xl border border-white/10 bg-santra-panel px-4 text-sm text-white"
                   >
                     {severities.map((severity) => (
                       <option key={severity} value={severity}>
@@ -1355,7 +1355,7 @@ export function MonitorCenter() {
                     {report ? (
                       <button
                         type="button"
-                        className="sentra-focus mt-2 text-left text-xs font-medium text-cyan-100/80 hover:text-cyan-100"
+                        className="santra-focus mt-2 text-left text-xs font-medium text-cyan-100/80 hover:text-cyan-100"
                         onClick={() => openReport(monitor, undefined, report)}
                       >
                         View full report →
@@ -1425,14 +1425,14 @@ export function MonitorCenter() {
 
       {selectedReport && (
         <div
-          className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-sentra-ink/80 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
+          className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-santra-ink/80 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
           style={{
-            paddingBottom: "max(1rem, var(--sentra-mobile-nav-clearance))",
+            paddingBottom: "max(1rem, var(--santra-mobile-nav-clearance))",
           }}
           onClick={closeReport}
         >
           <div
-            className="my-auto w-full max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-sentra-panel shadow-2xl shadow-black/40"
+            className="my-auto w-full max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-santra-panel shadow-2xl shadow-black/40"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-white/10 p-4 md:p-6">
@@ -1458,7 +1458,7 @@ export function MonitorCenter() {
               </Button>
             </div>
 
-            <div className="max-h-[calc(100dvh-10rem-var(--sentra-mobile-nav-clearance))] overflow-y-auto overscroll-contain sm:max-h-[min(78vh,900px)]">
+            <div className="max-h-[calc(100dvh-10rem-var(--santra-mobile-nav-clearance))] overflow-y-auto overscroll-contain sm:max-h-[min(78vh,900px)]">
               {selectedReport.report ? (
                 <div className="grid gap-0">
                   <div className="p-5 md:p-6">
@@ -1497,7 +1497,7 @@ export function MonitorCenter() {
 
                   <div className="mt-6">
                     <div className="flex items-center gap-3">
-                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-sentra-cyan">
+                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-santra-cyan">
                         <Bot className="h-5 w-5" />
                       </span>
                       <div>
@@ -1508,7 +1508,7 @@ export function MonitorCenter() {
                     <div className="mt-5 min-h-48 rounded-3xl border border-white/10 bg-white/[0.045] p-5">
                       {aiLoading ? (
                         <div className="flex h-40 items-center justify-center gap-3 text-sm text-white/60">
-                          <Sparkles className="h-4 w-4 animate-pulse text-sentra-cyan" />
+                          <Sparkles className="h-4 w-4 animate-pulse text-santra-cyan" />
                           SANTRA is analyzing the alert...
                         </div>
                       ) : (
@@ -1533,9 +1533,9 @@ export function MonitorCenter() {
       )}
       {editingMonitor && (
         <div
-          className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-sentra-ink/80 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
+          className="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-santra-ink/80 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
           style={{
-            paddingBottom: "max(1rem, var(--sentra-mobile-nav-clearance))",
+            paddingBottom: "max(1rem, var(--santra-mobile-nav-clearance))",
           }}
           onClick={closeEditMonitor}
           role="presentation"
@@ -1544,7 +1544,7 @@ export function MonitorCenter() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-monitor-title"
-            className="my-auto w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-sentra-panel shadow-2xl shadow-black/40"
+            className="my-auto w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-santra-panel shadow-2xl shadow-black/40"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3 border-b border-white/10 px-5 py-4">
@@ -1586,7 +1586,7 @@ export function MonitorCenter() {
                   <select
                     value={editCategory}
                     onChange={(event) => setEditCategory(event.target.value as Monitor["category"])}
-                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                    className="santra-focus h-11 rounded-2xl border border-white/10 bg-santra-panel px-4 text-sm text-white"
                     disabled={savingEdit}
                   >
                     {categories.map((item) => (
@@ -1601,7 +1601,7 @@ export function MonitorCenter() {
                   <select
                     value={editSeverity}
                     onChange={(event) => setEditSeverity(event.target.value as Severity)}
-                    className="sentra-focus h-11 rounded-2xl border border-white/10 bg-sentra-panel px-4 text-sm text-white"
+                    className="santra-focus h-11 rounded-2xl border border-white/10 bg-santra-panel px-4 text-sm text-white"
                     disabled={savingEdit}
                   >
                     {severities.map((severity) => (

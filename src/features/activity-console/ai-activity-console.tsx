@@ -198,7 +198,7 @@ export function StreamingStatusEngine({ health, running }: { health?: PipelineHe
 
   return (
     <Badge variant={variant}>
-      <span className={cn("mr-2 h-1.5 w-1.5 rounded-full", running ? "animate-pulse bg-sentra-cyan" : status === "failed" ? "bg-rose-300" : "bg-emerald-300")} />
+      <span className={cn("mr-2 h-1.5 w-1.5 rounded-full", running ? "animate-pulse bg-santra-cyan" : status === "failed" ? "bg-rose-300" : "bg-emerald-300")} />
       {running ? "SSE live" : status}
     </Badge>
   );
@@ -253,7 +253,7 @@ export function AIActivityConsole({ logs, sources, thoughts, health, running }: 
     const lines = logs.map((log) => `[${formatTime(log.timestamp)}] ${log.category} -> ${log.message}`).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([lines], { type: "text/plain" }));
-    link.download = `sentra-activity-${new Date().toISOString().replace(/[:.]/g, "-")}.log`;
+    link.download = `santra-activity-${new Date().toISOString().replace(/[:.]/g, "-")}.log`;
     link.click();
     URL.revokeObjectURL(link.href);
   }
@@ -264,8 +264,8 @@ export function AIActivityConsole({ logs, sources, thoughts, health, running }: 
       <div className="relative flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] pb-4">
           <div className="flex items-center gap-3">
-            <span className={cn("h-2.5 w-2.5 rounded-full", running ? "animate-pulse bg-sentra-cyan shadow-[0_0_14px_rgba(83,244,255,.9)]" : "bg-emerald-300")} />
-            <TerminalSquare className="h-4 w-4 text-sentra-cyan" />
+            <span className={cn("h-2.5 w-2.5 rounded-full", running ? "animate-pulse bg-santra-cyan shadow-[0_0_14px_rgba(83,244,255,.9)]" : "bg-emerald-300")} />
+            <TerminalSquare className="h-4 w-4 text-santra-cyan" />
             <div>
               <p className="text-sm font-semibold text-white">AI Activity Console</p>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-100/40">
@@ -322,7 +322,7 @@ export function AIActivityConsole({ logs, sources, thoughts, health, running }: 
   return (
     <AnimatePresence>
       {fullscreen ? (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-sentra-ink p-3 md:p-5">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-santra-ink p-3 md:p-5">
           {consoleBody}
         </motion.div>
       ) : (

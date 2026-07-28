@@ -97,7 +97,7 @@ export function SuggestedPromptsMenu({
                   zIndex: 200,
                   maxHeight: menuPosition.maxHeight,
                 }}
-                className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-sentra-ink shadow-2xl ring-1 ring-white/10"
+                className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-santra-ink shadow-2xl ring-1 ring-white/10"
                 role="listbox"
                 aria-label={buttonLabel}
               >
@@ -111,7 +111,7 @@ export function SuggestedPromptsMenu({
                       <button
                         type="button"
                         role="option"
-                        className="sentra-focus w-full px-4 py-3 text-left text-sm leading-6 text-white/72 transition hover:bg-cyan-300/10 hover:text-cyan-50"
+                        className="santra-focus w-full px-4 py-3 text-left text-sm leading-6 text-white/72 transition hover:bg-cyan-300/10 hover:text-cyan-50"
                         onClick={() => {
                           setOpen(false);
                           onSelect(suggestion);
@@ -146,7 +146,7 @@ export function SuggestedPromptsMenu({
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <Sparkles className="h-4 w-4 text-sentra-cyan" />
+        <Sparkles className="h-4 w-4 text-santra-cyan" />
         {buttonLabel}
         <ChevronDown className={cn("h-4 w-4 transition", open && "rotate-180")} />
       </Button>

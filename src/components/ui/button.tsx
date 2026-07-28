@@ -4,12 +4,12 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "sentra-focus inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium tracking-[-0.01em] transition-all duration-300 ease-out disabled:pointer-events-none disabled:opacity-50",
+  "santra-focus inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm font-medium tracking-[-0.01em] transition-all duration-300 ease-out disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-white/[0.96] bg-[length:180%_180%] text-sentra-ink shadow-[0_8px_22px_rgba(0,0,0,.15)]",
+          "bg-white/[0.96] bg-[length:180%_180%] text-santra-ink shadow-[0_8px_22px_rgba(0,0,0,.15)]",
         neon:
           "bg-[linear-gradient(135deg,#53f4ff_0%,#3f9cff_36%,#6272ff_68%,#a855f7_100%)] bg-[length:220%_220%] text-white shadow-[0_10px_25px_rgba(38,118,235,.3)]",
         ghost:

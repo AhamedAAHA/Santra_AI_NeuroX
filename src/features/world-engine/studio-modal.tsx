@@ -34,7 +34,7 @@ export function StudioModal({ open, title, description, onClose, children, class
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             className={cn(
-              "flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-sentra-ink shadow-2xl",
+              "flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-santra-ink shadow-2xl",
               className,
             )}
             onClick={(event) => event.stopPropagation()}

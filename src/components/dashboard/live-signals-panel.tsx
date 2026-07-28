@@ -43,7 +43,7 @@ export function LiveSignalsPanel({
       footer={
         variant === "embedded" ? (
           <div className="mt-3 flex flex-wrap gap-3 text-xs text-white/40">
-            <Link href="/alerts" className="inline-flex items-center gap-1 text-sentra-cyan/90 underline-offset-2 hover:underline">
+            <Link href="/alerts" className="inline-flex items-center gap-1 text-santra-cyan/90 underline-offset-2 hover:underline">
               Monitors <ArrowRight className="h-3 w-3" />
             </Link>
             <Link href="/reports" className="underline-offset-2 hover:text-white/70 hover:underline">

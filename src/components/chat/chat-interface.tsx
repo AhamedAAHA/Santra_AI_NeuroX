@@ -53,14 +53,14 @@ const assistantMarkdownComponents: Components = {
   h1: ({ children }) => <h2 className="mb-3 mt-6 text-xl font-semibold text-white first:mt-0">{children}</h2>,
   h2: ({ children }) => <h2 className="mb-3 mt-6 text-lg font-semibold text-white first:mt-0">{children}</h2>,
   h3: ({ children }) => (
-    <h3 className="mb-2 mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-sentra-cyan first:mt-0">
+    <h3 className="mb-2 mt-6 text-sm font-semibold uppercase tracking-[0.18em] text-santra-cyan first:mt-0">
       {children}
     </h3>
   ),
   p: ({ children }) => <p className="mb-3 text-sm leading-7 text-white/72 last:mb-0">{children}</p>,
   strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
   ul: ({ children }) => (
-    <ul className="mb-4 space-y-2 pl-1 last:mb-0 [&_li]:relative [&_li]:pl-4 [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-2.5 [&_li]:before:h-1.5 [&_li]:before:w-1.5 [&_li]:before:rounded-full [&_li]:before:bg-sentra-cyan">
+    <ul className="mb-4 space-y-2 pl-1 last:mb-0 [&_li]:relative [&_li]:pl-4 [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-2.5 [&_li]:before:h-1.5 [&_li]:before:w-1.5 [&_li]:before:rounded-full [&_li]:before:bg-santra-cyan">
       {children}
     </ul>
   ),
@@ -71,13 +71,13 @@ const assistantMarkdownComponents: Components = {
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="break-words text-sentra-cyan underline decoration-cyan-300/30 underline-offset-4 transition"
+      className="break-words text-santra-cyan underline decoration-cyan-300/30 underline-offset-4 transition"
     >
       {children}
     </a>
   ),
   blockquote: ({ children }) => (
-    <blockquote className="my-4 rounded-r-2xl border-l-2 border-sentra-cyan/60 bg-white/[0.04] px-4 py-3">
+    <blockquote className="my-4 rounded-r-2xl border-l-2 border-santra-cyan/60 bg-white/[0.04] px-4 py-3">
       {children}
     </blockquote>
   ),
@@ -571,7 +571,7 @@ export function ChatInterface({
             "flex min-h-0 min-w-0 flex-col overflow-hidden",
             hideChrome
               ? "h-full min-h-0 border-white/[0.08]"
-              : "h-[var(--sentra-mobile-strategy-height)] max-h-[var(--sentra-mobile-strategy-height)] md:h-[calc(100vh-9rem)] md:max-h-[calc(100vh-9rem)] lg:h-[calc(100svh-9rem)] lg:max-h-[calc(100svh-9rem)]",
+              : "h-[var(--santra-mobile-strategy-height)] max-h-[var(--santra-mobile-strategy-height)] md:h-[calc(100vh-9rem)] md:max-h-[calc(100vh-9rem)] lg:h-[calc(100svh-9rem)] lg:max-h-[calc(100svh-9rem)]",
           )}
           glow={!hideChrome}
         >
@@ -595,14 +595,14 @@ export function ChatInterface({
                 <div
                   className={
                     message.role === "user"
-                      ? "rounded-2xl bg-gradient-to-r from-sentra-cyan to-sentra-violet p-[1px]"
+                      ? "rounded-2xl bg-gradient-to-r from-santra-cyan to-santra-violet p-[1px]"
                       : "rounded-2xl border border-white/10 bg-white/[0.04] p-4"
                   }
                 >
-                  <div className={message.role === "user" ? "rounded-2xl bg-sentra-ink px-4 py-3 text-white" : ""}>
+                  <div className={message.role === "user" ? "rounded-2xl bg-santra-ink px-4 py-3 text-white" : ""}>
                     {message.role === "assistant" && (
                       <div className="mb-3 flex items-center gap-2.5">
-                        <span className="grid h-8 w-8 place-items-center rounded-xl bg-cyan-300/10 text-sentra-cyan">
+                        <span className="grid h-8 w-8 place-items-center rounded-xl bg-cyan-300/10 text-santra-cyan">
                           <Bot className="h-3.5 w-3.5" />
                         </span>
                         <span className="text-sm font-medium text-white">SANTRA</span>
@@ -665,7 +665,7 @@ export function ChatInterface({
                     ) : (
                       <div>
                         {message.attachment && (
-                          <p className="mb-2 flex items-center gap-2 text-xs text-sentra-cyan/90">
+                          <p className="mb-2 flex items-center gap-2 text-xs text-santra-cyan/90">
                             <FileText className="h-3.5 w-3.5 shrink-0" />
                             <span className="truncate">{message.attachment.fileName}</span>
                           </p>
@@ -693,7 +693,7 @@ export function ChatInterface({
             {loading && (
               <div className="mr-auto max-w-3xl rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
                 <div className="flex items-center gap-3 text-sm text-white/65">
-                  <Sparkles className="h-4 w-4 animate-pulse text-sentra-cyan" />
+                  <Sparkles className="h-4 w-4 animate-pulse text-santra-cyan" />
                   Collecting evidence and drafting a response…
                 </div>
               </div>
@@ -701,7 +701,7 @@ export function ChatInterface({
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="shrink-0 border-t border-white/10 bg-sentra-panel/95 p-2.5 backdrop-blur-sm sm:p-3 md:p-4">
+          <div className="shrink-0 border-t border-white/10 bg-santra-panel/95 p-2.5 backdrop-blur-sm sm:p-3 md:p-4">
             <div className="mb-2 flex flex-wrap items-center gap-1.5 sm:mb-3">
               <Button
                 type="button"

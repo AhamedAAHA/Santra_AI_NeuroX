@@ -168,7 +168,7 @@ export function UserMenu() {
 
   async function signOut() {
     signOutLocalAccount();
-    document.cookie = "sentra-local-session=; path=/; max-age=0; SameSite=Lax";
+    document.cookie = "santra-local-session=; path=/; max-age=0; SameSite=Lax";
     router.push("/sign-in");
     router.refresh();
   }
@@ -198,7 +198,7 @@ export function UserMenu() {
             className="h-5 w-5 shrink-0 rounded-full object-cover"
           />
         ) : (
-          <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-sentra-cyan/20 text-[9px] font-semibold text-sentra-cyan">
+          <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-santra-cyan/20 text-[9px] font-semibold text-santra-cyan">
             {initials}
           </span>
         )}
@@ -219,7 +219,7 @@ export function UserMenu() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-1.25rem))] origin-top-right rounded-[28px] border border-white/10 bg-sentra-ink/95 p-5 shadow-2xl shadow-black/50 backdrop-blur-2xl"
+            className="absolute right-0 top-full z-50 mt-2 w-[min(20rem,calc(100vw-1.25rem))] origin-top-right rounded-[28px] border border-white/10 bg-santra-ink/95 p-5 shadow-2xl shadow-black/50 backdrop-blur-2xl"
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">

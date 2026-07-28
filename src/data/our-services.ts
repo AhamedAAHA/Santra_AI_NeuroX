@@ -5,7 +5,7 @@ import {
   Radar,
 } from "lucide-react";
 
-export type SentraService = {
+export type SantraService = {
   id: string;
   title: string;
   tagline: string;
@@ -17,7 +17,7 @@ export type SentraService = {
   steps: string[];
 };
 
-export const sentraServices: SentraService[] = [
+export const santraServices: SantraService[] = [
   {
     id: "monitors",
     title: "Monitors",
@@ -75,5 +75,5 @@ export const sentraServices: SentraService[] = [
 ];
 
 export function getServiceById(id: string) {
-  return sentraServices.find((service) => service.id === id);
+  return santraServices.find((service) => service.id === id);
 }

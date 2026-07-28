@@ -50,8 +50,8 @@ const itemVariants = {
 
 export function Footer() {
   return (
-    <footer className="relative border-t border-white/[0.07] bg-gradient-to-b from-transparent to-sentra-ink/40">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sentra-cyan/40 to-transparent" />
+    <footer className="relative border-t border-white/[0.07] bg-gradient-to-b from-transparent to-santra-ink/40">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-santra-cyan/40 to-transparent" />
 
       <div className="border-b border-white/[0.06] bg-white/[0.02]">
         <div className="container">
@@ -61,7 +61,7 @@ export function Footer() {
                 key={stat.label}
                 className="flex shrink-0 flex-col items-center justify-center gap-0.5 px-8 py-4 text-center"
               >
-                <span className="font-display text-lg font-bold text-sentra-cyan tabular-nums">{stat.value}</span>
+                <span className="font-display text-lg font-bold text-santra-cyan tabular-nums">{stat.value}</span>
                 <span className="type-caption text-white/30">{stat.label}</span>
               </div>
             ))}
@@ -93,16 +93,16 @@ export function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/40 transition-all hover:border-sentra-cyan/30 hover:bg-sentra-cyan/10 hover:text-sentra-cyan"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white/40 transition-all hover:border-santra-cyan/30 hover:bg-santra-cyan/10 hover:text-santra-cyan"
                 >
                   <Icon className="h-3.5 w-3.5" />
                 </Link>
               ))}
             </div>
 
-            <div className="inline-flex items-center gap-2 rounded-full border border-sentra-cyan/20 bg-[rgba(83,244,255,0.05)] px-3.5 py-1.5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-santra-cyan/20 bg-[rgba(83,244,255,0.05)] px-3.5 py-1.5">
               <span className="live-dot" />
-              <span className="text-xs font-semibold tracking-widest text-sentra-cyan/70">SYSTEMS ONLINE</span>
+              <span className="text-xs font-semibold tracking-widest text-santra-cyan/70">SYSTEMS ONLINE</span>
             </div>
           </motion.div>
 
@@ -157,7 +157,7 @@ export function Footer() {
             </ul>
 
             <div className="rounded-2xl border border-white/[0.08] bg-[rgba(83,244,255,0.04)] p-4 relative overflow-hidden">
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sentra-cyan/25 to-transparent" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-santra-cyan/25 to-transparent" />
               <p className="text-xs font-bold tracking-wider text-white mb-1">SANTRA GTM Agent</p>
               <p className="text-xs text-white/35 leading-5">
                 NeuroX 2026 — competitive intelligence with human-in-the-loop automation.
@@ -165,7 +165,7 @@ export function Footer() {
               <div className="mt-3 flex items-center gap-1.5">
                 <div className="h-1 flex-1 rounded-full bg-white/10 overflow-hidden">
                   <motion.div
-                    className="h-full rounded-full bg-gradient-to-r from-sentra-cyan to-sentra-violet"
+                    className="h-full rounded-full bg-gradient-to-r from-santra-cyan to-santra-violet"
                     initial={{ width: 0 }}
                     whileInView={{ width: "78%" }}
                     viewport={{ once: true }}
@@ -189,9 +189,9 @@ export function Footer() {
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-xs text-white/20">Powered by AI</span>
             <div className="h-3 w-px bg-white/10 hidden sm:block" />
-            <div className="flex items-center gap-2 rounded-full border border-sentra-cyan/20 bg-[rgba(83,244,255,0.05)] px-3.5 py-1.5">
+            <div className="flex items-center gap-2 rounded-full border border-santra-cyan/20 bg-[rgba(83,244,255,0.05)] px-3.5 py-1.5">
               <span className="live-dot" />
-              <span className="text-xs font-medium text-sentra-cyan/70">AI Intelligence Active</span>
+              <span className="text-xs font-medium text-santra-cyan/70">AI Intelligence Active</span>
             </div>
           </div>
         </motion.div>

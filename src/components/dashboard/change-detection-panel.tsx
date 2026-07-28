@@ -16,7 +16,7 @@ export function ChangeDetectionPanel({ changes, className }: ChangeDetectionPane
   return (
     <Card className={className} glow>
       <div className="flex items-center gap-3 p-5 md:p-6 pb-0">
-        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-sentra-cyan">
+        <span className="grid h-10 w-10 place-items-center rounded-2xl bg-cyan-300/10 text-santra-cyan">
           <GitCompareArrows className="h-5 w-5" />
         </span>
         <div>

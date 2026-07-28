@@ -116,7 +116,7 @@ export function MonitorTimeline({ monitorId, limit = 12, className }: MonitorTim
           return (
             <div key={event.id} className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
               <div className="flex items-start gap-3">
-                <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-cyan-300/10 text-sentra-cyan">
+                <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-cyan-300/10 text-santra-cyan">
                   <Icon className="h-4 w-4" />
                 </span>
                 <div className="min-w-0 flex-1">

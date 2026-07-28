@@ -139,7 +139,7 @@ export function ReportsCenter() {
                   {filtered.length} saved run{filtered.length === 1 ? "" : "s"}
                 </p>
               </div>
-              <History className="h-7 w-7 text-sentra-cyan" />
+              <History className="h-7 w-7 text-santra-cyan" />
             </div>
             <div className="relative mt-5">
               <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-white/35" />
@@ -183,7 +183,7 @@ export function ReportsCenter() {
                       <button
                         type="button"
                         onClick={() => setSelectedId(entry.id)}
-                        className="sentra-focus w-full text-left"
+                        className="santra-focus w-full text-left"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <Badge variant="cyan">{historyKindLabel(entry.kind)}</Badge>
@@ -192,7 +192,7 @@ export function ReportsCenter() {
                           </span>
                         </div>
                         <div className="mt-3 flex items-start gap-2">
-                          <Icon className="mt-0.5 h-4 w-4 shrink-0 text-sentra-cyan" />
+                          <Icon className="mt-0.5 h-4 w-4 shrink-0 text-santra-cyan" />
                           <div className="min-w-0">
                             <p className="line-clamp-2 text-sm font-medium text-white">
                               {entry.kind === "monitor_report" && entry.payload.kind === "monitor_report"
@@ -259,7 +259,7 @@ export function ReportsCenter() {
             ) : (
               <div className="grid min-h-[12rem] place-items-center text-center md:min-h-[560px]">
                 <div>
-                  <FileCheck2 className="mx-auto h-10 w-10 text-sentra-cyan" />
+                  <FileCheck2 className="mx-auto h-10 w-10 text-santra-cyan" />
                   <h2 className="mt-4 text-xl font-semibold text-white">Select a saved analysis</h2>
                   <p className="mt-2 text-sm text-white/45">Pick any run from the left to review the full output.</p>
                 </div>
@@ -429,7 +429,7 @@ function HistoryDetailHeader({ entry }: { entry: WorkspaceHistoryEntry }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Icon className="h-5 w-5 text-sentra-cyan" />
+        <Icon className="h-5 w-5 text-santra-cyan" />
         <Badge variant="cyan">{historyKindLabel(entry.kind)}</Badge>
         {entry.provider && <Badge variant="default">{entry.provider}</Badge>}
         <span className="text-xs text-white/40">{new Date(entry.createdAt).toLocaleString()}</span>

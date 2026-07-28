@@ -15,8 +15,8 @@ import {
 import { LandingAuthLink } from "@/components/landing/landing-auth-link";
 import { MotionSection } from "@/components/shared/motion-section";
 import { Button } from "@/components/ui/button";
-import { sentraServices } from "@/data/our-services";
-import { SENTRA_HOME } from "@/lib/landing/auth-links";
+import { santraServices } from "@/data/our-services";
+import { SANTRA_HOME } from "@/lib/landing/auth-links";
 import { cn } from "@/lib/utils";
 
 function FeatureCard({
@@ -31,8 +31,8 @@ function FeatureCard({
   accent?: "cyan" | "violet" | "pink";
 }) {
   const accentMap = {
-    cyan: "text-sentra-cyan",
-    violet: "text-sentra-violet",
+    cyan: "text-santra-cyan",
+    violet: "text-santra-violet",
     pink: "text-pink-300",
   };
   return (
@@ -61,7 +61,7 @@ function WorkflowStep({ step, index }: { step: string; index: number }) {
       transition={{ delay: index * 0.06, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className="flex items-baseline gap-4 rounded-2xl border border-white/[0.1] bg-white/[0.03] px-4 py-3.5"
     >
-      <span className="w-7 shrink-0 text-xs font-medium tabular-nums text-sentra-cyan/70">
+      <span className="w-7 shrink-0 text-xs font-medium tabular-nums text-santra-cyan/70">
         {String(index + 1).padStart(2, "0")}
       </span>
       <span className="text-sm leading-6 text-white/75">{step}</span>
@@ -138,7 +138,7 @@ export function LandingSections() {
               Describe a competitive signal, let the agent collect evidence and draft a brief, then approve before CRM or webhook automation runs.
             </p>
             <Button asChild variant="neon" size="lg" className="mt-8 group">
-              <LandingAuthLink href={SENTRA_HOME}>
+              <LandingAuthLink href={SANTRA_HOME}>
                 Open GTM Monitors
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </LandingAuthLink>
@@ -167,7 +167,7 @@ export function LandingSections() {
           </Button>
         </div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {sentraServices.slice(0, 4).map((service, i) => (
+          {santraServices.slice(0, 4).map((service, i) => (
             <motion.div
               key={service.id}
               initial={{ opacity: 0, y: 16 }}
@@ -177,7 +177,7 @@ export function LandingSections() {
               className="rounded-2xl border border-white/[0.1] bg-white/[0.03] p-6"
             >
               <span className="mb-4 inline-grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.05]">
-                <service.icon className="h-4 w-4 text-sentra-cyan" />
+                <service.icon className="h-4 w-4 text-santra-cyan" />
               </span>
               <p className="mb-1 text-[10px] uppercase tracking-[0.22em] text-white/35">{service.tagline}</p>
               <h3 className="text-lg font-semibold leading-snug text-white">{service.title}</h3>
@@ -205,7 +205,7 @@ export function LandingSections() {
               className="rounded-2xl border border-white/[0.1] bg-white/[0.03] p-6"
             >
               <span className="mb-4 inline-grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.05]">
-                <item.icon className="h-4 w-4 text-sentra-cyan" />
+                <item.icon className="h-4 w-4 text-santra-cyan" />
               </span>
               <p className="text-sm font-medium text-white">{item.name}</p>
               <p className="mt-1.5 text-xs leading-5 text-white/40">{item.detail}</p>
@@ -226,7 +226,7 @@ export function LandingSections() {
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Button asChild size="lg" variant="neon" className="group">
-                <LandingAuthLink href={SENTRA_HOME}>
+                <LandingAuthLink href={SANTRA_HOME}>
                   Open GTM Monitors
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </LandingAuthLink>

@@ -71,8 +71,8 @@ export function NewUserGuideModal() {
       setStepIndex(0);
       setOpen(true);
     };
-    window.addEventListener("sentra:open-guide", openGuide);
-    return () => window.removeEventListener("sentra:open-guide", openGuide);
+    window.addEventListener("santra:open-guide", openGuide);
+    return () => window.removeEventListener("santra:open-guide", openGuide);
   }, []);
 
   function closeGuide() {
@@ -103,9 +103,9 @@ export function NewUserGuideModal() {
 
   return (
     <div
-      className="fixed inset-0 z-[70] grid place-items-center overflow-y-auto bg-sentra-ink/82 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
+      className="fixed inset-0 z-[70] grid place-items-center overflow-y-auto bg-santra-ink/82 px-3 py-4 backdrop-blur-xl sm:px-4 sm:py-8"
       style={{
-        paddingBottom: "max(1rem, var(--sentra-mobile-nav-clearance))",
+        paddingBottom: "max(1rem, var(--santra-mobile-nav-clearance))",
       }}
     >
       <Card className="my-auto w-full max-w-4xl overflow-hidden p-0" glow>
@@ -132,11 +132,11 @@ export function NewUserGuideModal() {
               type="button"
               onClick={() => setStepIndex(index)}
               className={cn(
-                "sentra-focus flex min-w-[9.5rem] shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-left transition md:min-w-0",
+                "santra-focus flex min-w-[9.5rem] shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-left transition md:min-w-0",
                 stepIndex === index && "border-cyan-200/30 bg-cyan-300/10",
               )}
             >
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl bg-cyan-300/10 text-sentra-cyan">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl bg-cyan-300/10 text-santra-cyan">
                 <step.icon className="h-4 w-4" />
               </span>
               <span className="min-w-0">
@@ -150,7 +150,7 @@ export function NewUserGuideModal() {
         <div className="p-5 md:p-6">
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
             <div className="flex flex-col gap-5 md:flex-row md:items-start">
-              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-3xl bg-cyan-300/10 text-sentra-cyan">
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-3xl bg-cyan-300/10 text-santra-cyan">
                 <currentStep.icon className="h-7 w-7" />
               </span>
               <div className="min-w-0">

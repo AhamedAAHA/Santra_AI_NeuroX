@@ -54,7 +54,7 @@ export function MonitorPromptField({
         <button
           type="button"
           className={cn(
-            "sentra-focus inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition",
+            "santra-focus inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition",
             ideasOpen
               ? "border-cyan-200/40 bg-cyan-300/15 text-cyan-100"
               : "border-white/10 bg-white/[0.04] text-white/55 hover:border-cyan-200/25 hover:text-white/80",
@@ -89,7 +89,7 @@ export function MonitorPromptField({
               <li key={item.requirement}>
                 <button
                   type="button"
-                  className="sentra-focus w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left text-sm leading-6 text-white/75 transition hover:border-cyan-200/30 hover:bg-cyan-300/10 hover:text-white"
+                  className="santra-focus w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left text-sm leading-6 text-white/75 transition hover:border-cyan-200/30 hover:bg-cyan-300/10 hover:text-white"
                   onClick={() => apply(item)}
                 >
                   {item.requirement}
@@ -100,7 +100,7 @@ export function MonitorPromptField({
 
           <button
             type="button"
-            className="sentra-focus mt-4 text-xs font-medium text-cyan-100/80 hover:text-cyan-100"
+            className="santra-focus mt-4 text-xs font-medium text-cyan-100/80 hover:text-cyan-100"
             onClick={() => setTemplatesOpen((open) => !open)}
             aria-expanded={templatesOpen}
           >
@@ -113,7 +113,7 @@ export function MonitorPromptField({
                 <li key={template.id}>
                   <button
                     type="button"
-                    className="sentra-focus h-full w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-left transition hover:border-cyan-200/30 hover:bg-cyan-300/10"
+                    className="santra-focus h-full w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-left transition hover:border-cyan-200/30 hover:bg-cyan-300/10"
                     onClick={() =>
                       apply({
                         requirement: template.requirement,

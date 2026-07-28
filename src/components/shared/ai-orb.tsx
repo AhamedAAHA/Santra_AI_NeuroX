@@ -31,7 +31,7 @@ function getReducedMotion() {
 function StaticOrb({ size, className, speaking }: { size: keyof typeof sizes; className?: string; speaking: boolean }) {
   return (
     <div className={cn("relative grid place-items-center", sizes[size], className)} aria-hidden>
-      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sentra-cyan via-sentra-blue to-sentra-violet opacity-60 blur-xl" />
+      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-santra-cyan via-santra-blue to-santra-violet opacity-60 blur-xl" />
       <div className="absolute inset-[9%] rounded-full border border-white/20 bg-white/10" />
       <div
         className={cn(
@@ -40,7 +40,7 @@ function StaticOrb({ size, className, speaking }: { size: keyof typeof sizes; cl
           speaking && "ai-orb-spin-fast",
         )}
       />
-      <div className="absolute inset-[24%] rounded-full bg-sentra-ink shadow-inner shadow-black" />
+      <div className="absolute inset-[24%] rounded-full bg-santra-ink shadow-inner shadow-black" />
       <div className="absolute inset-[34%] rounded-full bg-cyan-200/70 blur-lg" />
     </div>
   );
@@ -59,14 +59,14 @@ export function AiOrb({ speaking = false, size = "md", className, static: useSta
       animate={{ scale: speaking ? [1, 1.05, 1] : [1, 1.02, 1] }}
       transition={{ repeat: Infinity, duration: speaking ? 1.1 : 4.5, ease: "easeInOut" }}
     >
-      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-sentra-cyan via-sentra-blue to-sentra-violet opacity-70 blur-xl" />
+      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-santra-cyan via-santra-blue to-santra-violet opacity-70 blur-xl" />
       <div className="absolute inset-[9%] rounded-full border border-white/20 bg-white/10" />
       <motion.div
         className="absolute inset-[18%] rounded-full bg-[conic-gradient(from_90deg,rgba(83,244,255,0.95),rgba(168,85,247,0.8),rgba(255,79,216,0.8),rgba(83,244,255,0.95))]"
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: speaking ? 4 : 10, ease: "linear" }}
       />
-      <div className="absolute inset-[24%] rounded-full bg-sentra-ink shadow-inner shadow-black" />
+      <div className="absolute inset-[24%] rounded-full bg-santra-ink shadow-inner shadow-black" />
       <div className="absolute inset-[34%] rounded-full bg-cyan-200/80 blur-lg" />
     </motion.div>
   );

@@ -178,7 +178,7 @@ export function MonitorIntelBrief({
             onDelete={() => applyHeadline("")}
           />
           <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-white/50">
-            <Target className="mt-0.5 h-4 w-4 shrink-0 text-sentra-cyan" />
+            <Target className="mt-0.5 h-4 w-4 shrink-0 text-santra-cyan" />
             <span>
               <span className="text-white/35">Monitor · </span>
               {report.monitorRequirement}
@@ -414,7 +414,7 @@ export function MonitorIntelBrief({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <Webhook className="h-4 w-4 shrink-0 text-sentra-cyan" />
+              <Webhook className="h-4 w-4 shrink-0 text-santra-cyan" />
               <p className="text-sm font-semibold text-white">Why webhook delivery exists</p>
               <Badge variant="success" className="gap-1">
                 <ShieldCheck className="h-3 w-3" />

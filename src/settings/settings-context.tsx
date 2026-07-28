@@ -18,7 +18,7 @@ export type VoiceLanguage =
   | "it"
   | "nl";
 
-export type SentraSettings = {
+export type SantraSettings = {
   voice: {
     enabled: boolean;
     microphone: boolean;
@@ -70,16 +70,16 @@ export type SentraSettings = {
 };
 
 type SettingsContextValue = {
-  settings: SentraSettings;
-  updateSettings: (updater: (current: SentraSettings) => SentraSettings) => void;
+  settings: SantraSettings;
+  updateSettings: (updater: (current: SantraSettings) => SantraSettings) => void;
   resetSettings: () => void;
   exportSettings: () => void;
   clearAnalysisHistory: () => void;
 };
 
-const storageKey = "sentra-settings";
+const storageKey = "santra-settings";
 
-export const defaultSettings: SentraSettings = {
+export const defaultSettings: SantraSettings = {
   voice: {
     enabled: true,
     microphone: true,
@@ -129,9 +129,9 @@ export const defaultSettings: SentraSettings = {
   },
 };
 
-function mergeSettings(value: unknown): SentraSettings {
+function mergeSettings(value: unknown): SantraSettings {
   if (!value || typeof value !== "object") return defaultSettings;
-  const saved = value as Partial<SentraSettings>;
+  const saved = value as Partial<SantraSettings>;
   return {
     voice: { ...defaultSettings.voice, ...saved.voice },
     analyst: { ...defaultSettings.analyst, ...saved.analyst },
@@ -143,7 +143,7 @@ function mergeSettings(value: unknown): SentraSettings {
 }
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<SentraSettings>(defaultSettings);
+  const [settings, setSettings] = useState<SantraSettings>(defaultSettings);
 
   useEffect(() => {
     try {
@@ -165,7 +165,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dataset.fullscreenCommand = settings.experience.fullscreenCommandCenter ? "on" : "off";
   }, [settings]);
 
-  const updateSettings = useCallback((updater: (current: SentraSettings) => SentraSettings) => {
+  const updateSettings = useCallback((updater: (current: SantraSettings) => SantraSettings) => {
     setSettings((current) => mergeSettings(updater(current)));
   }, []);
 
@@ -182,14 +182,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       settings,
       exportedAt: new Date().toISOString(),
       histories: {
-        workspaceHistory: window.localStorage.getItem("sentra-workspace-history"),
+        workspaceHistory: window.localStorage.getItem("santra-workspace-history"),
       },
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "sentra-user-data.json";
+    anchor.download = "santra-user-data.json";
     anchor.click();
     URL.revokeObjectURL(url);
   }, [settings]);

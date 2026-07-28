@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getServiceById, sentraServices, type SentraService } from "@/data/our-services";
+import { getServiceById, santraServices, type SantraService } from "@/data/our-services";
 import { useWorkspaceSession } from "@/lib/hooks/use-workspace-session";
 import { cn } from "@/lib/utils";
 import { WorkspacePage, WorkspacePageHeader, WorkspaceSection } from "@/components/workspace/workspace-page";
@@ -18,7 +18,7 @@ export function OurServicesPage({ basePath = "/services" }: { basePath?: string 
   const router = useRouter();
   const searchParams = useSearchParams();
   const { ready, signedIn } = useWorkspaceSession();
-  const [selectedService, setSelectedService] = useState<SentraService | null>(null);
+  const [selectedService, setSelectedService] = useState<SantraService | null>(null);
 
   const guideId = searchParams.get("guide");
 
@@ -34,7 +34,7 @@ export function OurServicesPage({ basePath = "/services" }: { basePath?: string 
     router.push(signUpUrl(next));
   }
 
-  function openGuide(service: SentraService) {
+  function openGuide(service: SantraService) {
     if (!signedIn) {
       requireRegistration(`${basePath}?guide=${service.id}`);
       return;
@@ -48,7 +48,7 @@ export function OurServicesPage({ basePath = "/services" }: { basePath?: string 
     router.replace(basePath, { scroll: false });
   }
 
-  function openWorkspace(service: SentraService) {
+  function openWorkspace(service: SantraService) {
     if (!signedIn) {
       requireRegistration(service.href);
       return;
@@ -65,7 +65,7 @@ export function OurServicesPage({ basePath = "/services" }: { basePath?: string 
         aside={
           <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] p-4">
             <div className="flex items-center gap-3">
-              <Sparkles className="h-4 w-4 text-sentra-cyan" />
+              <Sparkles className="h-4 w-4 text-santra-cyan" />
               <p className="text-sm font-medium text-white">{signedIn ? "Workspace active" : "Browse freely"}</p>
             </div>
             <p className="mt-1.5 text-xs leading-5 text-white/45">
@@ -79,10 +79,10 @@ export function OurServicesPage({ basePath = "/services" }: { basePath?: string 
 
       <WorkspaceSection title="Capabilities">
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {sentraServices.map((service) => (
+        {santraServices.map((service) => (
           <Card key={service.id} className="flex min-w-0 flex-col p-5" glow>
             <div className="flex items-start gap-4">
-              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-300/10 text-sentra-cyan">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-cyan-300/10 text-santra-cyan">
                 <service.icon className="h-6 w-6" />
               </span>
               <div className="min-w-0">
@@ -124,16 +124,16 @@ function ServiceGuideModal({
   onClose,
   onOpenWorkspace,
 }: {
-  service: SentraService;
+  service: SantraService;
   onClose: () => void;
-  onOpenWorkspace: (service: SentraService) => void;
+  onOpenWorkspace: (service: SantraService) => void;
 }) {
   const [stepIndex, setStepIndex] = useState(0);
   const currentStep = service.steps[stepIndex];
   const isLastStep = stepIndex === service.steps.length - 1;
 
   return (
-    <div className="fixed inset-0 z-[70] grid place-items-center overflow-y-auto bg-sentra-ink/82 px-4 py-8 backdrop-blur-xl">
+    <div className="fixed inset-0 z-[70] grid place-items-center overflow-y-auto bg-santra-ink/82 px-4 py-8 backdrop-blur-xl">
       <Card className="w-full max-w-4xl overflow-hidden p-0" glow>
         <div className="flex items-start justify-between gap-4 border-b border-white/10 p-5 md:p-6">
           <div className="min-w-0">
@@ -156,7 +156,7 @@ function ServiceGuideModal({
               type="button"
               onClick={() => setStepIndex(index)}
               className={cn(
-                "sentra-focus rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-left transition",
+                "santra-focus rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-left transition",
                 stepIndex === index && "border-cyan-200/30 bg-cyan-300/10",
               )}
             >

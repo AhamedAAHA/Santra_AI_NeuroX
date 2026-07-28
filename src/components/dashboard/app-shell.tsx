@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="min-h-[100dvh]">
       <ParticleField lite />
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-white/10 bg-sentra-ink/92 p-5 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-white/10 bg-santra-ink/92 p-5 lg:flex">
         <Link href="/" className="group flex shrink-0 justify-center px-2 pb-5 pt-2 text-white" aria-label="SANTRA AI home">
           <BrandLogo className="h-[112px] w-[168px]" />
         </Link>
@@ -111,24 +111,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 isActive(item.href) && "bg-white/[0.08] text-white",
               )}
             >
-              <item.icon className="h-4 w-4 shrink-0 text-sentra-cyan" />
+              <item.icon className="h-4 w-4 shrink-0 text-santra-cyan" />
               <span className="min-w-0 truncate">{item.label}</span>
             </Link>
           ))}
         </nav>
         <button
           type="button"
-          onClick={() => window.dispatchEvent(new Event("sentra:open-guide"))}
-          className="sentra-focus nav-glow-link mt-5 flex shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-left text-sm text-white/72 transition"
+          onClick={() => window.dispatchEvent(new Event("santra:open-guide"))}
+          className="santra-focus nav-glow-link mt-5 flex shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-left text-sm text-white/72 transition"
         >
-          <HelpCircle className="h-4 w-4 shrink-0 text-sentra-cyan" />
+          <HelpCircle className="h-4 w-4 shrink-0 text-santra-cyan" />
           <span>Open guide</span>
         </button>
       </aside>
       <section className="lg:pl-72">
-        <div className="pb-[var(--sentra-mobile-nav-clearance)] lg:pb-0">
+        <div className="pb-[var(--santra-mobile-nav-clearance)] lg:pb-0">
           <LocalDevBanner />
-          <header className="sticky top-0 z-30 border-b border-white/10 bg-sentra-ink/92 px-3 py-3 backdrop-blur-xl md:px-8 md:py-4">
+          <header className="sticky top-0 z-30 border-b border-white/10 bg-santra-ink/92 px-3 py-3 backdrop-blur-xl md:px-8 md:py-4">
             <div className="flex min-w-0 items-center gap-2 md:gap-4">
               <CommandPalette className="min-w-0 flex-1" />
               <Link
@@ -140,7 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event("sentra:open-guide"))}
+                onClick={() => window.dispatchEvent(new Event("santra:open-guide"))}
                 className="nav-glow-link hidden shrink-0 rounded-2xl border border-white/10 bg-white/[0.06] p-3 text-white/60 transition sm:block"
                 aria-label="Open guide"
               >
@@ -149,13 +149,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <UserMenu />
             </div>
           </header>
-          <div className="sentra-workspace-shell mx-auto w-full max-w-7xl px-3 py-4 md:px-8 md:py-8">
+          <div className="santra-workspace-shell mx-auto w-full max-w-7xl px-3 py-4 md:px-8 md:py-8">
             {children}
           </div>
         </div>
       </section>
       <nav
-        className="fixed inset-x-2 z-40 rounded-3xl border border-white/10 bg-sentra-ink/95 p-1.5 shadow-2xl shadow-black/40 backdrop-blur-xl lg:hidden"
+        className="fixed inset-x-2 z-40 rounded-3xl border border-white/10 bg-santra-ink/95 p-1.5 shadow-2xl shadow-black/40 backdrop-blur-xl lg:hidden"
         style={{ bottom: "max(0.5rem, env(safe-area-inset-bottom, 0px))" }}
       >
         <div className="flex gap-0.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -168,11 +168,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onPointerEnter={() => prefetchRoute(item.href)}
               onTouchStart={() => prefetchRoute(item.href)}
               className={cn(
-                "sentra-focus nav-glow-link flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-2 text-[10px] font-medium text-white/55 transition",
+                "santra-focus nav-glow-link flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-2 text-[10px] font-medium text-white/55 transition",
                 isActive(item.href) && "bg-white/[0.08] text-white",
               )}
             >
-              <item.icon className="h-4 w-4 shrink-0 text-sentra-cyan" />
+              <item.icon className="h-4 w-4 shrink-0 text-santra-cyan" />
               <span className="max-w-full truncate">{item.label}</span>
             </Link>
           ))}

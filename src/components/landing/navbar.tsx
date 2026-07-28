@@ -7,7 +7,7 @@ import { Activity, Menu, X } from "lucide-react";
 import { LandingAuthLink } from "@/components/landing/landing-auth-link";
 import { BrandLogo } from "@/components/shared/brand-mark";
 import { Button } from "@/components/ui/button";
-import { SENTRA_HOME } from "@/lib/landing/auth-links";
+import { SANTRA_HOME } from "@/lib/landing/auth-links";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -42,7 +42,7 @@ export function Navbar() {
         style={{ backgroundColor: bgColor }}
       >
         <motion.div
-          className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sentra-cyan/40 to-transparent"
+          className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-santra-cyan/40 to-transparent"
           style={{ opacity: borderOpacity }}
         />
         <div className="hidden border-b border-white/[0.06] md:block">
@@ -59,8 +59,8 @@ export function Navbar() {
               <span className="type-caption text-white/28 stat-counter">{liveTime} UTC+5:30</span>
               <span className="h-3 w-px bg-white/10" />
               <span className="flex items-center gap-1.5">
-                <Activity className="h-2.5 w-2.5 text-sentra-cyan" />
-                <span className="type-caption text-sentra-cyan/70">API ONLINE</span>
+                <Activity className="h-2.5 w-2.5 text-santra-cyan" />
+                <span className="type-caption text-santra-cyan/70">API ONLINE</span>
               </span>
             </div>
           </div>
@@ -87,13 +87,13 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-2 rounded-full border border-sentra-cyan/20 bg-sentra-cyan/5 px-3 py-1.5 sm:flex">
+            <div className="hidden items-center gap-2 rounded-full border border-santra-cyan/20 bg-santra-cyan/5 px-3 py-1.5 sm:flex">
               <span className="live-dot" />
-              <span className="text-xs font-medium text-sentra-cyan/75">Live</span>
+              <span className="text-xs font-medium text-santra-cyan/75">Live</span>
             </div>
 
             <Button asChild variant="neon" size="sm" className="hidden sm:inline-flex">
-              <LandingAuthLink href={SENTRA_HOME}>
+              <LandingAuthLink href={SANTRA_HOME}>
                 Open GTM Monitors
               </LandingAuthLink>
             </Button>
@@ -115,7 +115,7 @@ export function Navbar() {
         animate={mobileOpen ? { opacity: 1, y: 0, pointerEvents: "auto" } : { opacity: 0, y: -12, pointerEvents: "none" }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="mx-3 overflow-hidden rounded-3xl border border-white/10 bg-sentra-ink/96 p-4 shadow-2xl shadow-black/50 backdrop-blur-2xl">
+        <div className="mx-3 overflow-hidden rounded-3xl border border-white/10 bg-santra-ink/96 p-4 shadow-2xl shadow-black/50 backdrop-blur-2xl">
           <nav className="grid gap-1">
             {links.map((link) => (
               <Link
@@ -124,14 +124,14 @@ export function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-white/60 transition hover:bg-white/[0.06] hover:text-white"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-sentra-cyan/60" />
+                <span className="h-1.5 w-1.5 rounded-full bg-santra-cyan/60" />
                 {link.label}
               </Link>
             ))}
           </nav>
           <div className="mt-4 border-t border-white/10 pt-4">
             <Button asChild variant="neon" size="lg" className="w-full">
-              <LandingAuthLink href={SENTRA_HOME}>
+              <LandingAuthLink href={SANTRA_HOME}>
                 Open GTM Monitors
               </LandingAuthLink>
             </Button>

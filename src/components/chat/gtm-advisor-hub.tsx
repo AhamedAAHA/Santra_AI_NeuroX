@@ -66,7 +66,7 @@ export function StrategyDeskHub() {
   );
 
   return (
-    <WorkspacePage className="h-[var(--sentra-mobile-strategy-height)] gap-3 overflow-hidden lg:h-[calc(100svh-7.5rem)] lg:gap-4">
+    <WorkspacePage className="h-[var(--santra-mobile-strategy-height)] gap-3 overflow-hidden lg:h-[calc(100svh-7.5rem)] lg:gap-4">
       <WorkspacePageHeader
         compact
         badge="B2B revenue intelligence"
@@ -89,7 +89,7 @@ export function StrategyDeskHub() {
                   aria-selected={selected}
                   onClick={() => setMode(item.id)}
                   className={cn(
-                    "sentra-focus inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition sm:flex-none",
+                    "santra-focus inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition sm:flex-none",
                     selected
                       ? "bg-cyan-300/15 text-cyan-50 shadow-[inset_0_0_0_1px_rgba(103,232,249,0.25)]"
                       : "text-white/50 hover:text-white/80",

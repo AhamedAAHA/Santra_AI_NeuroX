@@ -269,7 +269,7 @@ export function AuthShell({ mode }: AuthShellProps) {
         className="relative z-10 w-full max-w-[27rem]"
       >
         <div className="flex flex-col items-center text-center">
-          <Link href="/" aria-label="Santra home" className="sentra-focus relative inline-flex rounded-3xl">
+          <Link href="/" aria-label="Santra home" className="santra-focus relative inline-flex rounded-3xl">
             <span
               aria-hidden
               className="absolute inset-0 -z-10 rounded-full bg-[radial-gradient(circle,rgba(83,244,255,0.3),transparent_70%)] blur-2xl"
@@ -293,7 +293,7 @@ export function AuthShell({ mode }: AuthShellProps) {
                 href={tab.href}
                 aria-current={tab.active ? "page" : undefined}
                 className={cn(
-                  "sentra-focus rounded-full px-4 py-2 text-center text-sm font-medium transition-colors duration-300",
+                  "santra-focus rounded-full px-4 py-2 text-center text-sm font-medium transition-colors duration-300",
                   tab.active
                     ? "bg-white/[0.1] text-white shadow-[inset_0_1px_0_rgba(255,255,255,.14)]"
                     : "text-white/45 hover:text-white/80",
@@ -408,7 +408,7 @@ export function AuthShell({ mode }: AuthShellProps) {
                 <button
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
-                  className="sentra-focus inline-flex items-center gap-1.5 rounded-full px-1 text-[11px] font-medium text-white/45 hover:text-white/80"
+                  className="santra-focus inline-flex items-center gap-1.5 rounded-full px-1 text-[11px] font-medium text-white/45 hover:text-white/80"
                 >
                   {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   {showPassword ? "Hide" : "Show"}
