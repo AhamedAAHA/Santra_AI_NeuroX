@@ -116,10 +116,11 @@ export async function POST(request: Request) {
       }
     }
 
+    // Awaited so the counter is durable before a serverless runtime can freeze.
     if (provider.includes("featherless")) {
-      void recordProviderUsage("featherless");
+      await recordProviderUsage("featherless").catch(() => {});
     } else if (provider.includes("aiml")) {
-      void recordProviderUsage("aiml");
+      await recordProviderUsage("aiml").catch(() => {});
     }
 
     const response = await generateChatResponse(message, {
