@@ -1,9 +1,7 @@
 import {
   createChatCompletion,
   createLiveSearchChatCompletion,
-  getAnalysisModel,
   getChatModel,
-  getIntentModel,
   getLlmClient,
   getLlmProviderLabel,
   getSearchFallbackModel,
@@ -18,10 +16,8 @@ import {
   isLlmAuthError,
 } from "@/lib/llm/inference";
 import {
-  getAgentInferenceClient,
   getFeatherlessClient,
   getFeatherlessChatModel,
-  getFeatherlessFastModel,
   isFeatherlessConfigured,
 } from "@/lib/llm/featherless";
 import { sliceDocumentForContext } from "@/lib/documents/extract-text";
@@ -33,7 +29,7 @@ import {
   inferMonitorIntentHeuristically,
 } from "@/lib/monitor-intent-heuristic";
 import { AimlSttError, transcribeAimlAudio } from "@/services/aiml-stt";
-import type { ChatMessage, IntelligenceAnalysis, MonitorIntent, Severity } from "@/types/intelligence";
+import type { ChatMessage, IntelligenceAnalysis, MonitorIntent } from "@/types/intelligence";
 
 const SYSTEM_PROMPT = `You are SANTRA AI, a B2B GTM and competitive intelligence analyst.
 Analyze competitor moves, pricing risk, market signals, and revenue impact using available evidence.
@@ -520,4 +516,4 @@ export function resolveDocumentChatProvider(hasBrightData: boolean) {
   return hasBrightData ? ("aiml-document-bright-data" as const) : ("aiml-document" as const);
 }
 
-export { getLlmClient as getOpenAIClient, isLlmConfigured };
+export { isLlmConfigured };
