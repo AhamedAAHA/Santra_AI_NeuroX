@@ -16,6 +16,6 @@ export async function register() {
   const { ensurePlatformSecrets, schedulePlatformSecretsRefresh } = await import(
     "@/lib/secrets/platform-secrets"
   );
-  await ensurePlatformSecrets(true);
+  await ensurePlatformSecrets();
   schedulePlatformSecretsRefresh();
 }
