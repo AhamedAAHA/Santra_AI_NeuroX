@@ -1,0 +1,115 @@
+/* Mission Control — pitch-only motion (never animates text layers) */
+
+@keyframes pitch-radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pitch-pulse-ring {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.4;
+  }
+  70% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+@keyframes pitch-grid-drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 32px 32px;
+  }
+}
+
+@keyframes pitch-blip {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  60% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+}
+
+@keyframes pitch-scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+.pitch-radar-sweep {
+  animation: pitch-radar-sweep 16s linear infinite;
+  transform-origin: center;
+}
+
+.pitch-pulse-ring {
+  animation: pitch-pulse-ring 4.2s ease-out infinite;
+}
+
+.pitch-pulse-ring-delay {
+  animation: pitch-pulse-ring 4.2s ease-out 1.4s infinite;
+}
+
+.pitch-grid-drift {
+  animation: pitch-grid-drift 36s linear infinite;
+}
+
+.pitch-blip {
+  animation: pitch-blip 3.2s ease-in-out infinite;
+}
+
+.pitch-blip-delay-1 {
+  animation: pitch-blip 3.6s ease-in-out 0.8s infinite;
+}
+
+.pitch-blip-delay-2 {
+  animation: pitch-blip 2.8s ease-in-out 1.6s infinite;
+}
+
+.pitch-blip-delay-3 {
+  animation: pitch-blip 4s ease-in-out 0.4s infinite;
+}
+
+.pitch-scanline {
+  animation: pitch-scanline 9s linear infinite;
+}
+
+.pitch-hud-breathe {
+  animation: pitch-hud-breathe 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pitch-radar-sweep,
+  .pitch-pulse-ring,
+  .pitch-pulse-ring-delay,
+  .pitch-grid-drift,
+  .pitch-blip,
+  .pitch-blip-delay-1,
+  .pitch-blip-delay-2,
+  .pitch-blip-delay-3,
+  .pitch-scanline,
+  .pitch-hud-breathe {
+    animation: none !important;
+  }
+}
