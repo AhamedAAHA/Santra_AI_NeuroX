@@ -49,3 +49,16 @@ export async function listIntelligenceReports(userId: string) {
     .toArray();
   return rows.map(({ user_id: _, ...report }) => report);
 }
+
+/** Recent reports for one monitor — used by risk-over-time charts. */
+export async function listMonitorReportHistory(userId: string, monitorId: string, limit = 8) {
+  await ensureMongoReady();
+  const db = await getDb();
+  const rows = await db
+    .collection<DbIntelligenceReport & { user_id: string }>("intelligence_reports")
+    .find({ user_id: userId, monitor_id: monitorId })
+    .sort({ created_at: -1 })
+    .limit(limit)
+    .toArray();
+  return rows.map(({ user_id: _, ...report }) => report);
+}
