@@ -84,16 +84,6 @@ export function planGtmCollection(message: string, options?: { preferMcp?: boole
   };
 }
 
-export function planToPrimaryRequest(plan: GtmRoutePlan): BrightDataRequest {
-  const first = plan.steps.find((step) => step.mode !== "mcp") ?? plan.steps[0];
-  const mode = first?.mode === "mcp" || !first ? "serp" : first.mode;
-  return {
-    query: plan.query,
-    targetUrl: plan.targetUrl,
-    mode,
-  };
-}
-
 function dedupeSteps(steps: GtmRouteStep[]) {
   const seen = new Set<BrightDataMode>();
   return steps.filter((step) => {
