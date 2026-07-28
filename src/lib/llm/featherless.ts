@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { createChatCompletion, getLlmClient } from "@/lib/llm/client";
+import { createChatCompletion } from "@/lib/llm/client";
 import { getPlatformEnv } from "@/lib/secrets/platform-secrets";
 
 const FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1";
@@ -38,18 +38,6 @@ export function getFeatherlessVisionModel() {
 }
 
 /** Prefer AIML when both are configured; invalid Featherless keys should not block briefings. */
-export function getAgentInferenceClient() {
-  const prefer = (process.env.SANTRA_AGENT_PROVIDER || process.env.SENTRA_AGENT_PROVIDER)?.trim().toLowerCase();
-  if (prefer === "featherless") {
-    return getFeatherlessClient() ?? getLlmClient();
-  }
-  return getLlmClient() ?? getFeatherlessClient();
-}
-
-export function getAgentInferenceModel() {
-  return getFeatherlessChatModel();
-}
-
 export async function createFeatherlessChatCompletion(
   params: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming,
 ) {
