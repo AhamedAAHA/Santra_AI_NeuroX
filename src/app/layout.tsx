@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 import { SafeGlobal3DField } from "@/components/shared/safe-global-3d-field";
 import { Providers } from "@/app/providers";
 import "./globals.css";
@@ -19,7 +19,7 @@ const inter = Inter({
   adjustFontFallback: true,
 });
 
-const displayFont = Space_Grotesk({
+const displayFont = Sora({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
