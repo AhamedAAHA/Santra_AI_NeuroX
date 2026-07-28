@@ -2,9 +2,15 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/auth/session";
 import { getLatestBriefing, getLatestSignals, getSignalsForRun } from "@/lib/db/intelligence";
 import { isMongoConfigured } from "@/lib/mongo/config";
-import { signalStream } from "@/data/mock-intelligence";
 
 export const runtime = "nodejs";
+
+function emptySignalsResponse(generatedAt = new Date().toISOString()) {
+  return NextResponse.json(
+    { signals: [], source: "empty", generatedAt },
+    { headers: { "Cache-Control": "no-store" } },
+  );
+}
 
 export async function GET() {
   try {
@@ -12,10 +18,7 @@ export async function GET() {
     if ("error" in auth) return auth.error;
 
     if (!isMongoConfigured()) {
-      return NextResponse.json(
-        { signals: signalStream, source: "sample", generatedAt: new Date().toISOString() },
-        { headers: { "Cache-Control": "no-store" } },
-      );
+      return emptySignalsResponse();
     }
 
     const userId = auth.user.id;
@@ -36,18 +39,19 @@ export async function GET() {
     }
 
     if (!briefing) {
-      return NextResponse.json(
-        { signals: signalStream, source: "sample", generatedAt: new Date().toISOString() },
-        { headers: { "Cache-Control": "no-store" } },
-      );
+      return emptySignalsResponse();
     }
 
     const signals = await getSignalsForRun(userId, String(briefing.id));
-    const source = briefing.provider === "openai" ? "live" : "sample";
+    if (!signals.length) {
+      return emptySignalsResponse(briefing.created_at);
+    }
+
+    const source = briefing.provider === "openai" ? "live" : "monitor";
 
     return NextResponse.json(
       {
-        signals: signals.length ? signals : signalStream,
+        signals,
         source,
         generatedAt: briefing.created_at,
       },
@@ -55,9 +59,6 @@ export async function GET() {
     );
   } catch (error) {
     console.error("Signals route failed", error);
-    return NextResponse.json(
-      { signals: signalStream, source: "sample", generatedAt: new Date().toISOString() },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    return emptySignalsResponse();
   }
 }
