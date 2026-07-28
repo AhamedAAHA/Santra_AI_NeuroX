@@ -20,6 +20,7 @@ import type { PendingAction } from "@/types/pending-actions";
 import type { BrightDataCollectionMode, Severity } from "@/types/intelligence";
 import { isMongoConfigured } from "@/lib/mongo/config";
 import { notifyBandGtmEvent } from "@/services/band-agent";
+import { maybeSendWatchEmail, type WatchEmailOutcome } from "@/lib/notifications/notify-watch";
 
 export type MonitorCheckInput = {
   id: string;
@@ -48,6 +49,7 @@ export type MonitorCheckResult = {
   }>;
   evidencePreview: string;
   agentStages: GtmAgentStage[];
+  emailNotification?: WatchEmailOutcome;
   pendingAction?: PendingAction;
 };
 
@@ -233,11 +235,14 @@ export async function runMonitorCheck(
         ? await createPendingAction(options.userId, queueInput)
         : await createServerPendingAction(options.userId, queueInput);
 
-      void notifyBandGtmEvent({
+      // Awaited so the notification is not dropped when a serverless runtime freezes.
+      await notifyBandGtmEvent({
         title: "GTM monitor — approval required",
         summary: report.verdict,
         monitorId: monitor.id,
         proposedAction: pendingAction.proposedAction,
+      }).catch((error) => {
+        console.warn("Band notification skipped", error);
       });
       agentStages.push({
         stage: "hitl_queue",
@@ -247,6 +252,29 @@ export async function runMonitorCheck(
       });
     } catch (error) {
       console.warn("Pending action queue skipped", error);
+    }
+  }
+
+  let emailNotification: WatchEmailOutcome | undefined;
+
+  if (options?.userId && canPersist) {
+    // Awaited so serverless runtimes cannot freeze before delivery completes.
+    emailNotification = await maybeSendWatchEmail({
+      userId: options.userId,
+      monitorId: monitor.id,
+      requirement: monitor.requirement,
+      report,
+      matchedCount: matched.length,
+      changeCount: changeResult.changes.length,
+    });
+
+    if (emailNotification.sent) {
+      agentStages.push({
+        stage: "notify_email",
+        label: "Email alert sent",
+        detail: emailNotification.to ? `Delivered to ${emailNotification.to}` : "Delivered",
+        timestamp: new Date().toISOString(),
+      });
     }
   }
 
@@ -333,6 +361,7 @@ export async function runMonitorCheck(
     evidencePreview: evidence.slice(0, 6000) || analysis.summary.slice(0, 6000),
     agentStages,
     pendingAction,
+    emailNotification,
   };
 }
 
