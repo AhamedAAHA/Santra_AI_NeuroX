@@ -10,7 +10,8 @@ export type GtmAgentStageName =
   | "analysis"
   | "change_detection"
   | "report"
-  | "hitl_queue";
+  | "hitl_queue"
+  | "notify_email";
 
 export type GtmAgentStage = {
   stage: GtmAgentStageName;
