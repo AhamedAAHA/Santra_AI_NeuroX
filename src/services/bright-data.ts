@@ -102,11 +102,6 @@ async function writeCache(cacheKey: string, value: BrightDataEvidence) {
   }
 }
 
-export async function discoverBrightDataZones(apiKey: string) {
-  const { fetchActiveBrightDataZones } = await import("@/lib/bright-data/zones");
-  return fetchActiveBrightDataZones(apiKey);
-}
-
 function getDemoEvidence(query: string, mode: BrightDataMode = "serp"): BrightDataEvidence {
   return {
     provider: "demo",
@@ -116,10 +111,6 @@ function getDemoEvidence(query: string, mode: BrightDataMode = "serp"): BrightDa
       .map((signal) => `${signal.title}: ${signal.summary} Source=${signal.source}`)
       .join("\n"),
   };
-}
-
-export function collectDemoWebIntelligence(query: string): BrightDataEvidence {
-  return getDemoEvidence(query);
 }
 
 async function resolveZoneForMode(mode: Exclude<BrightDataMode, "mcp">, zones: ResolvedBrightDataZones) {
@@ -246,10 +237,3 @@ export async function collectWebIntelligence({
   }
 }
 
-export async function monitorCompetitor(targetUrl: string) {
-  return collectWebIntelligence({
-    query: `Monitor competitor website changes, pricing, product launches, and hiring signals for ${targetUrl}`,
-    targetUrl,
-    mode: "unlocker",
-  });
-}
