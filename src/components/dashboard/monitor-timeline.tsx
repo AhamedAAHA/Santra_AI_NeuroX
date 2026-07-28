@@ -8,6 +8,7 @@ import {
   Clock3,
   FileText,
   GitCompareArrows,
+  Mail,
   Webhook,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ const eventIcon = {
   report_generated: FileText,
   workflow_triggered: Webhook,
   signal_matched: BellRing,
+  notification_sent: Mail,
 } as const;
 
 const eventLabel = {
@@ -36,6 +38,7 @@ const eventLabel = {
   report_generated: "Report generated",
   workflow_triggered: "Workflow triggered",
   signal_matched: "Signal matched",
+  notification_sent: "Email alert sent",
 } as const;
 
 type MonitorTimelineProps = {
