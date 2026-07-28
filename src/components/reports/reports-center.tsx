@@ -286,7 +286,11 @@ function HistoryDetail({
     return (
       <div className="grid gap-6">
         <HistoryDetailHeader entry={entry} />
-        <MonitorIntelBrief report={selected} onHeadlineChange={onMonitorHeadlineChange} />
+        <MonitorIntelBrief
+          report={selected}
+          monitorId={entry.payload.monitorId}
+          onHeadlineChange={onMonitorHeadlineChange}
+        />
       </div>
     );
   }
