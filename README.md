@@ -120,6 +120,7 @@ docs/             # Deploy, OAuth, architecture guides
 - [MongoDB OAuth](docs/MONGODB_OAUTH.md)  
 - [User setup](docs/USER_SETUP.md)  
 - [Secrets vault](docs/SECRETS_VAULT.md)  
+- [Background email alerts](docs/EMAIL_ALERTS.md)  
 
 ---
 
