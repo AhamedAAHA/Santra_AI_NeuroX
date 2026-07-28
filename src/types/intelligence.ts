@@ -89,7 +89,8 @@ export type MonitorTimelineEventType =
   | "check_complete"
   | "report_generated"
   | "workflow_triggered"
-  | "signal_matched";
+  | "signal_matched"
+  | "notification_sent";
 
 export type MonitorTimelineEvent = {
   id: string;
