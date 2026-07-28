@@ -17,19 +17,22 @@ function CountUp({ to, suffix = "", prefix = "", startDelay = 900 }: { to: numbe
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | undefined;
     const timeout = setTimeout(() => {
       const duration = 1600;
       const steps = 55;
       const increment = to / steps;
       let current = 0;
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         current = Math.min(current + increment, to);
         setCount(Math.floor(current));
         if (current >= to) clearInterval(timer);
       }, duration / steps);
-      return () => clearInterval(timer);
     }, startDelay);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      if (timer) clearInterval(timer);
+    };
   }, [to, startDelay]);
 
   return <span className="stat-counter">{prefix}{count.toLocaleString()}{suffix}</span>;
