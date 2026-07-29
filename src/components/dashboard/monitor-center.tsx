@@ -16,7 +16,6 @@ import { AgentActivityLog } from "@/components/gtm/agent-activity-log";
 import { MonitorIntelBrief } from "@/components/reports/monitor-intel-brief";
 import { getWorkspaceContext } from "@/lib/gtm/workspace-context";
 import { buildClientMemoryBrief } from "@/lib/gtm/agent-memory";
-import { resolveActionHeadline } from "@/lib/gtm/report-headline";
 import { useWorkspaceSession } from "@/lib/hooks/use-workspace-session";
 import { fetchMonitorIntent } from "@/lib/monitor-intent-client";
 import { inferMonitorIntentHeuristically } from "@/lib/monitor-intent-heuristic";
@@ -137,7 +136,7 @@ export function MonitorCenter() {
   const intentAbortRef = useRef<AbortController | null>(null);
   const checkMonitorNowRef = useRef<((monitorId: string, options?: { automated?: boolean }) => Promise<void>) | null>(null);
   const [monitors, setMonitors] = useState<Monitor[]>([]);
-  const [signals, setSignals] = useState<IntelligenceSignal[]>([]);
+  const [, setSignals] = useState<IntelligenceSignal[]>([]);
   const [checkingId, setCheckingId] = useState<string | null>(null);
   const [requirement, setRequirement] = useState("");
   const [category, setCategory] = useState<"any" | SignalCategory>("any");
@@ -152,7 +151,6 @@ export function MonitorCenter() {
   const [aiError, setAiError] = useState("");
   const [demoAutopilot, setDemoAutopilot] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const [webhookSending, setWebhookSending] = useState(false);
   const [detectedChanges, setDetectedChanges] = useState<DetectedChange[]>([]);
   const [demoLoading, setDemoLoading] = useState(false);
   const [creatingMonitor, setCreatingMonitor] = useState(false);
@@ -705,41 +703,6 @@ export function MonitorCenter() {
     }
   }
 
-  async function sendWebhookAlert(report: ExecutiveIntelligenceReport, monitorId?: string) {
-    const trimmed = webhookUrl.trim();
-    if (!trimmed) return;
-
-    setWebhookSending(true);
-    try {
-      const response = await fetch("/api/alerts/webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ webhookUrl: trimmed, report }),
-      });
-      const data = (await response.json().catch(() => ({}))) as { error?: string };
-      if (!response.ok) throw new Error(data.error || "Webhook delivery failed.");
-      toast.success("Webhook alert delivered.");
-      // CRM/automation delivery stays behind the approval inbox; this is notification only.
-      fetch("/api/timeline", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "notification_sent",
-          monitorId,
-          monitorRequirement: report.monitorRequirement,
-          summary: "Alert webhook delivered",
-          metadata: { channel: "webhook" },
-        }),
-      }).catch(() => {});
-      setTimelineKey((current) => current + 1);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Webhook delivery failed.");
-    } finally {
-      setWebhookSending(false);
-    }
-  }
-
   async function loadPresetDemo() {
     setDemoLoading(true);
     try {
@@ -951,8 +914,14 @@ export function MonitorCenter() {
         });
 
         const hasFindings = matched.length > 0 || (data.detectedChanges?.length ?? 0) > 0;
-        if (hasFindings) {
-          void sendWebhookAlert(data.report, monitorId);
+        if (hasFindings && data.pendingAction) {
+          toast.message("HITL gate — approve before webhook send", {
+            description: "Open the Approval inbox to edit and approve delivery.",
+            action: {
+              label: "Approve",
+              onClick: () => openReport(monitor, matched[0] ?? allSignals[0], data.report, data.pendingAction?.id),
+            },
+          });
         }
       }
 
@@ -1384,10 +1353,30 @@ export function MonitorCenter() {
                   Slack/Discord post a readable alert. Generic URLs (webhook.site, Zapier) include a plain <span className="font-mono text-white/50">summary</span>. Approve &amp; send still lives in the report popup.
                 </p>
                 {webhookUrl.trim() && (
-                  <Badge variant={webhookSending ? "cyan" : "success"} className="w-fit">
-                    {webhookSending ? "Sending" : "Alert webhook saved"}
+                  <Badge variant="success" className="w-fit">
+                    Alert webhook saved · HITL required
                   </Badge>
                 )}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {(
+                    [
+                      ["webhook.site", "https://webhook.site/"],
+                      ["Slack", "https://api.slack.com/messaging/webhooks"],
+                      ["Discord", "https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks"],
+                      ["Zapier", "https://zapier.com/apps/webhook/help"],
+                    ] as const
+                  ).map(([label, href]) => (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] text-white/55 hover:text-cyan-100"
+                    >
+                      {label}
+                    </a>
+                  ))}
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 border-t border-white/8 pt-4">
@@ -1572,20 +1561,16 @@ export function MonitorCenter() {
             <div className="flex items-start justify-between gap-4 border-b border-white/10 p-4 md:p-6">
               <div className="min-w-0">
                 <p className="text-[11px] uppercase tracking-[0.2em] text-white/35">Executive intel brief</p>
-                <h3 className="mt-2 text-lg font-semibold text-white md:text-2xl">
-                  {selectedReport.report
-                    ? selectedReport.report.verdict?.trim()
-                      ? resolveActionHeadline({
-                          proposedAction: selectedReport.report.verdict,
-                          monitorRequirement: selectedReport.monitor.requirement,
-                          report: selectedReport.report,
-                        })
-                      : "No headline"
-                    : selectedReport.signal?.title}
-                </h3>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/45">
-                  Monitor · {selectedReport.monitor.requirement}
-                </p>
+                {!selectedReport.report ? (
+                  <>
+                    <h3 className="mt-2 text-lg font-semibold text-white md:text-2xl">
+                      {selectedReport.signal?.title}
+                    </h3>
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-white/45">
+                      Monitor · {selectedReport.monitor.requirement}
+                    </p>
+                  </>
+                ) : null}
               </div>
               <Button variant="ghost" size="icon" onClick={closeReport} aria-label="Close report">
                 <X className="h-4 w-4" />
@@ -1599,6 +1584,7 @@ export function MonitorCenter() {
                     <MonitorIntelBrief
                       report={selectedReport.report}
                       monitorId={selectedReport.monitor.id}
+                      showSendGuide={false}
                       onHeadlineChange={(headline) => {
                         const nextReport = { ...selectedReport.report!, verdict: headline };
                         setSelectedReport({ ...selectedReport, report: nextReport });
