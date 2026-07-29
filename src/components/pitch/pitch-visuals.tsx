@@ -5,7 +5,10 @@ import {
   Bell,
   Bot,
   CheckCircle2,
+  Copy,
   GitFork,
+  Hash,
+  Link2,
   Mail,
   Mic,
   Radar,
@@ -260,17 +263,15 @@ export function HitlGateDiagram({ className }: { className?: string }) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
-    if (reducedMotion) {
-      setActive(2);
-      return;
-    }
+    if (reducedMotion) return;
     const id = window.setInterval(() => {
       setActive((prev) => (prev + 1) % stages.length);
     }, 1600);
     return () => window.clearInterval(id);
   }, [reducedMotion, stages.length]);
 
-  const unlocked = reducedMotion || active === 3;
+  const step = reducedMotion ? 2 : active;
+  const unlocked = reducedMotion || step === 3;
 
   return (
     <div
@@ -313,8 +314,8 @@ export function HitlGateDiagram({ className }: { className?: string }) {
 
       <div className="relative mt-8 flex items-stretch gap-0">
         {stages.map((stage, i) => {
-          const isActive = active === i;
-          const isPast = active > i;
+          const isActive = step === i;
+          const isPast = step > i;
           const isGate = Boolean("gate" in stage && stage.gate);
           const isCrm = i === stages.length - 1;
           const crmBlocked = isCrm && !unlocked && !reducedMotion;
@@ -383,16 +384,16 @@ export function HitlGateDiagram({ className }: { className?: string }) {
                     animate={
                       reducedMotion
                         ? { x: "50%" }
-                        : active > i
+                        : step > i
                           ? { x: ["-100%", "200%"] }
-                          : active === i
+                          : step === i
                             ? { x: ["-100%", "80%"], opacity: [0.3, 1, 0.3] }
                             : { x: "-100%", opacity: 0.2 }
                     }
                     transition={
                       reducedMotion
                         ? undefined
-                        : active >= i
+                        : step >= i
                           ? { repeat: Infinity, duration: 1.1, ease: "linear" }
                           : { duration: 0.3 }
                     }
@@ -554,14 +555,10 @@ export function AutoIntentVisual({ className }: { className?: string }) {
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => true);
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<"typing" | "classified">("classified");
-  const [typed, setTyped] = useState(INTENT_PROMPTS[0].text);
+  const [typed, setTyped] = useState<string>(INTENT_PROMPTS[0].text);
 
   useEffect(() => {
-    if (reducedMotion) {
-      setTyped(INTENT_PROMPTS[0].text);
-      setPhase("classified");
-      return;
-    }
+    if (reducedMotion) return;
 
     let cancelled = false;
     let typeTimer: number | undefined;
@@ -601,7 +598,9 @@ export function AutoIntentVisual({ className }: { className?: string }) {
     };
   }, [reducedMotion]);
 
-  const current = INTENT_PROMPTS[index]!;
+  const current = INTENT_PROMPTS[reducedMotion ? 0 : index]!;
+  const shownText = reducedMotion ? current.text : typed;
+  const shownPhase = reducedMotion ? "classified" : phase;
 
   return (
     <div
@@ -623,8 +622,8 @@ export function AutoIntentVisual({ className }: { className?: string }) {
         </p>
         <div className="mt-2 min-h-[4.5rem] border border-white/[0.1] bg-white/[0.03] px-3 py-3">
           <p className="text-sm leading-relaxed text-white/85">
-            {typed}
-            {!reducedMotion && phase === "typing" ? (
+            {shownText}
+            {!reducedMotion && shownPhase === "typing" ? (
               <motion.span
                 className="ml-0.5 inline-block h-4 w-0.5 bg-cyan-300 align-middle"
                 animate={{ opacity: [1, 0, 1] }}
@@ -635,9 +634,9 @@ export function AutoIntentVisual({ className }: { className?: string }) {
         </div>
 
         <motion.div
-          key={`${index}-${phase}`}
+          key={`${current.category}-${shownPhase}`}
           initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-          animate={{ opacity: phase === "classified" ? 1 : 0.35, y: 0 }}
+          animate={{ opacity: shownPhase === "classified" ? 1 : 0.35, y: 0 }}
           transition={{ duration: 0.35, ease: EASE }}
           className="mt-5"
         >
@@ -661,6 +660,188 @@ export function AutoIntentVisual({ className }: { className?: string }) {
             Plain-language watches classify automatically — adjust anytime.
           </p>
         </motion.div>
+      </div>
+    </div>
+  );
+}
+
+const DISCORD_STEPS = [
+  {
+    title: "Open channel settings",
+    detail: "Discord → channel → Edit Channel",
+  },
+  {
+    title: "Create a webhook",
+    detail: "Integrations → Webhooks → New Webhook",
+  },
+  {
+    title: "Copy the URL",
+    detail: "discord.com/api/webhooks/…",
+  },
+  {
+    title: "Paste in SANTRA",
+    detail: "Monitors → Options → Alert webhook URL",
+  },
+  {
+    title: "Approve & send",
+    detail: "HITL gate → Discord embed lands",
+  },
+] as const;
+
+/** Animated Discord webhook how-to for the pitch deck */
+export function DiscordWebhookVisual({ className }: { className?: string }) {
+  const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => true);
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    if (reducedMotion) return;
+    const id = window.setInterval(() => {
+      setStep((prev) => (prev + 1) % DISCORD_STEPS.length);
+    }, 2000);
+    return () => window.clearInterval(id);
+  }, [reducedMotion]);
+
+  const active = reducedMotion ? DISCORD_STEPS.length - 1 : step;
+  const pasted = active >= 3;
+  const sent = active >= 4;
+
+  return (
+    <div
+      className={cn(
+        "relative grid h-full min-h-[300px] overflow-hidden border border-cyan-400/25 bg-[#050b16]/95 lg:grid-cols-2",
+        className,
+      )}
+    >
+      {/* Discord side */}
+      <div className="flex flex-col border-b border-white/[0.08] lg:border-b-0 lg:border-r">
+        <div className="flex items-center gap-2 border-b border-white/[0.08] bg-[#5865F2]/15 px-4 py-2.5">
+          <Hash className="h-3.5 w-3.5 text-[#a5b4fc]" />
+          <span className={cn(mono, "text-[0.65rem] tracking-wider text-[#c7d2fe]")}>
+            #gtm-alerts · Discord
+          </span>
+        </div>
+        <ul className="flex flex-1 flex-col justify-center gap-2 px-4 py-4 sm:px-5">
+          {DISCORD_STEPS.slice(0, 3).map((item, i) => {
+            const isActive = active === i;
+            const isPast = active > i;
+            return (
+              <motion.li
+                key={item.title}
+                animate={{
+                  borderColor: isActive
+                    ? "rgba(129,140,248,0.55)"
+                    : isPast
+                      ? "rgba(34,211,238,0.25)"
+                      : "rgba(255,255,255,0.08)",
+                  backgroundColor: isActive ? "rgba(88,101,242,0.18)" : "rgba(255,255,255,0.02)",
+                }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="border px-3 py-2.5"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      mono,
+                      "flex h-5 w-5 items-center justify-center text-[0.6rem]",
+                      isActive || isPast ? "text-cyan-200" : "text-white/35",
+                    )}
+                  >
+                    0{i + 1}
+                  </span>
+                  <p className={cn(display, "text-sm font-semibold text-white")}>{item.title}</p>
+                  {isPast ? <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-cyan-300" /> : null}
+                </div>
+                <p className="mt-1 pl-7 text-xs text-white/55">{item.detail}</p>
+              </motion.li>
+            );
+          })}
+        </ul>
+        {sent ? (
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-4 mb-4 border border-indigo-300/30 bg-indigo-500/10 px-3 py-2.5 sm:mx-5"
+          >
+            <p className="text-xs font-medium text-indigo-100">SANTRA · Pricing watch</p>
+            <p className="mt-1 text-[0.7rem] leading-snug text-white/70">
+              Material packaging change detected · Risk 62 · awaiting team read.
+            </p>
+          </motion.div>
+        ) : null}
+      </div>
+
+      {/* SANTRA side */}
+      <div className="flex flex-col">
+        <div className="flex items-center gap-2 border-b border-white/[0.08] bg-white/[0.03] px-4 py-2.5">
+          <Link2 className="h-3.5 w-3.5 text-cyan-300" />
+          <span className={cn(mono, "text-[0.65rem] tracking-wider text-white/45")}>
+            /alerts · webhook URL
+          </span>
+        </div>
+        <div className="flex flex-1 flex-col justify-center px-4 py-4 sm:px-5">
+          <p className={cn(mono, "text-[0.65rem] uppercase tracking-[0.18em] text-cyan-300")}>
+            Alert webhook URL
+          </p>
+          <div className="mt-2 flex items-center gap-2 border border-white/15 bg-white/[0.04] px-3 py-2.5">
+            <motion.p
+              key={pasted ? "filled" : "empty"}
+              initial={reducedMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={cn(
+                "min-w-0 flex-1 truncate font-mono text-[0.7rem]",
+                pasted ? "text-cyan-100" : "text-white/30",
+              )}
+            >
+              {pasted
+                ? "https://discord.com/api/webhooks/…/…"
+                : "Paste Discord webhook URL…"}
+            </motion.p>
+            <Copy className={cn("h-3.5 w-3.5 shrink-0", pasted ? "text-cyan-300" : "text-white/25")} />
+          </div>
+
+          <ul className="mt-4 space-y-2">
+            {DISCORD_STEPS.slice(3).map((item, offset) => {
+              const i = offset + 3;
+              const isActive = active === i;
+              const isPast = active > i;
+              return (
+                <motion.li
+                  key={item.title}
+                  animate={{
+                    borderColor: isActive
+                      ? "rgba(34,211,238,0.5)"
+                      : isPast
+                        ? "rgba(34,211,238,0.22)"
+                        : "rgba(255,255,255,0.08)",
+                    backgroundColor: isActive ? "rgba(34,211,238,0.12)" : "rgba(255,255,255,0.02)",
+                  }}
+                  className="border px-3 py-2.5"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={cn(mono, "text-[0.6rem] text-cyan-200/80")}>0{i + 1}</span>
+                    <p className={cn(display, "text-sm font-semibold text-white")}>{item.title}</p>
+                    {(isPast || (sent && i === 4)) && (
+                      <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-emerald-300" />
+                    )}
+                  </div>
+                  <p className="mt-1 pl-7 text-xs text-white/55">{item.detail}</p>
+                </motion.li>
+              );
+            })}
+          </ul>
+
+          <motion.div
+            animate={{
+              opacity: sent ? 1 : 0.4,
+              borderColor: sent ? "rgba(52,211,153,0.45)" : "rgba(255,255,255,0.12)",
+            }}
+            className="mt-4 border px-3 py-2.5 text-center"
+          >
+            <p className={cn(mono, "text-[0.65rem] uppercase tracking-[0.16em]", sent ? "text-emerald-200" : "text-white/45")}>
+              {sent ? "Delivered to Discord" : "Waiting for HITL approve"}
+            </p>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
