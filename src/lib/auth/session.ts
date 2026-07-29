@@ -94,15 +94,20 @@ export async function requireApiUser(): Promise<{ error: NextResponse } | ApiAut
     };
   }
 
-  const user = await findUserById(localSession.userId);
-  if (!user) {
-    return {
-      error: NextResponse.json(
-        { error: "Session expired.", hint: "Sign in again." },
-        { status: 401 },
-      ),
-    };
+  try {
+    const user = await findUserById(localSession.userId);
+    if (!user) {
+      return {
+        error: NextResponse.json(
+          { error: "Session expired.", hint: "Sign in again." },
+          { status: 401 },
+        ),
+      };
+    }
+    return { user: { id: user.id, email: user.email } };
+  } catch (error) {
+    // Transient Atlas timeouts should not block signed-in APIs (e.g. live call token mint).
+    console.error("MongoDB user lookup failed during auth — using cookie session", error);
+    return { user: { id: localSession.userId, email: localSession.email } };
   }
-
-  return { user: { id: user.id, email: user.email } };
 }
