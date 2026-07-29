@@ -35,8 +35,10 @@ export type ReportViewModel = {
   monitorRequirement: string;
   situation: string;
   impact: string;
-  riskScore: number;
+    riskScore: number;
   confidence: number;
+  importanceScore: number;
+  importanceBand: "high" | "medium" | "low";
   hallucinationRisk: ExecutiveIntelligenceReport["hallucinationRisk"];
   provider: ExecutiveIntelligenceReport["provider"];
   generatedAt: string;
@@ -103,6 +105,8 @@ export function buildReportViewModel(
     impact: report.impact,
     riskScore: report.riskScore,
     confidence: report.confidence,
+    importanceScore: report.importanceScore ?? 0,
+    importanceBand: report.importanceBand ?? "low",
     hallucinationRisk: report.hallucinationRisk,
     provider: report.provider,
     generatedAt: report.generatedAt,
