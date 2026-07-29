@@ -21,6 +21,7 @@ import {
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { WebhookDeliveryCard } from "@/components/gtm/webhook-delivery-card";
 import { EditableHeadline } from "@/components/reports/editable-headline";
 import { ReportTrendChart } from "@/components/reports/report-trend-chart";
 import { downloadMonitorReport } from "@/lib/gtm/export-report";
@@ -29,6 +30,7 @@ import {
   buildRiskTrendPoints,
   type RiskTrendPoint,
 } from "@/lib/reports/view-model";
+import { getAlertWebhookUrl, saveAlertWebhookUrl } from "@/lib/webhooks";
 import { claimStatusLabel, normalizeClaimStatus, type ExecutiveIntelligenceReport } from "@/types/intelligence";
 import { cn } from "@/lib/utils";
 
@@ -49,7 +51,7 @@ function ScoreMeter({
 }: {
   label: string;
   value: number;
-  tone: "risk" | "confidence";
+  tone: "risk" | "confidence" | "importance";
   caption: string;
 }) {
   const fill =
@@ -59,14 +61,19 @@ function ScoreMeter({
         : value >= 65
           ? "bg-amber-400"
           : "bg-sky-400"
-      : "bg-cyan-300";
+      : tone === "importance"
+        ? "bg-amber-300"
+        : "bg-cyan-300";
+
+  const valueClass =
+    tone === "risk" ? "text-rose-100" : tone === "importance" ? "text-amber-100" : "text-cyan-100";
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
       <div className="flex items-end justify-between gap-3">
         <div>
           <p className="text-[11px] uppercase tracking-[0.18em] text-white/40">{label}</p>
-          <p className={`mt-1 text-3xl font-semibold ${tone === "risk" ? "text-rose-100" : "text-cyan-100"}`}>
+          <p className={`mt-1 text-3xl font-semibold ${valueClass}`}>
             {value}
             <span className="text-base font-medium text-white/40">%</span>
           </p>
@@ -85,20 +92,24 @@ export function MonitorIntelBrief({
   monitorId,
   riskTrend: riskTrendProp,
   onHeadlineChange,
+  showSendGuide = true,
 }: {
   report: ExecutiveIntelligenceReport;
   monitorId?: string;
   riskTrend?: RiskTrendPoint[];
   /** Persist edited/deleted headline. Pass empty string to delete. */
   onHeadlineChange?: (headline: string) => void;
+  /** When false, omit the Detect → OK → Send guide (e.g. Monitor Center already has approval below). */
+  showSendGuide?: boolean;
 }) {
   const [headlineOverride, setHeadlineOverride] = useState<{
     reportId: string;
     value: string;
   } | null>(null);
-  const [tab, setTab] = useState<BriefTab>("charts");
+  const [tab, setTab] = useState<BriefTab>("evidence");
   const [severityFilter, setSeverityFilter] = useState<string | null>(null);
   const [loadedTrend, setLoadedTrend] = useState<RiskTrendPoint[]>([]);
+  const [deliveryWebhookUrl, setDeliveryWebhookUrl] = useState("");
 
   const localHeadline =
     headlineOverride?.reportId === report.id ? headlineOverride.value : null;
@@ -110,6 +121,16 @@ export function MonitorIntelBrief({
 
   const vm = useMemo(() => buildReportViewModel(displayReport), [displayReport]);
   const headline = localHeadline ?? vm.headline;
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDeliveryWebhookUrl(getAlertWebhookUrl()), 0);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!deliveryWebhookUrl) return;
+    saveAlertWebhookUrl(deliveryWebhookUrl);
+  }, [deliveryWebhookUrl]);
 
   useEffect(() => {
     if (riskTrendProp?.length || !monitorId) return;
@@ -160,11 +181,67 @@ export function MonitorIntelBrief({
 
   return (
     <div className="grid gap-6">
-      <header className="grid gap-5 border-b border-white/10 pb-6">
+      <header className="grid gap-4 border-b border-white/10 pb-6">
+        <div>
+          <EditableHeadline
+            value={headline}
+            label="Headline"
+            onSave={applyHeadline}
+            onDelete={() => applyHeadline("")}
+          />
+          <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-white/50">
+            <Target className="mt-0.5 h-4 w-4 shrink-0 text-santra-cyan" />
+            <span>
+              <span className="text-white/35">Monitor · </span>
+              {vm.monitorRequirement}
+            </span>
+          </p>
+        </div>
+
+        {vm.competitors.length > 0 && (
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-white/35">Competitors in this brief</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {vm.competitors.map((name) => (
+                <span
+                  key={name}
+                  className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-medium text-cyan-50"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <ScoreMeter
+            label="Risk (exposure)"
+            value={vm.riskScore}
+            tone="risk"
+            caption="How severe / broad the matched signals are"
+          />
+          <ScoreMeter
+            label="Confidence (evidence)"
+            value={vm.confidence}
+            tone="confidence"
+            caption="How well claims are backed by sources"
+          />
+          <ScoreMeter
+            label="Importance (priority)"
+            value={vm.importanceScore}
+            tone="importance"
+            caption={`${vm.importanceBand} · relevance × magnitude × urgency`}
+          />
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
-            <Badge variant="risk">{vm.riskScore}% exposure</Badge>
-            <Badge variant="cyan">{vm.confidence}% evidence quality</Badge>
+            {displayReport.factCheck ? (
+              <Badge variant="success">
+                Fact-check · {displayReport.factCheck.corroborated} corroborated
+              </Badge>
+            ) : null}
             <Badge variant={vm.hallucinationRisk === "low" ? "success" : "risk"}>
               {vm.hallucinationRisk} hallucination risk
             </Badge>
@@ -191,48 +268,6 @@ export function MonitorIntelBrief({
               <Download className="h-4 w-4" /> JSON
             </Button>
           </div>
-        </div>
-
-        <div>
-          <EditableHeadline value={headline} onSave={applyHeadline} onDelete={() => applyHeadline("")} />
-          <p className="mt-2 flex items-start gap-2 text-sm leading-6 text-white/50">
-            <Target className="mt-0.5 h-4 w-4 shrink-0 text-santra-cyan" />
-            <span>
-              <span className="text-white/35">Monitor · </span>
-              {vm.monitorRequirement}
-            </span>
-          </p>
-        </div>
-
-        {vm.competitors.length > 0 && (
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.2em] text-white/35">Competitors in this brief</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {vm.competitors.map((name) => (
-                <span
-                  key={name}
-                  className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-medium text-cyan-50"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <ScoreMeter
-            label="Risk (exposure)"
-            value={vm.riskScore}
-            tone="risk"
-            caption="How severe / broad the matched signals are"
-          />
-          <ScoreMeter
-            label="Confidence (evidence)"
-            value={vm.confidence}
-            tone="confidence"
-            caption="How well claims are backed by sources"
-          />
         </div>
       </header>
 
@@ -299,8 +334,8 @@ export function MonitorIntelBrief({
           <div className="flex flex-wrap gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5">
             {(
               [
-                ["charts", "Charts"],
                 ["evidence", "Evidence"],
+                ["charts", "Charts"],
                 ["claims", "Claims"],
               ] as const
             ).map(([id, label]) => (
@@ -486,64 +521,53 @@ export function MonitorIntelBrief({
         </div>
       </div>
 
-      <section className="rounded-[24px] border border-cyan-300/20 bg-gradient-to-br from-cyan-400/[0.07] via-transparent to-violet-500/[0.06] p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <FileText className="h-4 w-4 shrink-0 text-santra-cyan" />
-              <p className="text-sm font-semibold text-white">Read here, then send with your OK</p>
-              <Badge variant="success" className="gap-1">
-                <ShieldCheck className="h-3 w-3" />
-                Needs your OK before sending
-              </Badge>
+      {showSendGuide ? (
+        <section className="rounded-[24px] border border-cyan-300/20 bg-gradient-to-br from-cyan-400/[0.07] via-transparent to-violet-500/[0.06] p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <FileText className="h-4 w-4 shrink-0 text-santra-cyan" />
+                <p className="text-sm font-semibold text-white">Read here, then send with your OK</p>
+                <Badge variant="success" className="gap-1">
+                  <ShieldCheck className="h-3 w-3" />
+                  Needs your OK before sending
+                </Badge>
+              </div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
+                This brief is your decision room inside SANTRA. After you approve below, we can deliver the same
+                summary to Slack, Zapier, or your other tools — where your team already works.
+              </p>
             </div>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-white/55">
-              This brief is your decision room inside SANTRA. After you approve below, we can deliver the same
-              summary to Slack, Zapier, or your other tools — where your team already works.
-            </p>
+            <div className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[11px] text-white/50 sm:mt-0.5">
+              <Radio className="h-3.5 w-3.5 text-emerald-200" />
+              Detect → Your OK → Send
+            </div>
           </div>
-          <div className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-white/10 bg-black/20 px-3 py-1.5 text-[11px] text-white/50 sm:mt-0.5">
-            <Radio className="h-3.5 w-3.5 text-emerald-200" />
-            Detect → Your OK → Send
-          </div>
-        </div>
 
-        <ol className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-stretch">
-          {[
-            ["1. Detect", "Monitor finds a meaningful change"],
-            ["2. Your OK", "Review this brief, then approve"],
-            ["3. Send", "Deliver to Slack / Zapier / CRM"],
-          ].map(([step, detail]) => (
-            <li
-              key={step}
-              className="flex h-full min-h-[4.5rem] flex-col justify-center rounded-2xl border border-white/10 bg-black/20 px-3 py-3"
-            >
-              <p className="text-xs font-medium text-cyan-100">{step}</p>
-              <p className="mt-1 text-[11px] leading-4 text-white/45">{detail}</p>
-            </li>
-          ))}
-        </ol>
+          <ol className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:items-stretch">
+            {[
+              ["1. Detect", "Monitor finds a meaningful change"],
+              ["2. Your OK", "Review this brief, then approve"],
+              ["3. Send", "Deliver to Slack / Zapier / CRM"],
+            ].map(([step, detail]) => (
+              <li
+                key={step}
+                className="flex h-full min-h-[4.5rem] flex-col justify-center rounded-2xl border border-white/10 bg-black/20 px-3 py-3"
+              >
+                <p className="text-xs font-medium text-cyan-100">{step}</p>
+                <p className="mt-1 text-[11px] leading-4 text-white/45">{detail}</p>
+              </li>
+            ))}
+          </ol>
 
-        <div className="mt-4 grid grid-cols-1 items-stretch gap-3 lg:grid-cols-2">
-          <div className="flex h-full min-h-[9.5rem] flex-col rounded-2xl border border-white/10 bg-black/25 p-3.5">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-white/35">Slack / Discord preview</p>
-            <p className="mt-2 flex-1 text-sm leading-6 text-white/75">{vm.channel.slackLine}</p>
-          </div>
-          <div className="flex h-full min-h-[9.5rem] flex-col rounded-2xl border border-white/10 bg-black/25 p-3.5">
-            <p className="text-[10px] uppercase tracking-[0.18em] text-white/35">What gets sent</p>
-            <ul className="mt-2 grid flex-1 content-start gap-2">
-              {vm.channel.crmFields.map((field) => (
-                <li key={field.label} className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-baseline gap-x-3 text-xs">
-                  <span className="text-white/35">{field.label}</span>
-                  <span className="truncate text-white/75" title={field.value}>
-                    {field.value}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
+          <WebhookDeliveryCard
+            className="mt-4 border-white/10 bg-black/25"
+            report={displayReport}
+            webhookUrl={deliveryWebhookUrl}
+            onWebhookUrlChange={setDeliveryWebhookUrl}
+          />
+        </section>
+      ) : null}
     </div>
   );
 }
