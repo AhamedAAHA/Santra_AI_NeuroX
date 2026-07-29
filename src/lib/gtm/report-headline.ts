@@ -191,14 +191,36 @@ export function buildWebhookChannelPreview(report: ExecutiveIntelligenceReport) 
     report,
   });
 
+  const claimStats = { backed: 0, partial: 0, unsupported: 0 };
+  for (const claim of report.verifiedClaims ?? []) {
+    if (claim.status === "evidence-backed") claimStats.backed += 1;
+    else if (claim.status === "partial") claimStats.partial += 1;
+    else claimStats.unsupported += 1;
+  }
+
   return {
-    slackLine: `SANTRA alert — ${headline} (risk ${report.riskScore} · confidence ${report.confidence})`,
+    slackLine: `SANTRA alert — ${headline} (risk ${report.riskScore} · confidence ${report.confidence}${typeof report.importanceScore === "number" ? ` · importance ${report.importanceScore}` : ""})`,
     crmFields: [
       { label: "Verdict", value: headline },
       { label: "Risk", value: `${report.riskScore}` },
       { label: "Confidence", value: `${report.confidence}` },
+      ...(typeof report.importanceScore === "number"
+        ? [{ label: "Importance", value: `${report.importanceScore} (${report.importanceBand ?? "low"})` }]
+        : []),
       { label: "Monitor", value: report.monitorRequirement },
       { label: "Next action", value: coerceTextListItem(report.actionPlan[0]) || "Review with owner" },
+      ...(report.factCheck
+        ? [
+            {
+              label: "Fact-check",
+              value: `${report.factCheck.corroborated} ok · ${report.factCheck.contested} contested · ${report.factCheck.dropped} dropped`,
+            },
+          ]
+        : []),
+      {
+        label: "Claims",
+        value: `${claimStats.backed} backed · ${claimStats.partial} partial · ${claimStats.unsupported} open`,
+      },
     ],
   };
 }
