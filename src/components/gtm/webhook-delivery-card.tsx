@@ -77,7 +77,8 @@ export function WebhookDeliveryCard({
         <div>
           <p className="text-[11px] uppercase tracking-[0.2em] text-white/35">Webhook delivery</p>
           <p className="mt-1 text-sm text-white/70">
-            Full report payload (v2) — same truth as this brief, ready for Slack / Zapier / webhook.site
+            Full report payload (v2) — Discord gets a detailed analysis embed + score chart; Slack /
+            Zapier / webhook.site get the same truth
           </p>
         </div>
         <Badge variant={detection.ready ? "success" : "default"}>
