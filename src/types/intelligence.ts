@@ -124,6 +124,10 @@ export type ExecutiveIntelligenceReport = {
   verdict: string;
   riskScore: number;
   confidence: number;
+  /** Action priority 0–100 (independent of risk/confidence). */
+  importanceScore?: number;
+  /** high ≥ 75 · medium ≥ 45 · low < 45 */
+  importanceBand?: "high" | "medium" | "low";
   situation: string;
   impact: string;
   actionPlan: string[];
@@ -134,6 +138,27 @@ export type ExecutiveIntelligenceReport = {
   forecasts: string[];
   hallucinationRisk: "low" | "medium" | "high";
   detectedChanges?: DetectedChange[];
+  /** Dual-model fact-check pass (synthesizer ↔ verifier). */
+  factCheck?: FactCheckSummary;
+};
+
+export type FactCheckClaimResult = {
+  claimId: string;
+  claim: string;
+  synthesizerStatus: ClaimVerificationStatus;
+  verifierStatus: ClaimVerificationStatus;
+  finalStatus: ClaimVerificationStatus;
+  note?: string;
+};
+
+export type FactCheckSummary = {
+  synthesizer: string;
+  verifier: string;
+  corroborated: number;
+  contested: number;
+  dropped: number;
+  claims: FactCheckClaimResult[];
+  ranAt: string;
 };
 
 export type ChatProvider =
