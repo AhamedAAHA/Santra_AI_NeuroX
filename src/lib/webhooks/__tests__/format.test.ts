@@ -106,16 +106,43 @@ describe("webhook destination formatting", () => {
     expect(serialized).toContain("backed");
   });
 
-  it("formats Discord alerts with embeds", () => {
+  it("formats Discord alerts with detailed analysis, chart image, and deep link", () => {
+    const richReport: ExecutiveIntelligenceReport = {
+      ...report,
+      importanceScore: 72,
+      importanceBand: "medium",
+      observedFacts: ["Pro $99 → $129"],
+      factCheck: {
+        synthesizer: "aiml",
+        verifier: "featherless",
+        corroborated: 1,
+        contested: 0,
+        dropped: 0,
+        claims: [],
+        ranAt: new Date().toISOString(),
+      },
+    };
     const { destination, body } = formatAlertWebhookPayload(
       "https://discord.com/api/webhooks/1/token",
-      report,
+      richReport,
     );
     expect(destination).toBe("discord");
     expect(body).toMatchObject({
-      content: expect.stringContaining("SANTRA alert"),
-      embeds: [expect.objectContaining({ title: expect.stringContaining("ApexAnalytics") })],
+      content: expect.stringContaining("HITL approved"),
+      embeds: [
+        expect.objectContaining({
+          title: expect.stringContaining("ApexAnalytics"),
+          description: expect.stringMatching(/What happened[\s\S]*Why it matters/),
+          image: { url: expect.stringContaining("quickchart.io/chart") },
+          url: expect.stringContaining("/reports?reportId="),
+        }),
+      ],
+      santra: expect.objectContaining({ deepLink: expect.any(String) }),
     });
+    const serialized = JSON.stringify(body);
+    expect(serialized).toContain("Claim check");
+    expect(serialized).toContain("Next actions");
+    expect(serialized).toContain("Fact-check");
   });
 
   it("adds summary + markdown for webhook.site style destinations", () => {
