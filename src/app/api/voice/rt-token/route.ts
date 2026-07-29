@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { requireApiUser } from "@/lib/auth/session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { ensurePlatformSecrets, getPlatformEnv } from "@/lib/secrets/platform-secrets";
+import { buildSpeechmaticsRtWsUrl } from "@/lib/voice/speechmatics-rt-url";
 
 export const runtime = "nodejs";
 
 const JWT_TTL_SECONDS = 600;
-const DEFAULT_RT_WS = "wss://global.rt.speechmatics.com/v2";
 
 export async function POST() {
   try {
@@ -52,16 +52,20 @@ export async function POST() {
       return NextResponse.json({ error: "Speechmatics returned an empty token." }, { status: 502 });
     }
 
-    const wsBase = process.env.SPEECHMATICS_RT_URL?.trim() || DEFAULT_RT_WS;
+    const wsUrl = buildSpeechmaticsRtWsUrl(jwt, process.env.SPEECHMATICS_RT_URL);
 
     return NextResponse.json({
       jwt,
       ttlSeconds: JWT_TTL_SECONDS,
       expiresAt: Date.now() + JWT_TTL_SECONDS * 1000,
-      wsUrl: `${wsBase.replace(/\/$/, "")}?jwt=${encodeURIComponent(jwt)}`,
+      wsUrl,
     });
   } catch (error) {
     console.error("RT token route failed", error);
-    return NextResponse.json({ error: "Unable to mint realtime token." }, { status: 500 });
+    const message =
+      error instanceof Error && /mongo|timeout|server selection/i.test(error.message)
+        ? "Database timed out while starting the live call. Retry in a moment."
+        : "Unable to mint realtime token.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
