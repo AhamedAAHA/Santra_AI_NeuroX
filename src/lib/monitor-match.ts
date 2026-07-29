@@ -95,8 +95,6 @@ export function filterSignalsForMonitor(monitor: MonitorRule, signals: Intellige
     if (soft.length) return soft.slice(0, 6);
   }
 
-  // Show top analysis signals when strict keyword matching finds nothing.
-  return signals
-    .filter((signal) => severityRank[signal.severity] >= severityRank[monitor.minimumSeverity])
-    .slice(0, 4);
+  // No soft "show top signals" fallback — empty match is honest (noise-safe for judges).
+  return [];
 }
