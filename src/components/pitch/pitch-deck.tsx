@@ -28,7 +28,6 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
-import Image from "next/image";
 import {
   createContext,
   useCallback,
@@ -42,6 +41,7 @@ import { AppLoginQr, PITCH_TEAM, PITCH_TRY_URL, TeamMemberCard } from "@/compone
 import { PitchReviewBubbles } from "@/components/pitch/pitch-live-feed";
 import {
   AutoIntentVisual,
+  DiscordWebhookVisual,
   HitlGateDiagram,
   OAuthLoginVisual,
 } from "@/components/pitch/pitch-visuals";
@@ -1238,6 +1238,71 @@ function UniquePointSlide() {
   );
 }
 
+/* ─── Webhook how-to — Discord URL in 60s ─── */
+function WebhookSetupSlide() {
+  const chips = [
+    { title: "Get URL", text: "Discord channel → Integrations → Webhooks" },
+    { title: "Paste", text: "Monitors Options · Alert webhook URL" },
+    { title: "HITL send", text: "Approve first — then Discord gets the embed" },
+  ];
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % chips.length);
+    }, 2200);
+    return () => window.clearInterval(id);
+  }, [chips.length]);
+
+  return (
+    <SlideShell>
+      <div className="text-center">
+        <Eyebrow>Delivery</Eyebrow>
+        <motion.h2
+          variants={itemZoom}
+          className={cn(
+            display,
+            "mx-auto mt-3 max-w-3xl text-3xl font-semibold text-white sm:text-4xl md:text-5xl",
+          )}
+        >
+          Discord webhook —{" "}
+          <span className="text-cyan-300">how to connect</span>
+        </motion.h2>
+        <motion.p variants={item} className="mx-auto mt-4 max-w-2xl text-base text-white/70 sm:text-lg">
+          Users often don&apos;t know what a webhook URL is. Copy from Discord, paste in SANTRA,
+          approve — Slack / Zapier / Make use the same paste flow.
+        </motion.p>
+      </div>
+
+      <motion.div variants={itemZoom} className="relative mx-auto mt-7 w-full max-w-4xl">
+        <DiscordWebhookVisual className="relative min-h-[320px]" />
+      </motion.div>
+
+      <div className="mx-auto mt-7 grid w-full max-w-3xl gap-3 sm:grid-cols-3">
+        {chips.map((chip, i) => {
+          const isActive = active === i;
+          return (
+            <motion.div
+              key={chip.title}
+              variants={item}
+              animate={{
+                borderColor: isActive ? "rgba(34,211,238,0.45)" : "rgba(255,255,255,0.1)",
+                backgroundColor: isActive ? "rgba(34,211,238,0.08)" : "transparent",
+              }}
+              transition={{ duration: 0.35, ease: EASE }}
+              className="border border-t-2 px-4 py-4 text-center"
+              style={{ borderTopColor: isActive ? "rgb(103,232,249)" : "rgba(255,255,255,0.12)" }}
+            >
+              <h3 className={cn(display, "text-base font-semibold text-white")}>{chip.title}</h3>
+              <p className="mt-1.5 text-sm text-white/65">{chip.text}</p>
+            </motion.div>
+          );
+        })}
+      </div>
+    </SlideShell>
+  );
+}
+
 /* ─── Compare ─── */
 function CompetitiveEdgeSlide() {
   const rows = [
@@ -1573,6 +1638,7 @@ const SLIDES = [
   AIIntelligenceSlide,
   ArchitectureSlide,
   UniquePointSlide,
+  WebhookSetupSlide,
   CompetitiveEdgeSlide,
   MarketSlide,
   DemoJourneySlide,
@@ -1595,6 +1661,7 @@ const LABELS = [
   "AI Layer",
   "Architecture",
   "Unique Point",
+  "Webhook",
   "Edge",
   "Signals",
   "Demo Path",
@@ -1617,6 +1684,7 @@ const MOODS: PitchMood[] = [
   "calm", // AI Layer
   "calm", // Architecture
   "signal", // Unique Point
+  "signal", // Webhook / Discord
   "calm", // Edge
   "signal", // Market
   "signal", // Demo Path
