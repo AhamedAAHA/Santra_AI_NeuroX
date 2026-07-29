@@ -81,11 +81,31 @@ export class SpeechmaticsRealtimeSession {
     await new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(wsUrl);
       this.ws = ws;
+      let settled = false;
 
       const fail = (message: string) => {
+        if (settled) return;
+        settled = true;
         this.handlers.onError?.(message);
         reject(new Error(message));
       };
+
+      const succeed = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+
+      const connectTimeout = window.setTimeout(() => {
+        fail(
+          "Realtime transcription timed out. Check network access to Speechmatics (eu.rt / us.rt).",
+        );
+        try {
+          ws.close();
+        } catch {
+          // ignore
+        }
+      }, 12_000);
 
       ws.onopen = () => {
         ws.send(
@@ -122,9 +142,10 @@ export class SpeechmaticsRealtimeSession {
 
         const kind = payload.message;
         if (kind === "RecognitionStarted") {
+          window.clearTimeout(connectTimeout);
           this.ready = true;
           this.handlers.onReady?.();
-          resolve();
+          succeed();
           return;
         }
 
@@ -157,6 +178,7 @@ export class SpeechmaticsRealtimeSession {
         }
 
         if (kind === "Error") {
+          window.clearTimeout(connectTimeout);
           fail(payload.reason || payload.type || "Speechmatics realtime error.");
           return;
         }
@@ -167,9 +189,24 @@ export class SpeechmaticsRealtimeSession {
         }
       };
 
-      ws.onerror = () => fail("Realtime transcription connection failed.");
-      ws.onclose = () => {
+      ws.onerror = () => {
+        window.clearTimeout(connectTimeout);
+        fail(
+          "Realtime transcription connection failed. Speechmatics WebSocket could not open — try again or set SPEECHMATICS_RT_URL=wss://eu.rt.speechmatics.com/v2",
+        );
+      };
+      ws.onclose = (event) => {
+        window.clearTimeout(connectTimeout);
         this.ready = false;
+        if (!settled) {
+          const reason = event.reason?.trim();
+          fail(
+            reason
+              ? `Realtime transcription closed: ${reason}`
+              : `Realtime transcription connection closed (code ${event.code}).`,
+          );
+          return;
+        }
         if (!this.closed) this.handlers.onClosed?.();
       };
     });
