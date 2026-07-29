@@ -6,3 +6,7 @@ node_modules
 .git
 *.log
 tsconfig.tsbuildinfo
+# Large pitch export binaries — live /pitch page is the source of truth
+public/pitch/exports/SANTRA-AI-Pitch.pdf
+public/pitch/exports/SANTRA-AI-Pitch.pptx
+public/pitch/exports/slides
