@@ -2,12 +2,9 @@
 
 import { AnimatePresence, animate, motion, type Variants } from "framer-motion";
 import {
-  ArrowRight,
   Bot,
   Brain,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Database,
   Eye,
   FileCheck2,
@@ -31,7 +28,6 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import {
   createContext,
@@ -42,18 +38,34 @@ import {
   type ReactNode,
 } from "react";
 import { PitchBackground, type PitchMood } from "@/components/pitch/pitch-background";
-import { AppLoginQr, PITCH_TEAM, TeamMemberCard } from "@/components/pitch/pitch-team-qr";
+import { AppLoginQr, PITCH_TEAM, PITCH_TRY_URL, TeamMemberCard } from "@/components/pitch/pitch-team-qr";
+import { PitchReviewBubbles } from "@/components/pitch/pitch-live-feed";
 import {
+  AutoIntentVisual,
   HitlGateDiagram,
-  ProductPreviewFrame,
+  OAuthLoginVisual,
 } from "@/components/pitch/pitch-visuals";
 import { BrandLogo } from "@/components/shared/brand-mark";
 import { cn } from "@/lib/utils";
 
 const PitchSlideCtx = createContext(0);
+const PitchExportCtx = createContext(false);
 
 function useSlideNumber() {
   return useContext(PitchSlideCtx);
+}
+
+function usePitchExport() {
+  return useContext(PitchExportCtx);
+}
+
+function readExportBoot() {
+  if (typeof window === "undefined") return { exportMode: false, slide: 0 };
+  const sp = new URLSearchParams(window.location.search);
+  const exportMode = sp.get("export") === "1";
+  const raw = Number(sp.get("slide") ?? "0");
+  const slide = Number.isFinite(raw) ? Math.max(0, Math.floor(raw)) : 0;
+  return { exportMode, slide };
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -115,19 +127,22 @@ function CountUp({
   prefix?: string;
   duration?: number;
 }) {
-  const [displayValue, setDisplayValue] = useState(0);
+  const isExport = usePitchExport();
+  const [displayValue, setDisplayValue] = useState(isExport ? value : 0);
   useEffect(() => {
+    if (isExport) return;
     const controls = animate(0, value, {
       duration,
       ease: EASE,
       onUpdate: (v) => setDisplayValue(Math.round(v)),
     });
     return () => controls.stop();
-  }, [value, duration]);
+  }, [value, duration, isExport]);
+  const shown = isExport ? value : displayValue;
   return (
     <span>
       {prefix}
-      {displayValue}
+      {shown}
       {suffix}
     </span>
   );
@@ -198,13 +213,14 @@ function SlideShell({
   showNumber?: boolean;
 }) {
   const slideNo = useSlideNumber();
+  const isExport = usePitchExport();
   const label = String(slideNo + 1).padStart(2, "0");
   const place = SLIDE_NUMBER_PLACES[slideNo % SLIDE_NUMBER_PLACES.length]!;
 
   return (
     <motion.div
       variants={stagger}
-      initial="hidden"
+      initial={isExport ? "show" : "hidden"}
       animate="show"
       className={cn(
         "relative mx-auto flex h-full min-h-0 w-full max-w-[1480px] flex-col justify-center overflow-y-auto overscroll-contain",
@@ -272,118 +288,172 @@ function Caption({ children, className }: { children: ReactNode; className?: str
   );
 }
 
-function FlowArrow({ className }: { className?: string }) {
-  return (
-    <motion.div
-      animate={{ x: [0, 5, 0], opacity: [0.45, 0.9, 0.45] }}
-      transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-      className={className}
-    >
-      <ArrowRight className="h-5 w-5 shrink-0 text-cyan-300/55" />
-    </motion.div>
-  );
-}
-
 /* ─── 01 Hero ─── */
 function TitleSlide() {
+  const chips = [
+    { icon: Radar, label: "GTM Monitors" },
+    { icon: MessageSquare, label: "Strategy Desk" },
+    { icon: FileCheck2, label: "Reports + HITL" },
+  ];
+
   return (
-    <SlideShell className="items-center text-center">
-      <motion.div variants={itemZoom} className="flex justify-center">
-        <BrandLogo className="h-[72px] w-[108px] sm:h-[96px] sm:w-[144px] md:h-[112px] md:w-[168px]" />
+    <SlideShell className="items-center text-center" showNumber={false}>
+      <motion.div variants={itemZoom} className="relative flex flex-col items-center">
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/10 blur-3xl sm:h-64 sm:w-64"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: EASE }}
+        />
+        <BrandLogo className="relative h-[80px] w-[120px] sm:h-[104px] sm:w-[156px] md:h-[120px] md:w-[180px]" />
       </motion.div>
-      <motion.div variants={item} className="mt-5 sm:mt-6">
-        <Eyebrow>NeuroX 1.0 · Phase 2 · Mission brief</Eyebrow>
+
+      <motion.div variants={item} className="mt-8 sm:mt-10">
+        <Eyebrow>NeuroX 1.0 · Phase 2</Eyebrow>
       </motion.div>
+
       <motion.h1
         variants={itemZoom}
         className={cn(
           display,
-          "mt-3 text-5xl font-semibold tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl",
+          "mt-4 text-6xl font-semibold tracking-tight text-white sm:text-7xl md:text-8xl lg:text-[7.5rem] lg:leading-[0.95]",
         )}
       >
-        SANTRA{" "}
+        SANTRA
         <span className="bg-gradient-to-r from-cyan-200 via-sky-200 to-cyan-400 bg-clip-text text-transparent">
+          {" "}
           AI
         </span>
       </motion.h1>
-      <motion.p variants={item} className="mx-auto mt-4 max-w-2xl text-lg text-white/75 sm:mt-5 sm:text-xl md:text-2xl">
-        Autonomous GTM intelligence for B2B revenue and competitive intel teams
+
+      <motion.div
+        variants={item}
+        className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent sm:w-32"
+      />
+
+      <motion.p
+        variants={item}
+        className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/72 sm:text-xl md:text-2xl"
+      >
+        Autonomous GTM intelligence for B2B revenue teams
       </motion.p>
-      <motion.div variants={item} className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:mt-8">
-        <Panel className="inline-flex items-center gap-2.5 px-5 py-2.5">
-          <Sparkles className="h-4 w-4 text-cyan-300" />
-          <span className="text-sm font-medium text-white/85">Prompt Pirates</span>
-        </Panel>
-        <span className={cn(mono, "text-xs tracking-[0.18em] text-white/55 uppercase")}>
+
+      <motion.div
+        variants={item}
+        className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:mt-10"
+      >
+        <span className="inline-flex items-center gap-2 text-sm text-white/80">
+          <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+          Prompt Pirates
+        </span>
+        <span className="hidden h-3 w-px bg-white/20 sm:block" aria-hidden />
+        <span className={cn(mono, "text-[0.7rem] uppercase tracking-[0.22em] text-white/45")}>
           NeuroX 2026 · B2B Agentic GTM
         </span>
       </motion.div>
-      <motion.div variants={item} className="mt-5 flex flex-wrap justify-center gap-2">
-        {[
-          { icon: Radar, label: "GTM Monitors" },
-          { icon: MessageSquare, label: "Strategy Desk" },
-          { icon: FileCheck2, label: "Reports + HITL" },
-        ].map((chip) => (
-          <span
+
+      <motion.div variants={item} className="mt-10 flex flex-wrap justify-center gap-3">
+        {chips.map((chip, i) => (
+          <motion.span
             key={chip.label}
-            className="inline-flex items-center gap-2 border border-cyan-400/25 bg-cyan-400/[0.08] px-3 py-1.5 text-[0.7rem] tracking-wide text-cyan-100"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 + i * 0.1, duration: 0.45, ease: EASE }}
+            className="inline-flex items-center gap-2 border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-[0.7rem] tracking-wide text-white/70"
           >
-            <chip.icon className="h-3.5 w-3.5" />
+            <chip.icon className="h-3.5 w-3.5 text-cyan-300/90" />
             {chip.label}
-          </span>
+          </motion.span>
         ))}
       </motion.div>
     </SlideShell>
   );
 }
 
-/* ─── 03 Editorial manifesto + spine ─── */
+/* ─── 03 Problem — clean manifesto ─── */
 function ProblemSlide() {
   const points = [
     { icon: Timer, line: "Competitor moves surface days late" },
     { icon: Layers, line: "Intel scattered across Slack and sheets" },
     { icon: ShieldCheck, line: "No trust layer between AI and the CRM" },
   ];
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % points.length);
+    }, 2400);
+    return () => window.clearInterval(id);
+  }, [points.length]);
+
   return (
     <SlideShell>
-      <div className="grid gap-10 lg:grid-cols-[1.25fr_0.75fr] lg:gap-14">
-        <motion.div variants={itemLeft} className="relative">
+      <div className="grid items-center gap-12 lg:grid-cols-[1.2fr_0.8fr] lg:gap-16">
+        <motion.div variants={itemLeft} className="relative min-w-0">
           <Eyebrow>The problem</Eyebrow>
           <h2
             className={cn(
               display,
-              "mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl md:leading-[1.08]",
+              "mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl md:leading-[1.06]",
             )}
           >
             Competitive intel is slow —
-            <span className="mt-1 block text-white/55">and unsafe to automate</span>
+            <span className="mt-2 block text-white/50">and unsafe to automate</span>
           </h2>
-          <p className="mt-8 max-w-2xl border-l border-cyan-400/50 pl-5 text-xl leading-snug text-white/80 md:text-2xl">
+
+          <motion.div
+            variants={item}
+            className="mt-6 h-px w-20 bg-gradient-to-r from-cyan-300/80 to-transparent"
+          />
+
+          <p className="mt-7 max-w-xl text-lg leading-relaxed text-white/72 sm:text-xl">
             GTM teams make <span className="text-cyan-200">high-stakes decisions</span> on stale intel —
             while AI that could help is{" "}
             <span className="text-sky-200">too risky to plug into the CRM</span> unattended.
           </p>
-          <p className={cn(mono, "mt-10 text-[0.7rem] uppercase tracking-[0.22em] text-white/45")}>
-            Rivals move first · Battlecards rot · Automation stays banned — until HITL exists
+
+          <p className={cn(mono, "mt-8 text-[0.65rem] uppercase tracking-[0.22em] text-white/40")}>
+            Until HITL exists, automation stays banned
           </p>
         </motion.div>
 
-        <motion.div variants={itemRight} className="relative pl-6 sm:pl-8">
-          <div className="absolute bottom-3 left-0 top-3 w-px bg-gradient-to-b from-cyan-400/70 via-cyan-400/25 to-transparent" />
-          <ul className="space-y-8">
-            {points.map((row, i) => (
-              <li key={row.line} className="relative">
-                <span className="absolute -left-[1.55rem] top-1.5 h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.7)] sm:-left-[1.8rem]" />
-                <p className={cn(mono, "text-[0.65rem] tracking-[0.28em] text-cyan-300/80")}>
-                  {String(i + 1).padStart(2, "0")}
-                </p>
-                <div className="mt-2 flex items-start gap-3">
-                  <row.icon className="mt-0.5 h-4 w-4 shrink-0 text-white/40" />
-                  <p className="text-lg leading-snug text-white/90 sm:text-xl">{row.line}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <motion.div variants={itemRight} className="relative">
+          <div className="space-y-3">
+            {points.map((row, i) => {
+              const isActive = active === i;
+              return (
+                <motion.div
+                  key={row.line}
+                  animate={{
+                    borderColor: isActive ? "rgba(34,211,238,0.4)" : "rgba(255,255,255,0.08)",
+                    backgroundColor: isActive ? "rgba(34,211,238,0.08)" : "rgba(7,13,26,0.6)",
+                    x: isActive ? 6 : 0,
+                  }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                  className="border border-l-2 px-5 py-4"
+                  style={{
+                    borderLeftColor: isActive ? "rgb(103,232,249)" : "rgba(255,255,255,0.12)",
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={cn(mono, "text-[0.65rem] tracking-[0.24em] text-cyan-300/70")}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <row.icon className={cn("h-4 w-4", isActive ? "text-cyan-300" : "text-white/35")} />
+                  </div>
+                  <p
+                    className={cn(
+                      "mt-2 text-base leading-snug sm:text-lg",
+                      isActive ? "text-white" : "text-white/70",
+                    )}
+                  >
+                    {row.line}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
         </motion.div>
       </div>
     </SlideShell>
@@ -476,13 +546,19 @@ function CurrentPainSlide() {
   );
 }
 
-/* ─── Solution — four landing platform pillars ─── */
+/* ─── Solution — animated loop + pillars ─── */
 function SolutionSlide() {
+  const flow = [
+    { label: "Monitor", icon: Radar },
+    { label: "Evidence", icon: Globe2 },
+    { label: "Brief", icon: FileCheck2 },
+    { label: "Approve", icon: ShieldCheck },
+  ];
   const pillars = [
     {
       icon: Radar,
       title: "GTM Competitive Monitors",
-      text: "Describe what to watch in plain language. The agent interprets intent, collects evidence, and queues actions.",
+      text: "Describe what to watch in plain language. Santra auto-reads category and severity, collects evidence, and queues actions.",
     },
     {
       icon: Target,
@@ -497,9 +573,18 @@ function SolutionSlide() {
     {
       icon: ShieldCheck,
       title: "Human-in-the-Loop",
-      text: "Approve or dismiss proposed CRM / webhook automation — nothing executes unattended.",
+      text: "Approve or dismiss proposed webhook / CRM-export automation — nothing executes unattended.",
     },
   ];
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % flow.length);
+    }, 1500);
+    return () => window.clearInterval(id);
+  }, [flow.length]);
+
   return (
     <SlideShell>
       <SlideHeading
@@ -507,11 +592,65 @@ function SolutionSlide() {
         title="Monitor → evidence → brief → approve"
         subtitle="SANTRA is not another passive chatbot. It runs the competitive loop with humans at the gate."
       />
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
-        {pillars.map((p) => (
-          <motion.div key={p.title} variants={item}>
-            <Surface className="h-full !p-5 sm:!p-6">
-              <p.icon className="h-6 w-6 text-cyan-300" />
+
+      <motion.div variants={item} className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        {flow.map((step, i) => {
+          const isActive = active === i;
+          return (
+            <div key={step.label} className="flex items-center gap-2 sm:gap-3">
+              <motion.div
+                animate={{
+                  borderColor: isActive ? "rgba(34,211,238,0.6)" : "rgba(255,255,255,0.1)",
+                  backgroundColor: isActive ? "rgba(34,211,238,0.14)" : "rgba(7,13,26,0.9)",
+                  scale: isActive ? 1.06 : 1,
+                }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="relative flex min-w-[7.5rem] flex-col items-center border px-4 py-3"
+              >
+                {isActive ? (
+                  <motion.span
+                    className="absolute inset-0 border border-cyan-300/40"
+                    animate={{ opacity: [0.2, 0.7, 0.2] }}
+                    transition={{ repeat: Infinity, duration: 1.4, ease: "easeInOut" }}
+                  />
+                ) : null}
+                <step.icon className={cn("relative h-5 w-5", isActive ? "text-cyan-300" : "text-white/45")} />
+                <span className={cn(display, "relative mt-2 text-sm font-semibold text-white")}>
+                  {step.label}
+                </span>
+              </motion.div>
+              {i < flow.length - 1 ? (
+                <motion.div
+                  className="hidden h-px w-6 bg-gradient-to-r from-cyan-400/60 to-cyan-400/10 sm:block sm:w-10"
+                  animate={{ opacity: active >= i ? [0.4, 1, 0.4] : 0.25 }}
+                  transition={{ repeat: Infinity, duration: 1.2 }}
+                />
+              ) : null}
+            </div>
+          );
+        })}
+      </motion.div>
+
+      <div className="mt-8 grid gap-3 sm:grid-cols-2">
+        {pillars.map((p, i) => (
+          <motion.div
+            key={p.title}
+            variants={item}
+            whileHover={{ y: -3 }}
+            transition={{ duration: 0.25 }}
+          >
+            <Surface
+              className={cn(
+                "h-full !p-5 sm:!p-6 transition-colors",
+                active === i && "border-cyan-400/35 bg-cyan-400/[0.06]",
+              )}
+            >
+              <motion.div
+                animate={active === i ? { scale: [1, 1.12, 1] } : { scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <p.icon className="h-6 w-6 text-cyan-300" />
+              </motion.div>
               <h3 className={cn(display, "mt-4 text-lg font-semibold text-white")}>{p.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/72">{p.text}</p>
             </Surface>
@@ -559,30 +698,138 @@ function CoreFeaturesSlide() {
     { icon: Layers, route: "/dashboard", title: "Command Center", text: "Workspace home — monitor status, risk snapshot, what needs approval." },
     { icon: MessageSquare, route: "/chat", title: "Strategy Desk", text: "Ask and Market modes: chat, research agent, and optional live voice." },
     { icon: Radar, route: "/alerts", title: "GTM Monitors", text: "Plain-language watches, Check now, timeline diffs, approval inbox." },
-    { icon: FileCheck2, route: "/reports", title: "Reports", text: "Executive briefs with risk %, confidence, evidence, and claims." },
+    { icon: FileCheck2, route: "/reports", title: "Reports", text: "Executive briefs with risk %, confidence, importance, evidence, and claims." },
     { icon: Server, route: "/settings", title: "Settings", text: "Voice, display, privacy, and integration health checks." },
-    { icon: Mail, route: "Email watch", title: "Background email", text: "Scheduled re-checks via Resend — 30m to daily intervals." },
+    { icon: Mail, route: "Email watch", title: "Background email", text: "Resend digests on watch intervals — host cron must poll (Vercel daily by default)." },
   ];
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % modules.length);
+    }, 1800);
+    return () => window.clearInterval(id);
+  }, [modules.length]);
+
   return (
     <SlideShell>
       <SlideHeading
         eyebrow="Product surface"
-        title="Five modules. One agent loop."
+        title="Six surfaces. One agent loop."
         subtitle="Exactly what ships in the live workspace — not a feature laundry list."
       />
       <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {modules.map((m) => (
-          <motion.div key={m.title} variants={item}>
-            <Surface className="h-full !p-5">
-              <div className="flex items-center justify-between gap-3">
-                <m.icon className="h-5 w-5 text-cyan-300" />
-                <span className={cn(mono, "text-[0.6rem] tracking-wider text-white/40")}>{m.route}</span>
-              </div>
-              <h3 className={cn(display, "mt-3 text-base font-semibold text-white")}>{m.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-white/70">{m.text}</p>
-            </Surface>
-          </motion.div>
-        ))}
+        {modules.map((m, i) => {
+          const isActive = active === i;
+          return (
+            <motion.div
+              key={m.title}
+              variants={item}
+              animate={{
+                y: isActive ? -4 : 0,
+                borderColor: isActive ? "rgba(34,211,238,0.45)" : "rgba(255,255,255,0.1)",
+              }}
+              transition={{ duration: 0.35, ease: EASE }}
+              className="border border-transparent"
+            >
+              <Surface
+                className={cn(
+                  "relative h-full overflow-hidden !p-5",
+                  isActive && "border-cyan-400/40 bg-cyan-400/[0.07]",
+                )}
+              >
+                {isActive ? (
+                  <motion.span
+                    className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-300 to-transparent"
+                    animate={{ opacity: [0.3, 1, 0.3], x: ["-20%", "20%", "-20%"] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  />
+                ) : null}
+                <div className="flex items-center justify-between gap-3">
+                  <motion.div
+                    animate={isActive ? { rotate: [0, -8, 8, 0] } : { rotate: 0 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <m.icon className={cn("h-5 w-5", isActive ? "text-cyan-200" : "text-cyan-300")} />
+                  </motion.div>
+                  <span className={cn(mono, "text-[0.6rem] tracking-wider text-white/40")}>{m.route}</span>
+                </div>
+                <h3 className={cn(display, "mt-3 text-base font-semibold text-white")}>{m.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-white/70">{m.text}</p>
+              </Surface>
+            </motion.div>
+          );
+        })}
+      </div>
+    </SlideShell>
+  );
+}
+
+/* ─── Auth — Google / GitHub OAuth ─── */
+function AuthAccessSlide() {
+  const points = [
+    { title: "GitHub OAuth", text: "One-click for builders and judges." },
+    { title: "Google OAuth", text: "Work accounts into the workspace." },
+    { title: "Email fallback", text: "Optional path without OAuth." },
+  ];
+  const [activePoint, setActivePoint] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActivePoint((prev) => (prev + 1) % points.length);
+    }, 2200);
+    return () => window.clearInterval(id);
+  }, [points.length]);
+
+  return (
+    <SlideShell>
+      <div className="text-center">
+        <Eyebrow>Access</Eyebrow>
+        <motion.h2
+          variants={itemZoom}
+          className={cn(
+            display,
+            "mx-auto mt-3 max-w-3xl text-3xl font-semibold text-white sm:text-4xl md:text-5xl",
+          )}
+        >
+          Google & GitHub login —{" "}
+          <span className="text-cyan-300">shipped</span>
+        </motion.h2>
+        <motion.p variants={item} className="mx-auto mt-4 max-w-2xl text-base text-white/70 sm:text-lg">
+          Real OAuth on /sign-in — continue with Google or GitHub, then open Command Center.
+        </motion.p>
+      </div>
+
+      <motion.div variants={itemZoom} className="relative mx-auto mt-8 w-full max-w-xl">
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -inset-8 rounded-full bg-cyan-400/10 blur-3xl"
+          animate={{ opacity: [0.35, 0.65, 0.35] }}
+          transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+        />
+        <OAuthLoginVisual className="relative min-h-[300px] sm:min-h-[320px]" />
+      </motion.div>
+
+      <div className="mx-auto mt-8 grid w-full max-w-3xl gap-3 sm:grid-cols-3">
+        {points.map((p, i) => {
+          const isActive = activePoint === i;
+          return (
+            <motion.div
+              key={p.title}
+              variants={item}
+              animate={{
+                borderColor: isActive ? "rgba(34,211,238,0.45)" : "rgba(255,255,255,0.1)",
+                backgroundColor: isActive ? "rgba(34,211,238,0.08)" : "transparent",
+              }}
+              transition={{ duration: 0.35, ease: EASE }}
+              className="border border-t-2 px-4 py-4 text-center"
+              style={{ borderTopColor: isActive ? "rgb(103,232,249)" : "rgba(255,255,255,0.12)" }}
+            >
+              <h3 className={cn(display, "text-base font-semibold text-white")}>{p.title}</h3>
+              <p className="mt-1.5 text-sm text-white/65">{p.text}</p>
+            </motion.div>
+          );
+        })}
       </div>
     </SlideShell>
   );
@@ -591,11 +838,15 @@ function CoreFeaturesSlide() {
 /* ─── Monitor lifecycle deep dive (unique to this slide) ─── */
 function FeatureDeepDiveSlide() {
   const stages = [
-    { icon: Radar, title: "Create watch", text: "Describe a B2B competitive signal in plain language on /alerts." },
+    {
+      icon: Radar,
+      title: "Create watch",
+      text: "Plain-language goal on /alerts — Santra auto-tags category and severity.",
+    },
     { icon: Globe2, title: "Check now", text: "Agent routes Bright Data / Exa tools and logs stages in Activity." },
     { icon: Eye, title: "Timeline + diffs", text: "Snapshot history shows what changed between checks." },
-    { icon: Mail, title: "Email watch", text: "Optional background cadence emails digests via Resend + cron." },
-    { icon: FileCheck2, title: "Approval inbox", text: "Edit the brief, then approve webhook / Slack delivery." },
+    { icon: Mail, title: "Email watch", text: "Optional Resend digests — intervals in UI; production cron is daily on Vercel." },
+    { icon: FileCheck2, title: "Approval inbox", text: "Edit the brief, then approve → Slack Incoming Webhook / Zapier / Make." },
     { icon: Mic, title: "Strategy Desk", text: "Follow up in Ask/Market — or start a live voice call." },
   ];
   return (
@@ -623,86 +874,197 @@ function FeatureDeepDiveSlide() {
   );
 }
 
-/* ─── Agent loop from README ─── */
+/* ─── Agent loop + auto intent ─── */
 function HowItWorksSlide() {
   const steps = [
-    { label: "Goal intake", sub: "Plain-language monitor" },
-    { label: "Intent", sub: "Category · severity · query" },
-    { label: "Tool routing", sub: "Bright Data · Exa" },
-    { label: "Change detect", sub: "Snapshot diffs" },
-    { label: "Synthesis", sub: "Brief · risks · plan" },
-    { label: "HITL", sub: "Approve before webhook" },
+    { label: "Plan", sub: "Auto category · severity" },
+    { label: "Route", sub: "Bright Data · Exa · MCP" },
+    { label: "Collect", sub: "Live web evidence" },
+    { label: "Observe", sub: "Diff + noise filter" },
+    { label: "Reason", sub: "Risk · conf · importance" },
+    { label: "HITL", sub: "Approve before execute" },
   ];
   return (
     <SlideShell>
       <SlideHeading
-        eyebrow="Agent loop"
+        eyebrow="Agent graph"
         title="How SANTRA runs a check"
-        subtitle="The same six stages documented in the product README — from goal to human approval."
+        subtitle="Prompt once — Santra classifies category and severity (medium, high, critical…), then runs the graph."
       />
-      <motion.div variants={item} className="mt-12">
-        <div className="hidden items-stretch lg:flex">
-          {steps.map((step, index) => (
-            <div key={step.label} className="flex flex-1 items-center">
-              <div className="w-full border border-white/[0.1] bg-[#070d1a]/95 px-3 py-5 text-center">
+      <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <motion.div variants={item} className="flex flex-col justify-center">
+          <div className="hidden items-stretch lg:flex lg:flex-col lg:gap-2">
+            {steps.map((step, index) => (
+              <div
+                key={step.label}
+                className="flex items-center gap-4 border border-white/[0.1] bg-[#070d1a]/95 px-4 py-3"
+              >
                 <StepNo n={String(index + 1).padStart(2, "0")} />
-                <h3 className={cn(display, "mt-2 text-sm font-semibold text-white xl:text-base")}>
-                  {step.label}
-                </h3>
-                <p className="mt-1 text-xs text-white/75 xl:text-sm">{step.sub}</p>
+                <div className="min-w-0 flex-1 sm:flex sm:items-baseline sm:justify-between sm:gap-3">
+                  <h3 className={cn(display, "text-sm font-semibold text-white xl:text-base")}>
+                    {step.label}
+                  </h3>
+                  <p className="text-xs text-white/75 xl:text-sm">{step.sub}</p>
+                </div>
               </div>
-              {index < steps.length - 1 && <FlowArrow className="mx-1 shrink-0" />}
-            </div>
-          ))}
-        </div>
-        <div className="space-y-3 lg:hidden">
-          {steps.map((step, index) => (
-            <div key={step.label} className="flex items-center gap-4 border border-white/[0.1] bg-[#070d1a]/95 px-4 py-3">
-              <StepNo n={String(index + 1).padStart(2, "0")} />
-              <div>
-                <h3 className={cn(display, "font-semibold text-white")}>{step.label}</h3>
-                <p className="text-xs text-white/75">{step.sub}</p>
+            ))}
+          </div>
+          <div className="space-y-3 lg:hidden">
+            {steps.map((step, index) => (
+              <div
+                key={step.label}
+                className="flex items-center gap-4 border border-white/[0.1] bg-[#070d1a]/95 px-4 py-3"
+              >
+                <StepNo n={String(index + 1).padStart(2, "0")} />
+                <div>
+                  <h3 className={cn(display, "font-semibold text-white")}>{step.label}</h3>
+                  <p className="text-xs text-white/75">{step.sub}</p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
+            ))}
+          </div>
+        </motion.div>
+        <motion.div variants={itemZoom}>
+          <AutoIntentVisual className="h-full min-h-[300px]" />
+        </motion.div>
+      </div>
     </SlideShell>
   );
 }
 
-/* ─── Use case — real product routes ─── */
+/* ─── Use case — featured step story ─── */
 function UseCaseSlide() {
   const journey = [
-    { step: "01", title: "Create monitor", text: "On /alerts: “Watch competitor pricing page for packaging changes.”" },
-    { step: "02", title: "Check now", text: "Tools collect live pages; Activity log shows routing stages." },
-    { step: "03", title: "Report lands", text: "/reports shows risk %, confidence, evidence, and claims." },
-    { step: "04", title: "Human approves", text: "Edit the brief in the approval panel — then send webhook." },
-    { step: "05", title: "Ask on Strategy Desk", text: "/chat Ask mode: “How should sales counter this move?”" },
-    { step: "06", title: "Optional live call", text: "Speechmatics voice path when the room needs spoken Q&A." },
+    {
+      step: "01",
+      icon: Radar,
+      title: "Create monitor",
+      text: "On /alerts: “Watch competitor pricing…” — Santra auto-sets category & severity.",
+    },
+    {
+      step: "02",
+      icon: Globe2,
+      title: "Check now",
+      text: "Tools collect live pages; Activity log shows routing stages.",
+    },
+    {
+      step: "03",
+      icon: FileCheck2,
+      title: "Report lands",
+      text: "/reports shows risk %, confidence, importance, evidence, and claims.",
+    },
+    {
+      step: "04",
+      icon: ShieldCheck,
+      title: "Human approves",
+      text: "Edit the brief — then send webhook / CRM export.",
+    },
+    {
+      step: "05",
+      icon: MessageSquare,
+      title: "Ask on Strategy Desk",
+      text: "/chat Ask mode: “How should sales counter this move?”",
+    },
+    {
+      step: "06",
+      icon: Mic,
+      title: "Optional live call",
+      text: "Speechmatics voice path when the room needs spoken Q&A.",
+    },
   ];
+  const [active, setActive] = useState(0);
+  const current = journey[active]!;
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % journey.length);
+    }, 2200);
+    return () => window.clearInterval(id);
+  }, [journey.length]);
+
   return (
     <SlideShell>
-      <SlideHeading
-        eyebrow="Use case"
-        title="Pricing change → approved battlecard"
-        subtitle="A path you can demo on the live app — every step maps to a real screen."
-      />
-      <div className="mt-8 relative">
-        <div className="absolute bottom-2 left-[11px] top-2 w-px bg-gradient-to-b from-cyan-400/50 via-cyan-400/20 to-transparent sm:left-[15px]" />
-        <div className="grid gap-4 lg:grid-cols-2">
-          {journey.map((j, i) => (
-            <motion.div key={j.step} variants={i % 2 === 0 ? itemLeft : itemRight} className="flex gap-5 sm:gap-7">
-              <div className="relative z-10 mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-cyan-300 bg-[#030712] sm:mt-2 sm:h-4 sm:w-4" />
-              <div className="min-w-0 flex-1 border-b border-white/[0.08] pb-4">
-                <div className="flex flex-wrap items-baseline gap-3">
-                  <StepNo n={j.step} />
-                  <h3 className={cn(display, "text-lg font-semibold text-white")}>{j.title}</h3>
-                </div>
-                <p className="mt-1.5 text-sm text-white/72">{j.text}</p>
-              </div>
-            </motion.div>
-          ))}
+      <div>
+        <Eyebrow>Use case</Eyebrow>
+        <motion.h2
+          variants={itemZoom}
+          className={cn(display, "mt-3 text-3xl font-semibold text-white sm:text-4xl md:text-5xl")}
+        >
+          Pricing change → <span className="text-cyan-300">approved battlecard</span>
+        </motion.h2>
+        <motion.p variants={item} className="mt-3 max-w-2xl text-base text-white/70 sm:text-lg">
+          Demo path on the live app — every step is a real screen.
+        </motion.p>
+      </div>
+
+      <div className="mt-8 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+        <motion.div
+          key={current.step}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: EASE }}
+          className="relative flex flex-col justify-center overflow-hidden border border-cyan-400/35 bg-cyan-400/[0.07] p-7 sm:p-9"
+        >
+          <motion.span
+            className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-300 to-transparent"
+            animate={{ opacity: [0.35, 1, 0.35] }}
+            transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
+          />
+          <div className="flex items-center gap-3">
+            <current.icon className="h-6 w-6 text-cyan-300" />
+            <StepNo n={current.step} />
+            <span className={cn(mono, "text-[0.6rem] uppercase tracking-[0.18em] text-cyan-300/80")}>
+              Now
+            </span>
+          </div>
+          <h3 className={cn(display, "mt-5 text-3xl font-semibold text-white sm:text-4xl")}>
+            {current.title}
+          </h3>
+          <p className="mt-4 max-w-lg text-base leading-relaxed text-white/75 sm:text-lg">
+            {current.text}
+          </p>
+          <div className="mt-8 h-1 overflow-hidden bg-white/[0.08]">
+            <motion.div
+              className="h-full bg-cyan-300/80"
+              animate={{ width: `${((active + 1) / journey.length) * 100}%` }}
+              transition={{ duration: 0.4, ease: EASE }}
+            />
+          </div>
+        </motion.div>
+
+        <div className="flex flex-col gap-2">
+          {journey.map((j, i) => {
+            const isActive = active === i;
+            const isPast = active > i;
+            return (
+              <motion.button
+                key={j.step}
+                type="button"
+                onClick={() => setActive(i)}
+                animate={{
+                  borderColor: isActive ? "rgba(34,211,238,0.45)" : "rgba(255,255,255,0.08)",
+                  backgroundColor: isActive ? "rgba(34,211,238,0.1)" : "rgba(7,13,26,0.5)",
+                }}
+                transition={{ duration: 0.3, ease: EASE }}
+                className="flex items-center gap-3 border px-4 py-3 text-left"
+              >
+                <j.icon className={cn("h-4 w-4 shrink-0", isActive ? "text-cyan-200" : "text-white/35")} />
+                <span className={cn(mono, "w-6 shrink-0 text-[0.65rem] text-cyan-300/70")}>{j.step}</span>
+                <span
+                  className={cn(
+                    display,
+                    "min-w-0 flex-1 truncate text-sm font-semibold",
+                    isActive ? "text-white" : "text-white/65",
+                  )}
+                >
+                  {j.title}
+                </span>
+                {isPast && !isActive ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-cyan-300/50" />
+                ) : null}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
     </SlideShell>
@@ -712,11 +1074,11 @@ function UseCaseSlide() {
 /* ─── Intelligence providers (product-named) ─── */
 function AIIntelligenceSlide() {
   const layers = [
-    { icon: Bot, title: "AIML / OpenAI-compatible", text: "Frontier models draft briefs, score risk, and synthesize actions." },
-    { icon: Brain, title: "Featherless routing", text: "Intent models classify watch goals and choose tool paths." },
+    { icon: Bot, title: "AIML / OpenAI-compatible", text: "Primary models for intent, briefs, risk scoring, and action synthesis." },
+    { icon: Brain, title: "Featherless", text: "Open-model fallback / optional primary when SANTRA_AGENT_PROVIDER is set." },
     { icon: Mic, title: "Speechmatics", text: "Realtime STT + TTS for Strategy Desk live call." },
     { icon: Globe2, title: "Exa + Bright Data", text: "Live web evidence — SERP, unlocker, and search grounding." },
-    { icon: Mail, title: "Resend", text: "Background email watch digests on cron schedules." },
+    { icon: Mail, title: "Resend", text: "Background email watch digests when cron polls due monitors." },
     { icon: Database, title: "MongoDB Atlas", text: "Monitors, reports, chats, and approval history persist here." },
   ];
   return (
@@ -747,14 +1109,18 @@ function AIIntelligenceSlide() {
 function ArchitectureSlide() {
   const layers = [
     { icon: Layers, title: "Frontend", items: "Next.js 15 · React 19 · Tailwind · Framer Motion · R3F" },
-    { icon: Server, title: "API & agent", items: "Route handlers · Monitor check · HITL gate · Rate limits" },
-    { icon: Database, title: "Data", items: "MongoDB Atlas · Reports · Pending actions · Threads" },
-    { icon: Brain, title: "Models & voice", items: "AIML · Featherless · Speechmatics" },
-    { icon: Globe2, title: "Evidence & alerts", items: "Exa · Bright Data · Resend · HTTPS webhooks" },
+    { icon: Server, title: "Agent graph", items: "Plan → collect → observe → reason → HITL → execute → audit" },
+    { icon: Brain, title: "Scoring", items: "Risk ≠ confidence ≠ importance · noise filter · claim verify" },
+    { icon: Database, title: "Data", items: "MongoDB Atlas · Reports · Pending actions · Timeline audit" },
+    { icon: Globe2, title: "Evidence & alerts", items: "Exa · Bright Data · Speechmatics · Resend · HITL webhooks" },
   ];
   return (
     <SlideShell>
-      <SlideHeading eyebrow="Architecture" title="What the production stack looks like" />
+      <SlideHeading
+        eyebrow="Architecture"
+        title="What the production stack looks like"
+        subtitle="Live on Vercel — decision graph, independent scores, and hard HITL before execute."
+      />
       <div className="mt-10 mx-auto w-full max-w-3xl space-y-2">
         {layers.map((layer, i) => (
           <motion.div
@@ -778,58 +1144,93 @@ function ArchitectureSlide() {
 /* ─── Unique — product wedge only ─── */
 function UniquePointSlide() {
   const impacts = [
-    { value: "Not a chatbot", label: "Positioning", text: "Runs monitors end-to-end — not Q&A only.", side: "left" as const },
-    { value: "Edit → approve", label: "HITL inbox", text: "Reports stay drafts until a human ships them.", side: "left" as const },
-    { value: "Live web proof", label: "Evidence", text: "Exa + Bright Data ground every brief.", side: "right" as const },
-    { value: "Ask · Market · Voice", label: "Strategy Desk", text: "Chat, ICP validation, and Speechmatics call.", side: "right" as const },
+    {
+      icon: Layers,
+      value: "Named agent graph",
+      label: "Architecture",
+      text: "Plan → collect → observe → reason → HITL → execute → audit.",
+    },
+    {
+      icon: ShieldCheck,
+      value: "Edit → approve",
+      label: "HITL inbox",
+      text: "Nothing ships to webhook / CRM export until a human approves.",
+    },
+    {
+      icon: Brain,
+      value: "3 independent scores",
+      label: "Scoring",
+      text: "Risk ≠ confidence ≠ importance — plus noise filter.",
+    },
+    {
+      icon: Mic,
+      value: "Ask · Market · Voice",
+      label: "Strategy Desk",
+      text: "Chat, ICP validation, and Speechmatics live call.",
+    },
   ];
-  const left = impacts.filter((i) => i.side === "left");
-  const right = impacts.filter((i) => i.side === "right");
 
   return (
     <SlideShell>
       <div className="text-center">
         <Eyebrow>Unique point</Eyebrow>
-        <h2 className={cn(display, "mx-auto mt-3 max-w-4xl text-3xl font-semibold text-white sm:text-4xl md:text-5xl")}>
-          Autonomous research. <span className="text-cyan-300">Human execution gate.</span>
-        </h2>
+        <motion.h2
+          variants={itemZoom}
+          className={cn(
+            display,
+            "mx-auto mt-3 max-w-4xl text-3xl font-semibold text-white sm:text-4xl md:text-5xl",
+          )}
+        >
+          Autonomous research.{" "}
+          <motion.span
+            className="inline-block text-cyan-300"
+            animate={{ opacity: [0.75, 1, 0.75] }}
+            transition={{ repeat: Infinity, duration: 2.8, ease: "easeInOut" }}
+          >
+            Human execution gate.
+          </motion.span>
+        </motion.h2>
       </div>
 
-      <div className="mt-10 grid items-center gap-6 lg:grid-cols-[1fr_minmax(220px,280px)_1fr] lg:gap-4">
-        <div className="space-y-8 lg:space-y-10 lg:pr-4 lg:text-right">
-          {left.map((impact) => (
-            <motion.div key={impact.label} variants={itemLeft}>
-              <p className={cn(display, "text-xl font-semibold text-cyan-200 sm:text-2xl")}>{impact.value}</p>
-              <p className={cn(mono, "mt-1 text-[0.65rem] uppercase tracking-[0.2em] text-white/45")}>
-                {impact.label}
-              </p>
-              <p className="mt-1.5 text-sm text-white/70">{impact.text}</p>
-            </motion.div>
-          ))}
-        </div>
+      <motion.div variants={itemZoom} className="relative mx-auto mt-8 w-full max-w-3xl">
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -inset-6 rounded-full border border-cyan-400/10"
+          animate={{ rotate: [0, 360] }}
+          transition={{ repeat: Infinity, duration: 48, ease: "linear" }}
+        />
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -inset-12 rounded-full border border-dashed border-white/[0.05]"
+          animate={{ rotate: [360, 0] }}
+          transition={{ repeat: Infinity, duration: 72, ease: "linear" }}
+        />
+        <HitlGateDiagram className="relative border-cyan-400/30 bg-[#070d1a]/90" />
+      </motion.div>
 
-        <motion.div variants={itemZoom} className="relative mx-auto w-full max-w-[280px]">
-          <div className="absolute inset-[-12%] rounded-full border border-cyan-400/15" />
-          <div className="absolute inset-[-24%] rounded-full border border-dashed border-white/[0.06]" />
-          <HitlGateDiagram className="relative border-cyan-400/25 bg-[#070d1a]/80" />
-        </motion.div>
-
-        <div className="space-y-8 lg:space-y-10 lg:pl-4">
-          {right.map((impact) => (
-            <motion.div key={impact.label} variants={itemRight}>
-              <p className={cn(display, "text-xl font-semibold text-cyan-200 sm:text-2xl")}>{impact.value}</p>
-              <p className={cn(mono, "mt-1 text-[0.65rem] uppercase tracking-[0.2em] text-white/45")}>
-                {impact.label}
-              </p>
-              <p className="mt-1.5 text-sm text-white/70">{impact.text}</p>
-            </motion.div>
-          ))}
-        </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {impacts.map((impact, i) => (
+          <motion.div
+            key={impact.label}
+            variants={item}
+            custom={i}
+            className="border-t border-cyan-400/30 pt-4"
+          >
+            <impact.icon className="h-4 w-4 text-cyan-300" />
+            <p className={cn(display, "mt-3 text-base font-semibold text-cyan-100 sm:text-lg")}>
+              {impact.value}
+            </p>
+            <p className={cn(mono, "mt-1 text-[0.6rem] uppercase tracking-[0.2em] text-white/45")}>
+              {impact.label}
+            </p>
+            <p className="mt-1.5 text-sm text-white/70">{impact.text}</p>
+          </motion.div>
+        ))}
       </div>
 
       <motion.p
         variants={item}
-        className="mx-auto mt-10 max-w-3xl text-center text-base leading-relaxed text-white/70 sm:text-lg"
+        className="mx-auto mt-8 max-w-3xl text-center text-base leading-relaxed text-white/70 sm:text-lg"
       >
         Deploy GTM intelligence with human control — without another passive chatbot.
       </motion.p>
@@ -926,47 +1327,33 @@ function MarketSlide() {
   );
 }
 
-/* ─── 15 Why now — numbered manifesto ─── */
-function WhyNowSlide() {
-  const reasons = [
-    { title: "GTM teams are shrinking", text: "Cover more competitors with fewer analysts." },
-    { title: "Agents finally work", text: "Tool-using models research and draft reliably — trust was missing." },
-    { title: "Trust is the moat", text: "Whoever solves safe execution first owns the workflow. HITL is that answer." },
-  ];
-  return (
-    <SlideShell>
-      <SlideHeading eyebrow="Why now" title="The window for trusted agents is open" />
-      <div className="mt-12 space-y-0">
-        {reasons.map((reason, i) => (
-          <motion.div
-            key={reason.title}
-            variants={item}
-            className="grid gap-4 border-t border-white/[0.08] py-7 sm:grid-cols-[100px_1fr] sm:gap-10"
-          >
-            <span className={cn(display, "text-4xl font-semibold text-cyan-300/55")}>
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <div>
-              <h3 className={cn(display, "text-2xl font-semibold text-white")}>{reason.title}</h3>
-              <p className="mt-2 max-w-2xl text-base text-white/72">{reason.text}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </SlideShell>
-  );
-}
-
-/* ─── Demo path — real app routes ─── */
+/* ─── Demo path — animated walkthrough ─── */
 function DemoJourneySlide() {
   const journey = [
-    { step: "01", title: "Sign in", text: "/sign-in — email or GitHub / Google OAuth." },
+    {
+      step: "01",
+      title: "Sign in",
+      text: "/sign-in — Continue with Google or GitHub OAuth (or email).",
+    },
     { step: "02", title: "Command Center", text: "/dashboard — signal overview and what needs approval." },
-    { step: "03", title: "Create monitor", text: "/alerts — plain-language competitive watch." },
-    { step: "04", title: "Check + report", text: "Run Check now → open /reports for risk & evidence." },
-    { step: "05", title: "Approve send", text: "Edit brief in HITL panel → fire webhook / Slack." },
+    {
+      step: "03",
+      title: "Create monitor",
+      text: "/alerts — type a goal; Santra auto-reads category & severity.",
+    },
+    { step: "04", title: "Check + report", text: "Run Check now → open /reports for risk, confidence & importance." },
+    { step: "05", title: "Approve send", text: "Edit brief in HITL panel → Slack Incoming Webhook / Zapier / Make." },
     { step: "06", title: "Strategy Desk", text: "/chat Ask or Market — optional Speechmatics live call." },
   ];
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % journey.length);
+    }, 1700);
+    return () => window.clearInterval(id);
+  }, [journey.length]);
+
   return (
     <SlideShell>
       <SlideHeading
@@ -974,57 +1361,68 @@ function DemoJourneySlide() {
         title="Walk the live product"
         subtitle="Every step is a real route on santra-ai-neurox.vercel.app."
       />
-      <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {journey.map((j) => (
-          <motion.div
-            key={j.step}
-            variants={item}
-            className="group relative overflow-hidden border border-white/[0.08] bg-[#0a1224]/60 p-6"
-          >
-            <div className="absolute inset-y-0 left-0 w-0.5 bg-cyan-400/0 transition group-hover:bg-cyan-400/60" />
-            <StepNo n={j.step} />
-            <h3 className={cn(display, "mt-3 text-xl font-semibold text-white")}>{j.title}</h3>
-            <p className="mt-2 text-sm text-white/72">{j.text}</p>
-          </motion.div>
-        ))}
-      </div>
-    </SlideShell>
-  );
-}
 
-/* ─── Tech from README ─── */
-function TechStackSlide() {
-  const groups = [
-    { title: "App", items: ["Next.js 15", "React 19", "TypeScript", "Tailwind", "Framer Motion", "Recharts"] },
-    { title: "Intelligence", items: ["AIML", "Featherless", "Speechmatics", "Exa", "Bright Data"] },
-    { title: "Platform", items: ["MongoDB Atlas", "Resend", "HTTPS webhooks", "GitHub / Google OAuth", "Vercel"] },
-  ];
-  return (
-    <SlideShell>
-      <SlideHeading
-        eyebrow="Tech stack"
-        title="What we ship on"
-        subtitle="Canonical stack from the product README — Mongo primary, Vercel deploy."
-      />
-      <div className="mt-10 space-y-8">
-        {groups.map((group) => (
-          <motion.div key={group.title} variants={item} className="grid gap-4 sm:grid-cols-[140px_1fr] sm:items-start">
-            <h3 className={cn(mono, "text-xs uppercase tracking-[0.24em] text-cyan-300/70")}>{group.title}</h3>
-            <div className="flex flex-wrap gap-2">
-              {group.items.map((tech) => (
-                <span
-                  key={tech}
-                  className={cn(
-                    mono,
-                    "border border-white/[0.1] bg-white/[0.03] px-3 py-1.5 text-xs tracking-wide text-white/75",
-                  )}
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        ))}
+      <motion.div variants={item} className="mt-6 mb-2 flex items-center gap-2">
+        <div className="h-1 flex-1 overflow-hidden bg-white/[0.06]">
+          <motion.div
+            className="h-full bg-gradient-to-r from-cyan-400/80 to-sky-400/60"
+            animate={{ width: `${((active + 1) / journey.length) * 100}%` }}
+            transition={{ duration: 0.4, ease: EASE }}
+          />
+        </div>
+        <span className={cn(mono, "shrink-0 text-[0.65rem] tracking-wider text-cyan-300/80")}>
+          Step {String(active + 1).padStart(2, "0")} / {String(journey.length).padStart(2, "0")}
+        </span>
+      </motion.div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {journey.map((j, i) => {
+          const isActive = active === i;
+          const isPast = active > i;
+          return (
+            <motion.div
+              key={j.step}
+              variants={item}
+              animate={{
+                borderColor: isActive
+                  ? "rgba(34,211,238,0.5)"
+                  : isPast
+                    ? "rgba(34,211,238,0.2)"
+                    : "rgba(255,255,255,0.08)",
+                backgroundColor: isActive ? "rgba(34,211,238,0.1)" : "rgba(10,18,36,0.6)",
+                scale: isActive ? 1.02 : 1,
+              }}
+              transition={{ duration: 0.35, ease: EASE }}
+              className="group relative overflow-hidden border p-6"
+            >
+              {isActive ? (
+                <motion.div
+                  className="absolute inset-y-0 left-0 w-0.5 bg-cyan-300"
+                  layoutId="demo-path-active"
+                  transition={{ duration: 0.35, ease: EASE }}
+                />
+              ) : (
+                <div className="absolute inset-y-0 left-0 w-0.5 bg-cyan-400/0" />
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <StepNo n={j.step} />
+                {isActive ? (
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className={cn(mono, "text-[0.55rem] uppercase tracking-[0.18em] text-cyan-300")}
+                  >
+                    Now
+                  </motion.span>
+                ) : isPast ? (
+                  <CheckCircle2 className="h-4 w-4 text-cyan-300/70" />
+                ) : null}
+              </div>
+              <h3 className={cn(display, "mt-3 text-xl font-semibold text-white")}>{j.title}</h3>
+              <p className="mt-2 text-sm text-white/72">{j.text}</p>
+            </motion.div>
+          );
+        })}
       </div>
     </SlideShell>
   );
@@ -1042,7 +1440,7 @@ function FutureScopeSlide() {
         "Strategy Desk Ask + Market",
         "Speechmatics live call",
         "Background email watches (Resend)",
-        "Reports with risk / confidence / evidence",
+        "Reports with risk / confidence / importance",
       ],
     },
     {
@@ -1054,7 +1452,7 @@ function FutureScopeSlide() {
         "Multi-monitor campaigns",
         "Shared team workspaces",
         "Trend alert thresholds",
-        "Streaming voice UX polish",
+        "Faster email-watch cron cadence",
       ],
     },
     {
@@ -1115,157 +1513,46 @@ function TeamSlide() {
           variants={itemRight}
           className="mx-auto w-full max-w-[220px] shrink-0 border border-white/[0.1] bg-[#070d1a]/90 px-4 py-5 lg:mx-0 lg:mt-10"
         >
-          <AppLoginQr size={148} label="Scan to open app" />
+          <AppLoginQr size={148} label="Scan · Start · Review" />
         </motion.div>
       </div>
     </SlideShell>
   );
 }
 
-/* ─── Live demo — production app ─── */
-function LiveDemoSlide() {
-  return (
-    <SlideShell>
-      <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
-        <motion.div variants={itemLeft}>
-          <BrandLogo className="h-[56px] w-[84px] sm:h-[72px] sm:w-[108px]" />
-          <div className="mt-5">
-            <Eyebrow>Live product</Eyebrow>
-          </div>
-          <h2
-            className={cn(
-              display,
-              "mt-3 text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl",
-            )}
-          >
-            Open the real app
-          </h2>
-          <p className="mt-4 max-w-md text-lg text-white/75">
-            /alerts → /reports → /chat on the production deploy — not localhost.
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <a
-              href="https://santra-ai-neurox.vercel.app/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-3 border border-cyan-300/40 bg-cyan-400/15 px-6 py-3.5 text-sm font-medium text-cyan-50 transition hover:bg-cyan-400/25"
-            >
-              <Radar className="h-5 w-5 text-cyan-300" />
-              santra-ai-neurox.vercel.app
-              <ArrowRight className="h-4 w-4" />
-            </a>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {[
-              { icon: Radar, label: "GTM Monitors" },
-              { icon: FileCheck2, label: "Reports" },
-              { icon: MessageSquare, label: "Strategy Desk" },
-              { icon: Layers, label: "Command Center" },
-            ].map((chip) => {
-              const Icon = chip.icon;
-              return (
-                <span
-                  key={chip.label}
-                  className={cn(
-                    mono,
-                    "inline-flex items-center gap-2 border border-cyan-400/25 bg-cyan-400/[0.08] px-3 py-1.5 text-[0.7rem] tracking-wide text-cyan-100",
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {chip.label}
-                </span>
-              );
-            })}
-          </div>
-        </motion.div>
-        <motion.div variants={itemRight}>
-          <ProductPreviewFrame className="h-[320px] sm:h-[360px]" />
-        </motion.div>
-      </div>
-    </SlideShell>
-  );
-}
-
-/* ─── Close — large left / right closing frame ─── */
+/* ─── Close — centered thank you + QR; edge pop-up reviews ─── */
 function ConclusionSlide() {
   return (
     <SlideShell>
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[1.2fr_auto] lg:gap-12">
-        <div className="min-w-0">
-          <motion.div variants={itemLeft}>
+      <div className="relative mx-auto w-full max-w-6xl">
+        <PitchReviewBubbles />
+
+        <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center text-center">
+          <motion.div variants={itemZoom} className="w-full">
             <Eyebrow>Mission complete</Eyebrow>
-          </motion.div>
-          <motion.h2
-            variants={itemZoom}
-            className={cn(
-              display,
-              "mt-3 text-6xl font-semibold tracking-tight text-white sm:text-7xl md:text-8xl md:leading-[0.95]",
-            )}
-          >
-            Thank you
-          </motion.h2>
-          <motion.p variants={item} className="mt-4 text-3xl font-semibold sm:text-4xl">
-            <span className="text-white">SANTRA</span>{" "}
-            <span className="bg-gradient-to-r from-cyan-200 to-sky-400 bg-clip-text text-transparent">AI</span>
-          </motion.p>
-          <motion.p variants={item} className="mt-4 max-w-xl text-lg text-white/65 sm:text-xl">
-            Prompt Pirates · NeuroX 1.0 — autonomous GTM intelligence with humans in the loop.
-          </motion.p>
-
-          <motion.div variants={item} className="mt-8 flex items-center gap-4">
-            <div className="flex -space-x-3">
-              {PITCH_TEAM.map((m) => (
-                <div
-                  key={m.name}
-                  title={m.name}
-                  className={cn(
-                    "relative flex h-14 w-14 items-center justify-center overflow-hidden border-2 border-[#030712] text-sm font-semibold text-cyan-50 sm:h-16 sm:w-16",
-                    !m.photo && `bg-gradient-to-br ${m.accent}`,
-                  )}
-                >
-                  {m.photo ? (
-                    <Image
-                      src={m.photo}
-                      alt={m.name}
-                      fill
-                      className="object-cover object-[center_20%]"
-                      sizes="64px"
-                    />
-                  ) : (
-                    m.initials
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className={cn(mono, "text-xs uppercase tracking-[0.2em] text-white/50 sm:text-sm")}>
-              Prompt Pirates
+            <h2
+              className={cn(
+                display,
+                "mt-4 whitespace-nowrap text-[clamp(2.75rem,9vw,7.5rem)] font-semibold tracking-tight text-white leading-[0.95]",
+              )}
+            >
+              Thank you
+            </h2>
+            <p className="mt-5 text-2xl font-semibold sm:text-3xl">
+              <span className="text-white">SANTRA</span>{" "}
+              <span className="bg-gradient-to-r from-cyan-200 to-sky-400 bg-clip-text text-transparent">
+                AI
+              </span>
             </p>
+            <p className="mt-3 text-base text-white/65 sm:text-lg">Prompt Pirates · NeuroX 1.0</p>
           </motion.div>
 
-          <motion.div variants={item} className="mt-10 flex flex-wrap gap-4">
-            <a
-              href="https://santra-ai-neurox.vercel.app/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2.5 border border-cyan-300/45 bg-cyan-400/20 px-8 py-4 text-base font-medium text-cyan-50 transition hover:bg-cyan-400/30"
-            >
-              Open live app <ArrowRight className="h-5 w-5" />
-            </a>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 border border-white/20 bg-transparent px-8 py-4 text-base text-white/80 transition hover:bg-white/[0.06]"
-            >
-              Dashboard
-            </Link>
+          <motion.div variants={item} className="mt-10 w-full max-w-[240px]">
+            <div className="border border-cyan-300/35 bg-[#050b16]/95 px-5 py-5">
+              <AppLoginQr size={168} label="Scan · Start · Review" href={PITCH_TRY_URL} />
+            </div>
           </motion.div>
         </div>
-
-        <motion.div variants={itemRight} className="relative mx-auto w-full max-w-[300px] lg:mx-0">
-          <div className="absolute -inset-10 rounded-full bg-cyan-400/[0.08] blur-3xl" aria-hidden />
-          <div className="relative border border-cyan-300/35 bg-[#050b16]/95 px-7 py-8">
-            <AppLoginQr size={220} label="Scan to open live app" />
-          </div>
-        </motion.div>
       </div>
     </SlideShell>
   );
@@ -1279,6 +1566,7 @@ const SLIDES = [
   SolutionSlide,
   TargetUsersSlide,
   CoreFeaturesSlide,
+  AuthAccessSlide,
   FeatureDeepDiveSlide,
   HowItWorksSlide,
   UseCaseSlide,
@@ -1287,11 +1575,8 @@ const SLIDES = [
   UniquePointSlide,
   CompetitiveEdgeSlide,
   MarketSlide,
-  WhyNowSlide,
   DemoJourneySlide,
-  TechStackSlide,
   FutureScopeSlide,
-  LiveDemoSlide,
   ConclusionSlide,
 ];
 
@@ -1303,6 +1588,7 @@ const LABELS = [
   "Solution",
   "Target Users",
   "Core Features",
+  "Login",
   "Monitors",
   "Agent Loop",
   "Use Case",
@@ -1311,11 +1597,8 @@ const LABELS = [
   "Unique Point",
   "Edge",
   "Signals",
-  "Why Now",
   "Demo Path",
-  "Tech Stack",
   "Roadmap",
-  "Live Demo",
   "Conclusion",
 ];
 
@@ -1327,6 +1610,7 @@ const MOODS: PitchMood[] = [
   "calm", // Solution
   "calm", // Target Users
   "calm", // Core Features
+  "signal", // Auth / Login
   "calm", // Deep Dive
   "signal", // How It Works
   "signal", // Use Case
@@ -1335,19 +1619,27 @@ const MOODS: PitchMood[] = [
   "signal", // Unique Point
   "calm", // Edge
   "signal", // Market
-  "signal", // Why Now
   "signal", // Demo Path
-  "calm", // Tech Stack
-  "calm", // Future Scope
-  "celebrate", // Live Demo
+  "calm", // Future Scope / Roadmap
   "celebrate", // Conclusion
 ];
 
 const TOTAL = SLIDES.length;
 
 export function PitchDeck() {
-  const [[index, direction], setPage] = useState([0, 0]);
+  const boot = readExportBoot();
+  const [exportMode] = useState(boot.exportMode);
+  const [[index, direction], setPage] = useState(() =>
+    boot.exportMode ? ([Math.min(TOTAL - 1, boot.slide), 0] as [number, number]) : ([0, 0] as [number, number]),
+  );
   const [fullscreen, setFullscreen] = useState(false);
+  const [exportReady, setExportReady] = useState(!boot.exportMode);
+
+  useEffect(() => {
+    if (!exportMode) return;
+    const t = window.setTimeout(() => setExportReady(true), 1000);
+    return () => window.clearTimeout(t);
+  }, [exportMode]);
 
   const go = useCallback((nextIndex: number, dir: number) => {
     setPage([Math.max(0, Math.min(TOTAL - 1, nextIndex)), dir]);
@@ -1357,6 +1649,7 @@ export function PitchDeck() {
   const prev = useCallback(() => go(index - 1, -1), [go, index]);
 
   useEffect(() => {
+    if (exportMode) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "ArrowRight" || event.key === " " || event.key === "PageDown") {
         event.preventDefault();
@@ -1378,7 +1671,7 @@ export function PitchDeck() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, next, prev]);
+  }, [exportMode, go, next, prev]);
 
   useEffect(() => {
     const onFs = () => setFullscreen(Boolean(document.fullscreenElement));
@@ -1398,100 +1691,91 @@ export function PitchDeck() {
   }
 
   return (
-    <div className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#030712] text-white">
-      <PitchBackground mood={mood} />
+    <PitchExportCtx.Provider value={exportMode}>
+      <div
+        className="relative h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-[#030712] text-white"
+        data-pitch-export={exportMode ? "1" : "0"}
+        data-pitch-slide={index}
+        data-pitch-ready={exportReady ? "1" : "0"}
+      >
+        <PitchBackground mood={mood} />
 
-      <div className="relative z-10 mx-auto flex h-full w-full max-w-[1920px] flex-col">
-        <header className="flex h-12 shrink-0 items-center justify-between px-4 sm:h-14 sm:px-8 lg:px-10">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <BrandLogo className="h-[32px] w-[48px] sm:h-[40px] sm:w-[60px]" />
-            <span className={cn(mono, "text-[0.65rem] tracking-[0.24em] text-white/45 uppercase")}>
-              SANTRA AI · Pitch
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={cn(mono, "hidden text-[0.7rem] text-white/40 sm:inline")}>
-              {String(index + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")} · {LABELS[index]}
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                if (!document.fullscreenElement) void document.documentElement.requestFullscreen?.();
-                else void document.exitFullscreen?.();
-              }}
-              className="border border-white/10 bg-white/[0.03] p-2 text-white/72 transition hover:bg-white/[0.07] hover:text-white"
-              aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-            >
-              {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </button>
-          </div>
-        </header>
-
-        {/* Full remaining viewport — no aspect-video letterboxing on laptops */}
-        <main className="relative min-h-0 flex-1">
-          <div className="absolute inset-0">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.section
-                key={index}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="absolute inset-0 overflow-hidden"
-                aria-label={LABELS[index]}
-              >
-                <PitchSlideCtx.Provider value={index}>
-                  <Slide />
-                </PitchSlideCtx.Provider>
-              </motion.section>
-            </AnimatePresence>
-          </div>
-        </main>
-
-        <footer className="relative z-20 flex h-14 shrink-0 flex-col justify-center gap-1 px-4 pb-2 pt-1 sm:h-16 sm:px-8 lg:px-10">
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={prev}
-              disabled={index === 0}
-              className="inline-flex items-center gap-1.5 border border-white/10 bg-white/[0.03] px-3 py-1.5 text-sm text-white/75 transition enabled:hover:bg-white/[0.07] disabled:opacity-30 sm:px-4 sm:py-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Prev
-            </button>
-
-            <div className="flex max-w-[50vw] flex-1 flex-wrap items-center justify-center gap-1 sm:max-w-[55vw] sm:gap-1.5">
-              {LABELS.map((label, i) => (
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-[1920px] flex-col">
+          {!exportMode ? (
+            <header className="flex h-12 shrink-0 items-center justify-between px-4 sm:h-14 sm:px-8 lg:px-10">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <BrandLogo className="h-[32px] w-[48px] sm:h-[40px] sm:w-[60px]" />
+                <span className={cn(mono, "text-[0.65rem] tracking-[0.24em] text-white/45 uppercase")}>
+                  SANTRA AI · Pitch
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={cn(mono, "hidden text-[0.7rem] text-white/40 sm:inline")}>
+                  {String(index + 1).padStart(2, "0")} / {String(TOTAL).padStart(2, "0")} · {LABELS[index]}
+                </span>
                 <button
-                  key={`${label}-${i}`}
                   type="button"
-                  aria-label={`Go to ${label}`}
-                  title={label}
-                  onClick={() => go(i, i > index ? 1 : -1)}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all",
-                    i === index ? "w-5 bg-cyan-300 sm:w-6" : "w-1.5 bg-white/20 hover:bg-white/40 sm:w-2",
-                  )}
-                />
-              ))}
-            </div>
+                  onClick={() => {
+                    if (!document.fullscreenElement) void document.documentElement.requestFullscreen?.();
+                    else void document.exitFullscreen?.();
+                  }}
+                  className="border border-white/10 bg-white/[0.03] p-2 text-white/72 transition hover:bg-white/[0.07] hover:text-white"
+                  aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                >
+                  {fullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                </button>
+              </div>
+            </header>
+          ) : null}
 
-            <button
-              type="button"
-              onClick={next}
-              disabled={index === TOTAL - 1}
-              className="inline-flex items-center gap-1.5 border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-sm text-cyan-50 transition enabled:hover:bg-cyan-300/15 disabled:opacity-30 sm:px-4 sm:py-2"
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-          <p className={cn(mono, "hidden text-center text-[10px] tracking-wide text-white/25 sm:block")}>
-            ← → or Space · F fullscreen
-          </p>
-        </footer>
+          {/* Full remaining viewport — no aspect-video letterboxing on laptops */}
+          <main className="relative min-h-0 flex-1">
+            <div className="absolute inset-0">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.section
+                  key={index}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial={exportMode ? false : "enter"}
+                  animate="center"
+                  exit="exit"
+                  className="absolute inset-0 overflow-hidden"
+                  aria-label={LABELS[index]}
+                >
+                  <PitchSlideCtx.Provider value={index}>
+                    <Slide />
+                  </PitchSlideCtx.Provider>
+                </motion.section>
+              </AnimatePresence>
+            </div>
+          </main>
+
+          {!exportMode ? (
+            <footer className="relative z-20 flex h-14 shrink-0 flex-col justify-center gap-1 px-4 pb-2 pt-1 sm:h-16 sm:px-8 lg:px-10">
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex max-w-[80vw] flex-wrap items-center justify-center gap-1 sm:max-w-[70vw] sm:gap-1.5">
+                  {LABELS.map((label, i) => (
+                    <button
+                      key={`${label}-${i}`}
+                      type="button"
+                      aria-label={`Go to ${label}`}
+                      title={label}
+                      onClick={() => go(i, i > index ? 1 : -1)}
+                      className={cn(
+                        "h-1.5 rounded-full transition-all",
+                        i === index ? "w-5 bg-cyan-300 sm:w-6" : "w-1.5 bg-white/20 hover:bg-white/40 sm:w-2",
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className={cn(mono, "hidden text-center text-[10px] tracking-wide text-white/25 sm:block")}>
+                ← → or Space · F fullscreen
+              </p>
+            </footer>
+          ) : null}
+        </div>
       </div>
-    </div>
+    </PitchExportCtx.Provider>
   );
 }
