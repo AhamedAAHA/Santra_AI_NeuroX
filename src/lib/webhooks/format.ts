@@ -1,6 +1,6 @@
 import type { CrmExportPayload } from "@/lib/gtm/crm-payload";
+import { buildSantraWebhookEnvelope } from "@/lib/webhooks/payload";
 import {
-  claimStatusLabel,
   normalizeClaimStatus,
   type ExecutiveIntelligenceReport,
   type IntelligenceAnalysis,
@@ -129,6 +129,7 @@ export function buildReadableBrief(input: BriefInput): ReadableBrief {
   const scoreBits = [
     typeof riskScore === "number" ? `risk ${riskScore}` : null,
     typeof confidence === "number" ? `confidence ${confidence}` : null,
+    typeof report?.importanceScore === "number" ? `importance ${report.importanceScore}` : null,
   ].filter(Boolean);
   const scoreSuffix = scoreBits.length ? ` (${scoreBits.join(" · ")})` : "";
   const accountPrefix = companyName?.trim() ? `${companyName.trim()}: ` : "";
@@ -405,9 +406,26 @@ export function formatAlertWebhookPayload(webhookUrl: string, report: ExecutiveI
     requirement: report.monitorRequirement,
     eventLabel: "alert",
   });
+  const santra = buildSantraWebhookEnvelope(report);
 
-  if (destination === "slack") return { destination, body: formatSlackWebhookBody(brief) };
-  if (destination === "discord") return { destination, body: formatDiscordWebhookBody(brief) };
+  if (destination === "slack") {
+    return {
+      destination,
+      body: {
+        ...formatSlackWebhookBody(brief),
+        santra,
+      },
+    };
+  }
+  if (destination === "discord") {
+    return {
+      destination,
+      body: {
+        ...formatDiscordWebhookBody(brief),
+        santra,
+      },
+    };
+  }
 
   return {
     destination,
@@ -415,25 +433,7 @@ export function formatAlertWebhookPayload(webhookUrl: string, report: ExecutiveI
       brief,
       destination,
       event: "monitor_alert",
-      structured: {
-        santra: {
-          requirement: report.monitorRequirement,
-          riskScore: report.riskScore,
-          confidence: report.confidence,
-          verdict: report.verdict,
-          situation: report.situation,
-          impact: report.impact,
-          actionPlan: report.actionPlan,
-          watchItems: report.watchItems,
-          evidenceSources: report.evidenceSources,
-          verifiedClaims: report.verifiedClaims.map((claim) => ({
-            claim: claim.claim,
-            status: claimStatusLabel(claim.status),
-            confidence: claim.confidence,
-          })),
-          provider: report.provider,
-        },
-      },
+      structured: { santra },
     }),
   };
 }
@@ -462,8 +462,26 @@ export function formatAutomationWebhookPayload(options: {
     approvedAction: options.approvedAction,
   });
 
-  if (destination === "slack") return { destination, body: formatSlackWebhookBody(brief) };
-  if (destination === "discord") return { destination, body: formatDiscordWebhookBody(brief) };
+  const santra = options.report ? buildSantraWebhookEnvelope(options.report) : undefined;
+
+  if (destination === "slack") {
+    return {
+      destination,
+      body: {
+        ...formatSlackWebhookBody(brief),
+        ...(santra ? { santra } : {}),
+      },
+    };
+  }
+  if (destination === "discord") {
+    return {
+      destination,
+      body: {
+        ...formatDiscordWebhookBody(brief),
+        ...(santra ? { santra } : {}),
+      },
+    };
+  }
 
   return {
     destination,
@@ -477,6 +495,7 @@ export function formatAutomationWebhookPayload(options: {
         monitorId: options.monitorId,
         approvedAction: options.approvedAction,
         automation: options.automation,
+        ...(santra ? { santra } : {}),
       },
     }),
   };
