@@ -16,13 +16,20 @@ export type ReadableBrief = {
   detail: string;
   riskScore?: number;
   confidence?: number;
+  importanceScore?: number;
+  importanceBand?: string;
+  monitor?: string;
   actionLines: string[];
   evidenceUrls: string[];
+  evidenceLines: string[];
   impact?: string;
   watchItems: string[];
   competitors: string[];
   approvedAction?: string;
   claimStats?: { backed: number; partial: number; unsupported: number };
+  observedFacts: string[];
+  factCheckLine?: string;
+  hallucinationRisk?: string;
   provider?: string;
 };
 
@@ -124,12 +131,25 @@ export function buildReadableBrief(input: BriefInput): ReadableBrief {
     ...(report?.evidenceSources?.map((source) => source.url) ?? []),
     ...(intelligence?.evidenceUrls ?? []),
   ]).slice(0, 4);
+  const evidenceLines = uniqueNonEmpty([
+    ...(report?.evidenceSources?.map((source) => {
+      const title = source.title?.trim() || source.publisher?.trim() || "Source";
+      return source.url ? `${title} — ${source.url}` : title;
+    }) ?? []),
+    ...(intelligence?.evidenceUrls ?? []),
+  ]).slice(0, 4);
   const claimStats = claimStatsFromReport(report);
+  const importanceScore = report?.importanceScore;
+  const importanceBand = report?.importanceBand;
+  const observedFacts = uniqueNonEmpty([...(report?.observedFacts ?? [])]).slice(0, 4);
+  const factCheckLine = report?.factCheck
+    ? `${report.factCheck.corroborated} corroborated · ${report.factCheck.contested} contested · ${report.factCheck.dropped} dropped (${report.factCheck.synthesizer} ↔ ${report.factCheck.verifier})`
+    : undefined;
 
   const scoreBits = [
     typeof riskScore === "number" ? `risk ${riskScore}` : null,
     typeof confidence === "number" ? `confidence ${confidence}` : null,
-    typeof report?.importanceScore === "number" ? `importance ${report.importanceScore}` : null,
+    typeof importanceScore === "number" ? `importance ${importanceScore}` : null,
   ].filter(Boolean);
   const scoreSuffix = scoreBits.length ? ` (${scoreBits.join(" · ")})` : "";
   const accountPrefix = companyName?.trim() ? `${companyName.trim()}: ` : "";
@@ -197,15 +217,77 @@ export function buildReadableBrief(input: BriefInput): ReadableBrief {
     detail: situation,
     riskScore,
     confidence,
+    importanceScore,
+    importanceBand,
+    monitor: monitor || undefined,
     actionLines,
     evidenceUrls,
+    evidenceLines,
     impact,
     watchItems,
     competitors,
     approvedAction,
     claimStats,
+    observedFacts,
+    factCheckLine,
+    hallucinationRisk: report?.hallucinationRisk,
     provider: report?.provider,
   };
+}
+
+/** Public chart image URL Discord can embed (QuickChart). */
+export function buildDiscordScoreChartUrl(brief: ReadableBrief) {
+  const labels: string[] = [];
+  const values: number[] = [];
+  const colors: string[] = [];
+
+  if (typeof brief.riskScore === "number") {
+    labels.push("Risk");
+    values.push(brief.riskScore);
+    colors.push("rgb(244,63,94)");
+  }
+  if (typeof brief.confidence === "number") {
+    labels.push("Confidence");
+    values.push(brief.confidence);
+    colors.push("rgb(34,211,238)");
+  }
+  if (typeof brief.importanceScore === "number") {
+    labels.push("Importance");
+    values.push(brief.importanceScore);
+    colors.push("rgb(245,158,11)");
+  }
+
+  if (!labels.length) return undefined;
+
+  const chart = {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Score",
+          data: values,
+          backgroundColor: colors,
+          borderWidth: 0,
+        },
+      ],
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: "SANTRA · Risk · Confidence · Importance",
+          font: { size: 13 },
+        },
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { stepSize: 25 } },
+      },
+    },
+  };
+
+  return `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chart))}&w=560&h=300&bkg=%23ffffff&f=png`;
 }
 
 function slackColor(riskScore?: number) {
@@ -332,51 +414,130 @@ export function formatSlackWebhookBody(brief: ReadableBrief) {
   };
 }
 
-export function formatDiscordWebhookBody(brief: ReadableBrief) {
+export function formatDiscordWebhookBody(
+  brief: ReadableBrief,
+  options?: { deepLink?: string },
+) {
+  const deepLink = options?.deepLink?.trim() || undefined;
+  const chartUrl = buildDiscordScoreChartUrl(brief);
+
+  const scoreLine = [
+    typeof brief.riskScore === "number" ? `Risk **${brief.riskScore}**/100` : null,
+    typeof brief.confidence === "number" ? `Confidence **${brief.confidence}**/100` : null,
+    typeof brief.importanceScore === "number"
+      ? `Importance **${brief.importanceScore}**/100${brief.importanceBand ? ` (${brief.importanceBand})` : ""}`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const description = truncate(
+    [
+      brief.monitor ? `**Monitor**\n${brief.monitor}` : null,
+      "",
+      "**What happened**",
+      brief.detail,
+      brief.impact ? ["", "**Why it matters**", brief.impact].join("\n") : null,
+      brief.observedFacts.length
+        ? ["", "**Key facts**", ...brief.observedFacts.map((fact) => `• ${fact}`)].join("\n")
+        : null,
+      scoreLine ? ["", "**Scores**", scoreLine].join("\n") : null,
+      deepLink ? ["", `[Open full charts & evidence in SANTRA](${deepLink})`].join("\n") : null,
+    ]
+      .filter((block) => block !== null)
+      .join("\n")
+      .trim(),
+    3500,
+  );
+
   const fields = [
-    typeof brief.riskScore === "number"
-      ? { name: "Risk", value: String(brief.riskScore), inline: true }
-      : null,
-    typeof brief.confidence === "number"
-      ? { name: "Confidence", value: String(brief.confidence), inline: true }
-      : null,
     brief.claimStats
       ? {
-          name: "Claims",
-          value: `${brief.claimStats.backed} backed · ${brief.claimStats.partial} partial · ${brief.claimStats.unsupported} open`,
+          name: "Claim check",
+          value: truncate(
+            `${brief.claimStats.backed} backed · ${brief.claimStats.partial} partial · ${brief.claimStats.unsupported} open`,
+            1024,
+          ),
           inline: true,
+        }
+      : null,
+    brief.hallucinationRisk
+      ? {
+          name: "Hallucination risk",
+          value: brief.hallucinationRisk,
+          inline: true,
+        }
+      : null,
+    brief.provider
+      ? {
+          name: "Evidence provider",
+          value: brief.provider,
+          inline: true,
+        }
+      : null,
+    brief.factCheckLine
+      ? {
+          name: "Fact-check",
+          value: truncate(brief.factCheckLine, 1024),
+          inline: false,
         }
       : null,
     brief.approvedAction
       ? {
           name: "Approved action",
-          value: truncate(brief.approvedAction, 1000),
+          value: truncate(brief.approvedAction, 1024),
           inline: false,
         }
       : null,
     brief.actionLines.length
       ? {
-          name: "Battlecard / next actions",
-          value: truncate(brief.actionLines.map((line, index) => `${index + 1}. ${line}`).join("\n"), 1000),
+          name: "Next actions",
+          value: truncate(
+            brief.actionLines.map((line, index) => `${index + 1}. ${line}`).join("\n"),
+            1024,
+          ),
+          inline: false,
+        }
+      : null,
+    brief.watchItems.length
+      ? {
+          name: "Watch next",
+          value: truncate(brief.watchItems.map((item) => `• ${item}`).join("\n"), 1024),
+          inline: false,
+        }
+      : null,
+    brief.evidenceLines.length
+      ? {
+          name: "Evidence",
+          value: truncate(brief.evidenceLines.map((line) => `• ${line}`).join("\n"), 1024),
           inline: false,
         }
       : null,
   ].filter(Boolean);
 
+  const plainScores = scoreLine.replace(/\*\*/g, "");
+  const contentBits = ["SANTRA alert — HITL approved", brief.headline, plainScores || null].filter(
+    Boolean,
+  );
+
+  const titleBase = brief.headline.replace(/\s*\([^)]*\)\s*$/, "").trim() || brief.headline;
+
   return {
-    content: truncate(brief.text, 2000),
+    content: truncate(contentBits.join("\n"), 2000),
     embeds: [
       {
-        title: truncate(brief.headline, 240),
-        description: truncate(
-          [brief.detail, brief.impact ? `Impact: ${brief.impact}` : null].filter(Boolean).join("\n\n"),
-          3500,
-        ),
+        title: truncate(titleBase, 240),
+        description,
         color: discordColor(brief.riskScore),
         fields,
-        footer: { text: "SANTRA AI · GTM intelligence · HITL approved" },
+        footer: {
+          text: deepLink
+            ? "SANTRA AI · Open the link above for interactive charts"
+            : "SANTRA AI · GTM intelligence · HITL approved",
+        },
         timestamp: new Date().toISOString(),
-        ...(brief.evidenceUrls[0] ? { url: brief.evidenceUrls[0] } : {}),
+        ...(deepLink ? { url: deepLink } : brief.evidenceUrls[0] ? { url: brief.evidenceUrls[0] } : {}),
+        ...(chartUrl ? { image: { url: chartUrl } } : {}),
       },
     ],
   };
@@ -421,7 +582,7 @@ export function formatAlertWebhookPayload(webhookUrl: string, report: ExecutiveI
     return {
       destination,
       body: {
-        ...formatDiscordWebhookBody(brief),
+        ...formatDiscordWebhookBody(brief, { deepLink: santra.deepLink }),
         santra,
       },
     };
@@ -477,7 +638,7 @@ export function formatAutomationWebhookPayload(options: {
     return {
       destination,
       body: {
-        ...formatDiscordWebhookBody(brief),
+        ...formatDiscordWebhookBody(brief, { deepLink: santra?.deepLink }),
         ...(santra ? { santra } : {}),
       },
     };
