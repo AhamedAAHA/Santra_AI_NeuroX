@@ -144,11 +144,16 @@ export function useGtmLiveCall({ language = "en", onUtterance, onSpeak, onStopSp
       setCallStatus("listening");
     } catch (error) {
       activeRef.current = false;
+      const session = sessionRef.current;
+      sessionRef.current = null;
+      if (session) void session.stop();
       setActive(false);
       setCallStatus("idle");
-      toast.error("Could not start live call.", {
-        description: error instanceof Error ? error.message : "Check microphone and Speechmatics key.",
-      });
+      // Session onError already toasts connection failures; avoid a duplicate popup.
+      const message = error instanceof Error ? error.message : "Check microphone and Speechmatics key.";
+      if (!/Realtime transcription/i.test(message)) {
+        toast.error("Could not start live call.", { description: message });
+      }
     }
   }, [endCall, handleUtterance, language, setCallStatus]);
 
