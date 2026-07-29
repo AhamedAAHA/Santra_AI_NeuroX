@@ -98,6 +98,17 @@ describe("santra webhook envelope v2", () => {
       santra: expect.objectContaining({ importanceScore: 72, deepLink: expect.any(String) }),
       summary: expect.stringContaining("importance 72"),
     });
+
+    const discord = formatAlertWebhookPayload("https://discord.com/api/webhooks/1/token", report);
+    expect(discord.body).toMatchObject({
+      embeds: [
+        expect.objectContaining({
+          image: { url: expect.stringContaining("quickchart.io") },
+          url: expect.stringContaining("rep-full"),
+        }),
+      ],
+      santra: expect.objectContaining({ schemaVersion: "santra.webhook.v2" }),
+    });
   });
 });
 
