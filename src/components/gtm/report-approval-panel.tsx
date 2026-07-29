@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, PencilLine, XCircle } from "lucide-react";
+import { CheckCircle2, ExternalLink, PencilLine, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { getWorkspaceContext } from "@/lib/gtm/workspace-context";
 import { resolveActionHeadline } from "@/lib/gtm/report-headline";
 import { readResponseJson } from "@/lib/http/read-response-json";
+import {
+  WEBHOOK_DESTINATION_SUGGESTIONS,
+  describeWebhookDestination,
+} from "@/lib/webhooks/destinations";
 import { getAutomationWebhookUrl, isAllowedWebhook, saveAutomationWebhookUrl } from "@/lib/webhooks";
 import { cn } from "@/lib/utils";
 import type { ExecutiveIntelligenceReport } from "@/types/intelligence";
@@ -230,6 +234,7 @@ export function ReportApprovalPanel({
   const waiting = action?.status === "pending";
   const canResend = action?.status === "approved" || action?.status === "executed";
   const destinationOk = Boolean(destinationUrl.trim() && isAllowedWebhook(destinationUrl.trim()));
+  const destinationMeta = describeWebhookDestination(destinationUrl);
   const activeId = action?.id ?? pendingActionId;
 
   return (
@@ -424,8 +429,25 @@ export function ReportApprovalPanel({
                   Where to send
                 </label>
                 <Badge variant={destinationOk ? "success" : "default"} className="px-2 py-0.5 text-[10px]">
-                  {destinationOk ? "Ready" : "Not set"}
+                  {destinationOk ? `Ready · ${destinationMeta.label}` : destinationMeta.label}
                 </Badge>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {WEBHOOK_DESTINATION_SUGGESTIONS.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[10px] text-cyan-50 transition hover:border-cyan-300/40"
+                    title={item.hint}
+                    onClick={() => {
+                      if (!destinationUrl.trim()) setDestinationUrl(item.examplePlaceholder);
+                      window.open(item.docsUrl, "_blank", "noopener,noreferrer");
+                    }}
+                  >
+                    {item.label}
+                    <ExternalLink className="h-2.5 w-2.5 opacity-70" />
+                  </button>
+                ))}
               </div>
               <Input
                 id="report-where-to-send"
@@ -437,7 +459,7 @@ export function ReportApprovalPanel({
                 aria-label="Where to send"
               />
               <p className="text-[11px] leading-4 text-white/40">
-                Paste a Slack, Discord, Zapier, Make, or webhook.site link. Nothing is sent until you approve.
+                Tap a destination for setup docs, then paste the HTTPS webhook. Nothing is sent until you approve.
               </p>
             </div>
 
