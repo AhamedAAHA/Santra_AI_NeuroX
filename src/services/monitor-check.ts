@@ -8,10 +8,12 @@ import {
 import { recordMonitorEvents, updateMonitorChecked } from "@/lib/db/monitors";
 import { saveIntelligenceReport } from "@/lib/db/reports";
 import { filterSignalsForMonitor } from "@/lib/monitor-match";
+import { filterMaterialChanges, filterNoiseSignals } from "@/lib/noise-filter";
 import { enrichQueryWithWorkspace, type WorkspaceContext } from "@/lib/gtm/workspace-context";
 import { enrichQueryWithMemory } from "@/lib/gtm/agent-memory";
 import { runGtmAgentCollection } from "@/services/gtm-agent";
 import { createExecutiveReport } from "@/services/intelligence-report";
+import { factCheckExecutiveReport } from "@/services/fact-check";
 import { runChangeDetection } from "@/services/change-detection";
 import { runChangeDetectionWithDb } from "@/services/change-detection-db";
 import { generateEnterpriseAnalysis } from "@/services/openai";
@@ -125,29 +127,46 @@ export async function runMonitorCheck(
 
   agentStages.push({
     stage: "change_detection",
-    label: "Change detection",
+    label: "Observe · change detection",
     detail:
       changeResult.changes.length > 0
-        ? `${changeResult.changes.length} material change${changeResult.changes.length === 1 ? "" : "s"} detected`
-        : "No material pricing or field changes detected",
+        ? `${changeResult.changes.length} raw change${changeResult.changes.length === 1 ? "" : "s"} before noise filter`
+        : "No pricing or field changes detected",
     timestamp: new Date().toISOString(),
   });
+
+  const materialChanges = filterMaterialChanges(changeResult.changes);
+  const materialChangeSignals = changeResult.changeSignals.filter((signal) =>
+    materialChanges.some((change) => signal.changeId === change.id || signal.title.includes(change.field)),
+  );
+
+  if (changeResult.changes.length && materialChanges.length < changeResult.changes.length) {
+    agentStages.push({
+      stage: "change_detection",
+      label: "Noise filter",
+      detail: `Dropped ${changeResult.changes.length - materialChanges.length} cosmetic change${changeResult.changes.length - materialChanges.length === 1 ? "" : "s"} (footer/cookie/nav)`,
+      timestamp: new Date().toISOString(),
+    });
+  }
 
   const analysis = await generateEnterpriseAnalysis(enrichedRequirement, evidence, options?.workspace);
 
   agentStages.push({
     stage: "analysis",
-    label: "Executive analysis",
+    label: "Reason · executive analysis",
     detail: analysis.summary.slice(0, 200),
     timestamp: new Date().toISOString(),
   });
 
-  const mergedSignals = [
-    ...changeResult.changeSignals,
-    ...analysis.signals.filter(
-      (signal) => !changeResult.changeSignals.some((change) => change.title.includes(signal.title.slice(0, 20))),
-    ),
-  ];
+  const mergedSignals = filterNoiseSignals(
+    [
+      ...materialChangeSignals,
+      ...analysis.signals.filter(
+        (signal) => !materialChangeSignals.some((change) => change.title.includes(signal.title.slice(0, 20))),
+      ),
+    ],
+    monitor.minimum_severity,
+  );
 
   const persistProvider =
     provider === "bright-data" || provider === "exa" ? "bright-data" : "demo";
@@ -200,25 +219,40 @@ export async function runMonitorCheck(
     brightDataMode: inferBrightDataModeFromEvidence(evidence),
   };
 
-  const report = createExecutiveReport({
+  let report = createExecutiveReport({
     requirement: monitor.requirement,
     analysis: { ...analysis, signals: mergedSignals },
     matchedSignals: matched,
     evidence,
     provider,
-    detectedChanges: changeResult.changes,
+    detectedChanges: materialChanges,
     collectionMeta,
   });
 
+  // Dual-model fact-check: synthesizer report ↔ verifier model before HITL/webhook.
+  try {
+    report = await factCheckExecutiveReport(report, evidence);
+    if (report.factCheck) {
+      agentStages.push({
+        stage: "report",
+        label: "Fact-check · dual model",
+        detail: `${report.factCheck.synthesizer} ↔ ${report.factCheck.verifier} · ${report.factCheck.corroborated} corroborated · ${report.factCheck.contested} contested · ${report.factCheck.dropped} dropped`,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (error) {
+    console.warn("Fact-check pass skipped", error);
+  }
+
   agentStages.push({
     stage: "report",
-    label: "Executive report",
-    detail: report.verdict,
+    label: "Reflect · scored report",
+    detail: `${report.verdict} · risk ${report.riskScore} · conf ${report.confidence} · importance ${report.importanceScore ?? 0}`,
     timestamp: new Date().toISOString(),
   });
 
   let pendingAction: PendingAction | undefined;
-  const shouldQueueHitl = matched.length > 0 || changeResult.changes.length > 0;
+  const shouldQueueHitl = matched.length > 0 || materialChanges.length > 0;
 
   if (shouldQueueHitl && options?.userId) {
     try {
@@ -246,7 +280,7 @@ export async function runMonitorCheck(
       });
       agentStages.push({
         stage: "hitl_queue",
-        label: "Awaiting human approval",
+        label: "Human review · awaiting approval",
         detail: pendingAction.proposedAction,
         timestamp: new Date().toISOString(),
       });
@@ -265,7 +299,7 @@ export async function runMonitorCheck(
       requirement: monitor.requirement,
       report,
       matchedCount: matched.length,
-      changeCount: changeResult.changes.length,
+      changeCount: materialChanges.length,
     });
 
     if (emailNotification.sent) {
@@ -287,7 +321,7 @@ export async function runMonitorCheck(
 
     const userId = options!.userId!;
 
-    for (const change of changeResult.changes) {
+    for (const change of materialChanges) {
       try {
         await appendTimelineEventDb(userId, {
           type: "change_detected",
@@ -357,7 +391,7 @@ export async function runMonitorCheck(
     signals: matched,
     analysis: { ...analysis, signals: mergedSignals },
     report,
-    detectedChanges: changeResult.changes,
+    detectedChanges: materialChanges,
     evidencePreview: evidence.slice(0, 6000) || analysis.summary.slice(0, 6000),
     agentStages,
     pendingAction,
