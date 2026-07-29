@@ -2,7 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, BellRing, Bot, CheckCircle2, FileCheck2, LayoutDashboard, Settings, X } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BellRing,
+  Bot,
+  CheckCircle2,
+  FileCheck2,
+  LayoutDashboard,
+  Mail,
+  Settings,
+  Webhook,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -34,6 +46,22 @@ const guideSteps = [
     title: "Monitors",
     description: "Tell SANTRA what to watch, then run a check when you want fresh results.",
     detail: "Create monitors in plain language, like 'watch competitor pricing changes'. Review results before taking action.",
+    href: "/alerts",
+  },
+  {
+    icon: Webhook,
+    title: "Webhooks",
+    description: "Send approved alerts to Slack, Discord, Zapier, or any HTTPS webhook.",
+    detail:
+      "In Monitors, open Options and paste your Alert webhook URL (Slack, Discord, webhook.site, Zapier). After a check, open the report and Approve & send — nothing posts until you OK it. You can also paste a webhook in the report delivery card.",
+    href: "/alerts",
+  },
+  {
+    icon: Mail,
+    title: "Email watch",
+    description: "Get digest emails when a monitor finds something worth your attention.",
+    detail:
+      "Run a monitor, open its report, then use Background email watch. Pick an interval (30 min to daily), Start email watch, and digests go to your account email. You can stop the watch anytime from the same panel.",
     href: "/alerts",
   },
   {
@@ -125,14 +153,14 @@ export function NewUserGuideModal() {
           </Button>
         </div>
 
-        <div className="flex gap-2 overflow-x-auto overscroll-x-contain border-b border-white/10 px-4 py-3 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-5 md:gap-4 md:overflow-visible md:px-6 md:py-4 [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-2 overflow-x-auto overscroll-x-contain border-b border-white/10 px-4 py-3 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-7 md:gap-2 md:overflow-visible md:px-6 md:py-4 lg:gap-3 [&::-webkit-scrollbar]:hidden">
           {guideSteps.map((step, index) => (
             <button
               key={step.title}
               type="button"
               onClick={() => setStepIndex(index)}
               className={cn(
-                "santra-focus flex min-w-[9.5rem] shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-left transition md:min-w-0",
+                "santra-focus flex min-w-[9.5rem] shrink-0 items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-3 text-left transition md:min-w-0 md:flex-col md:items-start md:gap-2 lg:flex-row lg:items-center lg:gap-3",
                 stepIndex === index && "border-cyan-200/30 bg-cyan-300/10",
               )}
             >
@@ -171,7 +199,7 @@ export function NewUserGuideModal() {
                 <div>
                   <p className="font-medium text-white">You are ready</p>
                   <p className="mt-1 text-sm leading-6 text-white/55">
-                    Use Dashboard for overview, Strategy for questions and market validation, Monitors for tracking, History for saved work, and Settings for preferences.
+                    Use Dashboard for overview, Strategy for questions, Monitors for tracking, Webhooks and Email watch for delivery, History for saved work, and Settings for preferences.
                   </p>
                 </div>
               </div>
