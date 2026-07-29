@@ -9,6 +9,12 @@ const display = "font-[family-name:var(--font-pitch-display)]";
 const mono = "font-[family-name:var(--font-pitch-mono)]";
 
 export const PITCH_APP_URL = "https://santra-ai-neurox.vercel.app/";
+/** Judges/audience QR — start session + review funnel (production) */
+export const PITCH_TRY_URL = "https://santra-ai-neurox.vercel.app/try?from=pitch";
+export const PITCH_LIVE_URL = "https://santra-ai-neurox.vercel.app/pitch/live";
+/** Local try funnel — use on closing slide while developing */
+export const LOCAL_PITCH_TRY_URL = "http://localhost:3001/try?from=pitch";
+export const LOCAL_PITCH_LIVE_URL = "http://localhost:3001/pitch/live";
 
 export type PitchTeamMember = {
   name: string;
@@ -29,6 +35,7 @@ export const PITCH_TEAM: PitchTeamMember[] = [
   {
     name: "Avashik Ahamed",
     role: "Team",
+    photo: "/pitch/team/avashik-ahamed.png",
     initials: "AA",
     accent: "from-sky-400/35 to-indigo-500/20",
   },
@@ -41,6 +48,7 @@ export const PITCH_TEAM: PitchTeamMember[] = [
   {
     name: "Tharmithan",
     role: "Team",
+    photo: "/pitch/team/tharmithan.png",
     initials: "TH",
     accent: "from-blue-400/35 to-cyan-500/20",
   },
@@ -108,16 +116,19 @@ export function TeamMemberCard({
   );
 }
 
-/** Animated QR — opens production SANTRA app */
+/** Animated QR — opens judge/audience try funnel */
 export function AppLoginQr({
   className,
   size = 168,
-  label = "Scan to open SANTRA AI",
+  label = "Scan to try SANTRA AI",
+  href = PITCH_TRY_URL,
 }: {
   className?: string;
   size?: number;
   label?: string;
+  href?: string;
 }) {
+  const displayUrl = href.replace(/^https?:\/\//, "").replace(/\?.*$/, "");
   return (
     <div className={cn("flex flex-col items-center", className)}>
       <div className="relative p-3">
@@ -135,13 +146,13 @@ export function AppLoginQr({
 
         <div className="relative overflow-hidden border border-white/15 bg-white p-3">
           <QRCodeSVG
-            value={PITCH_APP_URL}
+            value={href}
             size={size}
             level="M"
             bgColor="#ffffff"
             fgColor="#020617"
             marginSize={1}
-            title="Open SANTRA AI"
+            title="Try SANTRA AI"
           />
           {/* Scan sweep */}
           <motion.div
@@ -155,12 +166,12 @@ export function AppLoginQr({
         {label}
       </p>
       <a
-        href={PITCH_APP_URL}
+        href={href}
         target="_blank"
         rel="noreferrer"
-        className="mt-1 max-w-[220px] truncate text-center text-xs text-white/50 transition hover:text-cyan-200"
+        className="mt-1 max-w-[240px] truncate text-center text-xs text-white/50 transition hover:text-cyan-200"
       >
-        santra-ai-neurox.vercel.app
+        {displayUrl}
       </a>
     </div>
   );
