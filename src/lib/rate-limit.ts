@@ -79,6 +79,10 @@ export async function checkRateLimit(
     }
   } catch (error) {
     console.warn(`Rate limit check failed for ${config.action}`, error);
+    // Live call / STT should still work when Atlas is briefly unreachable.
+    if (key === "voice" || key === "transcribe") {
+      return { allowed: true };
+    }
     return {
       allowed: false,
       message: "Usage limits are temporarily unavailable. Try again in a moment.",
