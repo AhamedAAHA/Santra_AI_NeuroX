@@ -12,31 +12,12 @@ import type {
 import { formatEvidenceExcerpt, formatEvidenceTitle } from "@/lib/evidence/format-evidence";
 import { buildNamedVerdict } from "@/lib/gtm/report-headline";
 import { normalizeTextList } from "@/lib/gtm/text-list";
-
-const severityScore: Record<IntelligenceSignal["severity"], number> = {
-  low: 30,
-  medium: 52,
-  high: 74,
-  critical: 92,
-};
-
-const claimStatusWeight: Record<ClaimVerificationStatus, number> = {
-  "evidence-backed": 1,
-  partial: 0.55,
-  unsupported: 0.12,
-};
-
-/** A report can never read as more trustworthy than the collection path allows. */
-const providerConfidenceCeiling: Record<ExecutiveIntelligenceReport["provider"], number> = {
-  "bright-data": 94,
-  exa: 90,
-  openai: 76,
-  demo: 60,
-};
-
-function clampScore(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, Math.round(value)));
-}
+import {
+  computeConfidence,
+  computeImportanceScore,
+  computeRiskScore,
+  importanceBand,
+} from "@/lib/scoring/formulas";
 
 function hostFromSource(source: string) {
   const url = source.match(/https?:\/\/[^\s)]+/i)?.[0];
@@ -210,58 +191,6 @@ function buildEvidenceBackedClaims(
   });
 }
 
-/**
- * Risk measures exposure (how severe and how broad), never model certainty.
- * Deriving it from confidence made both headline numbers collapse to one value.
- */
-function computeRiskScore(
-  matchedSignals: IntelligenceSignal[],
-  fallbackSignal: IntelligenceSignal | undefined,
-  detectedChanges?: DetectedChange[],
-) {
-  if (!matchedSignals.length) {
-    const latent = fallbackSignal ? severityScore[fallbackSignal.severity] : 40;
-    return clampScore(latent * 0.45, 8, 42);
-  }
-
-  const severities = matchedSignals.map((signal) => severityScore[signal.severity]);
-  const peak = Math.max(...severities);
-  const mean = severities.reduce((sum, value) => sum + value, 0) / severities.length;
-  const breadthBonus = Math.min(9, (matchedSignals.length - 1) * 3);
-  const changeBonus = detectedChanges?.length
-    ? Math.min(8, 3 + (detectedChanges.length - 1) * 2)
-    : 0;
-
-  return clampScore(peak * 0.72 + mean * 0.28 + breadthBonus + changeBonus, 10, 99);
-}
-
-/** Confidence measures evidence quality, independent of how bad the news is. */
-function computeConfidence(
-  claims: VerifiedClaim[],
-  sources: EvidenceSource[],
-  signals: IntelligenceSignal[],
-  provider: ExecutiveIntelligenceReport["provider"],
-  analysisConfidence: number,
-) {
-  const claimQuality = claims.length
-    ? claims.reduce((sum, claim) => sum + claimStatusWeight[claim.status], 0) / claims.length
-    : 0.25;
-  const sourceQuality = sources.length
-    ? sources.reduce((sum, source) => sum + source.reliability, 0) / sources.length / 100
-    : 0.4;
-  const citationCoverage = sources.length
-    ? sources.filter((source) => Boolean(source.url)).length / sources.length
-    : 0;
-  const modelConfidence = signals.length
-    ? signals.reduce((sum, signal) => sum + signal.confidence, 0) / signals.length
-    : analysisConfidence;
-
-  const score =
-    claimQuality * 0.42 + sourceQuality * 0.23 + citationCoverage * 0.17 + modelConfidence * 0.18;
-
-  return clampScore(score * 100, 10, providerConfidenceCeiling[provider]);
-}
-
 export function createExecutiveReport({
   requirement,
   analysis,
@@ -291,6 +220,14 @@ export function createExecutiveReport({
     provider,
     analysis.confidenceScore || 0.62,
   );
+  const importanceScore = computeImportanceScore({
+    matchedSignals,
+    detectedChanges,
+    sources,
+    claims,
+    riskScore,
+    confidence,
+  });
   const unsupportedCount = claims.filter((claim) => claim.status === "unsupported").length;
   const partialCount = claims.filter((claim) => claim.status === "partial").length;
   const hallucinationRisk =
@@ -312,6 +249,8 @@ export function createExecutiveReport({
     }),
     riskScore,
     confidence,
+    importanceScore,
+    importanceBand: importanceBand(importanceScore),
     situation: matchedSignals.length
       ? `${analysis.summary}${changeSummary || ""} The strongest matching signal is "${topSignal.title}".`
       : `${analysis.summary} No collected signal fully matched the configured threshold yet.`,
