@@ -114,6 +114,8 @@ async function ensureIndexes(db: Awaited<ReturnType<typeof getDb>>) {
     db.collection("chat_threads").createIndex({ user_id: 1, updated_at: -1 }),
     db.collection("chat_messages").createIndex({ thread_id: 1, created_at: 1 }),
     db.collection("pending_actions").createIndex({ user_id: 1, status: 1, created_at: -1 }),
+    db.collection("pitch_starts").createIndex({ started_at: -1 }),
+    db.collection("pitch_reviews").createIndex({ created_at: -1 }),
     db.collection("monitor_timeline_events").createIndex({ user_id: 1, created_at: -1 }),
     db.collection("monitor_detected_changes").createIndex({ user_id: 1, detected_at: -1 }),
     db.collection("monitor_page_snapshots").createIndex({ monitor_id: 1, url: 1, collected_at: -1 }),
