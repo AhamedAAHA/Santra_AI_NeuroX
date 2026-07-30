@@ -69,7 +69,9 @@ export async function POST() {
         hint: result.hint,
         status: "status" in result ? result.status : undefined,
         from: status.from,
-        to: email,
+        to: "to" in result && result.to ? result.to : email,
+        sandbox: status.sandbox,
+        sandboxTo: status.sandboxTo,
       },
       { status: 502 },
     );
@@ -77,9 +79,11 @@ export async function POST() {
 
   return NextResponse.json({
     sent: true,
-    to: email,
+    to: result.to,
     from: status.from,
     messageId: result.id,
     sandbox: status.sandbox,
+    redirected: result.redirected ?? false,
+    accountEmail: email,
   });
 }
