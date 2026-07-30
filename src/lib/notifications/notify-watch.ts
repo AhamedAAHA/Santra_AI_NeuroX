@@ -106,9 +106,16 @@ export async function maybeSendWatchEmail(input: MaybeSendWatchEmailInput): Prom
         return { sent: false, reason: "skipped", detail: result.reason, hint: result.hint, to };
       }
       console.warn("Watch email failed:", result.error);
-      return { sent: false, reason: "send_failed", detail: result.error, hint: result.hint, to };
+      return {
+        sent: false,
+        reason: "send_failed",
+        detail: result.error,
+        hint: result.hint,
+        to: result.to ?? to,
+      };
     }
 
+    const deliveredTo = result.to;
     await updateMonitorLastNotified(input.userId, input.monitorId);
 
     try {
@@ -117,11 +124,12 @@ export async function maybeSendWatchEmail(input: MaybeSendWatchEmailInput): Prom
         monitorId: input.monitorId,
         monitorRequirement: input.requirement,
         reportId: input.report.id,
-        summary: `Email alert sent to ${to}`,
+        summary: `Email alert sent to ${deliveredTo}`,
         severity: input.report.riskScore >= 80 ? "critical" : input.report.riskScore >= 65 ? "high" : "medium",
         metadata: {
           channel: "email",
-          recipient: to,
+          recipient: deliveredTo,
+          ...(result.redirected ? { redirectedFrom: to } : {}),
           ...(result.id ? { providerMessageId: result.id } : {}),
         },
       });
@@ -129,8 +137,8 @@ export async function maybeSendWatchEmail(input: MaybeSendWatchEmailInput): Prom
       console.warn("Timeline notification event skipped", error);
     }
 
-    console.info(`Watch email sent to ${to} for monitor ${input.monitorId}`);
-    return { sent: true, to, messageId: result.id };
+    console.info(`Watch email sent to ${deliveredTo} for monitor ${input.monitorId}`);
+    return { sent: true, to: deliveredTo, messageId: result.id };
   } catch (error) {
     console.warn("Watch email skipped", error);
     return {
