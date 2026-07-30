@@ -42,6 +42,7 @@ export const PITCH_TEAM: PitchTeamMember[] = [
   {
     name: "Aathil Akmal",
     role: "Team",
+    photo: "/pitch/team/aathil-akmal.png",
     initials: "AK",
     accent: "from-teal-400/35 to-cyan-600/20",
   },
