@@ -60,11 +60,13 @@ describe("email configuration status", () => {
   const original = {
     key: process.env.RESEND_API_KEY,
     from: process.env.SANTRA_EMAIL_FROM,
+    sandboxTo: process.env.SANTRA_EMAIL_SANDBOX_TO,
   };
 
   afterEach(() => {
     process.env.RESEND_API_KEY = original.key;
     process.env.SANTRA_EMAIL_FROM = original.from;
+    process.env.SANTRA_EMAIL_SANDBOX_TO = original.sandboxTo;
   });
 
   it("reports unconfigured when the api key is missing", () => {
@@ -77,9 +79,25 @@ describe("email configuration status", () => {
   it("flags the shared Resend test sender", () => {
     process.env.RESEND_API_KEY = "re_test";
     process.env.SANTRA_EMAIL_FROM = "SANTRA Alerts <onboarding@resend.dev>";
-    expect(getWatchEmailConfigStatus()).toMatchObject({ configured: true, sandbox: true });
+    delete process.env.SANTRA_EMAIL_SANDBOX_TO;
+    expect(getWatchEmailConfigStatus()).toMatchObject({
+      configured: true,
+      sandbox: true,
+      sandboxNeedsOwner: true,
+    });
 
     process.env.SANTRA_EMAIL_FROM = "alerts@example.com";
     expect(getWatchEmailConfigStatus().sandbox).toBe(false);
+  });
+
+  it("redirects sandbox recipients to SANTRA_EMAIL_SANDBOX_TO", async () => {
+    const { resolveWatchEmailRecipient } = await import("@/lib/notifications/email");
+    process.env.SANTRA_EMAIL_FROM = "SANTRA Alerts <onboarding@resend.dev>";
+    process.env.SANTRA_EMAIL_SANDBOX_TO = "owner@resend-account.com";
+    expect(resolveWatchEmailRecipient("other@example.com")).toEqual({
+      to: "owner@resend-account.com",
+      redirected: true,
+      accountEmail: "other@example.com",
+    });
   });
 });
