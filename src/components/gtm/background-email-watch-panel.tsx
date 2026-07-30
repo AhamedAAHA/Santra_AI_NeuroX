@@ -28,6 +28,8 @@ type EmailConfigStatus = {
   hasApiKey: boolean;
   from: string | null;
   sandbox: boolean;
+  sandboxTo?: string | null;
+  sandboxNeedsOwner?: boolean;
   email?: string | null;
 };
 
@@ -131,6 +133,8 @@ export function BackgroundEmailWatchPanel({ monitorId, className }: BackgroundEm
         to?: string;
         error?: string;
         hint?: string;
+        redirected?: boolean;
+        accountEmail?: string;
       } | null;
 
       if (!response.ok || !data?.sent) {
@@ -142,7 +146,9 @@ export function BackgroundEmailWatchPanel({ monitorId, className }: BackgroundEm
       }
 
       toast.success(`Test email sent to ${data.to}`, {
-        description: "Check your inbox and spam folder.",
+        description: data.redirected
+          ? `Resend sandbox routed from ${data.accountEmail}.`
+          : "Check your inbox and spam folder.",
       });
     } catch {
       toast.error("Test email failed to send.");
@@ -264,7 +270,11 @@ export function BackgroundEmailWatchPanel({ monitorId, className }: BackgroundEm
             <div className="min-w-0">
               <p className="text-sm text-white/80">Email alerts</p>
               <p className="mt-0.5 truncate text-xs text-white/45">
-                {email ? `Sends to ${email}` : "Uses your registered account email"}
+                {config?.sandbox && config.sandboxTo
+                  ? `Delivers to ${config.sandboxTo} (Resend sandbox)`
+                  : email
+                    ? `Sends to ${email}`
+                    : "Uses your registered account email"}
               </p>
             </div>
           </div>
@@ -288,8 +298,18 @@ export function BackgroundEmailWatchPanel({ monitorId, className }: BackgroundEm
             <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-white/60">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" />
               <p className="min-w-0 text-xs leading-5">
-                Using Resend&apos;s shared test sender. It only delivers to the email that owns your Resend
-                account. Verify a domain and set SANTRA_EMAIL_FROM to send anywhere.
+                {config.sandboxTo ? (
+                  <>
+                    Using Resend&apos;s test sender. Alerts are routed to{" "}
+                    <span className="text-white/80">{config.sandboxTo}</span> until you verify a
+                    domain and set SANTRA_EMAIL_FROM.
+                  </>
+                ) : (
+                  <>
+                    Using Resend&apos;s shared test sender. Set SANTRA_EMAIL_SANDBOX_TO to your
+                    Resend account email, or verify a domain to send anywhere.
+                  </>
+                )}
               </p>
             </div>
           ) : null}
