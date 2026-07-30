@@ -17,6 +17,15 @@ to read the failure messages.
 | Quick test | `SANTRA Alerts <onboarding@resend.dev>` | Only the email that owns the Resend account |
 | Production | `SANTRA Alerts <alerts@yourdomain.com>` | Anyone |
 
+For the quick-test sender, also set:
+
+```bash
+SANTRA_EMAIL_SANDBOX_TO=you@your-resend-account.com
+```
+
+SANTRA will route alert emails to that inbox even when the signed-in user has a
+different address. Without it, Resend rejects any other recipient.
+
 For production, add your domain under **Domains → Add Domain** in Resend and
 create the DNS records it lists (SPF, DKIM, and usually a return-path CNAME).
 Verification typically completes within minutes.
@@ -28,6 +37,7 @@ Add to `.env.local`, then restart the dev server:
 ```bash
 RESEND_API_KEY=re_your_key
 SANTRA_EMAIL_FROM=SANTRA Alerts <onboarding@resend.dev>
+SANTRA_EMAIL_SANDBOX_TO=you@your-resend-account.com
 
 # Optional: minimum time between alert emails per monitor (default 30 minutes)
 SANTRA_EMAIL_MIN_GAP_MS=1800000
